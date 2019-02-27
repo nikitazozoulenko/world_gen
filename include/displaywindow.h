@@ -11,7 +11,6 @@ class Displaywindow
 public:
     Displaywindow(const unsigned int& width, const unsigned int& height, const char* title);
     void Init(const unsigned int& width, const unsigned int& height, const char* title);
-    void ProcessInput(float& deltaTime, Camera& camera);
     GLFWwindow* window;
 protected:
 private:

@@ -1,14 +1,6 @@
 #include "../include/displaywindow.h"
 #include <iostream>
 
-// glfw: whenever the window size changed (by OS or user resize) this callback function executes
-// ---------------------------------------------------------------------------------------------
-static void framebuffer_size_callback(GLFWwindow* window, int width, int height)
-{
-    // make sure the viewport matches the new window dimensions; note that width and 
-    // height will be significantly larger than specified on retina displays.
-    glViewport(0, 0, width, height);
-}
 
 
 Displaywindow::Displaywindow(const unsigned int& width, const unsigned int& height, const char* title)
@@ -36,9 +28,6 @@ void Displaywindow::Init(const unsigned int& width, const unsigned int& height, 
         glfwTerminate();
     }
     glfwMakeContextCurrent(window);
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-
-
 
     //Initialize GLEW
     glfwMakeContextCurrent(window);
@@ -47,14 +36,3 @@ void Displaywindow::Init(const unsigned int& width, const unsigned int& height, 
         std::cout << "Failed to initialize GLEW" << std::endl;
     }
 }
-
-
-// process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
-// ---------------------------------------------------------------------------------------------------------
-void Displaywindow::ProcessInput(float& deltaTime, Camera& camera)
-{
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
-}
-
-

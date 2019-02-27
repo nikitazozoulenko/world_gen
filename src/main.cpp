@@ -12,20 +12,16 @@
 #include "../include/displaywindow.h"
 #include "../include/shaderprogram.h"
 #include "../include/shader.h"
+#include "../include/camera.h"
+#include "../include/inputHandler.h"
 
 // settings
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
-void mouse_callback(GLFWwindow* window, double xpos, double ypos);
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
-void ProcessInputTwo(GLFWwindow *window);
-
-
 Camera camera = Camera(glm::vec3(4,0,0));
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
-bool firstMouse = true;
 
 float deltaTime = 0;
 float lastFrame = 0;
@@ -41,11 +37,12 @@ int main()
     Shaderprogram shaderprogram = Shaderprogram(vertexShader, fragmentShader);
     glUseProgram(shaderprogram.shaderProgramID);
     glDeleteShader(vertexShader.shaderID);
-    glDeleteShader(fragmentShader.shaderID);  
+    glDeleteShader(fragmentShader.shaderID);
+
+    InputHandler input_handler = InputHandler(&displaywindow, &camera);
 
 
-    glfwSetCursorPosCallback(displaywindow.window, mouse_callback);
-    glfwSetScrollCallback(displaywindow.window, scroll_callback);
+
 
 
     // set up vertex data (and buffer(s)) and configure vertex attributes
@@ -179,8 +176,7 @@ int main()
 
         // input
         // -----
-        displaywindow.ProcessInput(deltaTime, camera);
-        ProcessInputTwo(displaywindow.window);
+        input_handler.processInput(deltaTime);
 
         // render
         // ------
@@ -204,8 +200,6 @@ int main()
         //pass uniforms to shader
         glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
         glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
-        std::cout << camera.position.x  << "   " << camera.position.y  << "   " << camera.position.z << std::endl;
-        std::cout << camera.yaw  << "   " << camera.pitch  << std::endl;
 
 
 
@@ -245,52 +239,4 @@ int main()
     glfwTerminate();
     return 0;
 }
-
-
-void ProcessInputTwo(GLFWwindow *window)
-{
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-    {
-        camera.ProcessKeyboard(Camera::FORWARD, deltaTime);
-        std::cout << "w" << std::endl;
-    }
-
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        camera.ProcessKeyboard(Camera::BACKWARD, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        camera.ProcessKeyboard(Camera::LEFT, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        camera.ProcessKeyboard(Camera::RIGHT, deltaTime);
-}
-
-// glfw: whenever the mouse moves, this callback is called
-// -------------------------------------------------------
-void mouse_callback(GLFWwindow* window, double xpos, double ypos)
-{
-    if (firstMouse)
-    {
-        lastX = xpos;
-        lastY = ypos;
-        firstMouse = false;
-    }
-
-    float xoffset = xpos - lastX;
-    float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
-
-    lastX = xpos;
-    lastY = ypos;
-
-    std::cout << "3" << std::endl;
-
-    camera.ProcessMouseMovement(xoffset, yoffset);
-}
-
-// glfw: whenever the mouse scroll wheel scrolls, this callback is called
-// ----------------------------------------------------------------------
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
-{
-    camera.ProcessMouseScroll(yoffset);
-}
-
-
 
