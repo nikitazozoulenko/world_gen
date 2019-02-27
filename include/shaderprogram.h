@@ -16,6 +16,7 @@ public:
     Shaderprogram(Shader& vertexShader, Shader& fragmentShader);
     void CheckProgramError(unsigned int flag, const std::string& errorMessage);
     unsigned int shaderProgramID;
+    void Use();
 protected:
 private:
 };

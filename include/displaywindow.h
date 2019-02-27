@@ -4,12 +4,14 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+#include "camera.h"
+
 class Displaywindow
 {
 public:
     Displaywindow(const unsigned int& width, const unsigned int& height, const char* title);
     void Init(const unsigned int& width, const unsigned int& height, const char* title);
-    void ProcessInput();
+    void ProcessInput(float& deltaTime, Camera& camera);
     GLFWwindow* window;
 protected:
 private:

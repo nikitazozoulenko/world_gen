@@ -38,6 +38,8 @@ void Displaywindow::Init(const unsigned int& width, const unsigned int& height, 
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
+
+
     //Initialize GLEW
     glfwMakeContextCurrent(window);
     if (glewInit() != GLEW_OK)
@@ -49,9 +51,9 @@ void Displaywindow::Init(const unsigned int& width, const unsigned int& height, 
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 // ---------------------------------------------------------------------------------------------------------
-void Displaywindow::ProcessInput()
+void Displaywindow::ProcessInput(float& deltaTime, Camera& camera)
 {
-    if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 }
 

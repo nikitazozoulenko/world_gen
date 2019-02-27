@@ -2,6 +2,7 @@
 
 #include <iostream>
 
+
 Shaderprogram::Shaderprogram(Shader& vertexShader, Shader& fragmentShader)
 {
     shaderProgramID = glCreateProgram();
@@ -25,4 +26,10 @@ void Shaderprogram::CheckProgramError(unsigned int flag, const std::string& erro
 		glGetProgramInfoLog(shaderProgramID, sizeof(error), NULL, error);
 		std::cerr << errorMessage << ": '" << error << "'" << std::endl;
 	}
+}
+
+
+void Shaderprogram::Use()
+{
+	glUseProgram(shaderProgramID);
 }
