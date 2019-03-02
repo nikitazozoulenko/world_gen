@@ -13,7 +13,6 @@ void Displaywindow::Init(const unsigned int& width, const unsigned int& height, 
 {
     // glfw: initialize and configure
     // ------------------------------
-    glewExperimental=true; //needed for core profile
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -29,10 +28,10 @@ void Displaywindow::Init(const unsigned int& width, const unsigned int& height, 
     }
     glfwMakeContextCurrent(window);
 
-    //Initialize GLEW
-    glfwMakeContextCurrent(window);
-    if (glewInit() != GLEW_OK)
+    // glad: load all OpenGL function pointers
+    // ---------------------------------------
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
-        std::cout << "Failed to initialize GLEW" << std::endl;
-    }
+        std::cout << "Failed to initialize GLAD" << std::endl;
+    }    
 }

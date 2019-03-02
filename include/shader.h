@@ -1,7 +1,7 @@
 #ifndef SHADER_WITH_ID_H
 #define SHADER_WITH_ID_H
 
-#include <GL/glew.h>
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
 //Standard includes
@@ -14,7 +14,7 @@ public:
 	std::string ParseShaderFile(const std::string& filename);
 	void CheckShaderError(unsigned int flag, const std::string& errorMessage);
 	unsigned int CreateShader(const std::string& shader_string, GLenum shadertype);
-	unsigned int shaderID;
+	unsigned int ID;
 protected:
 private:
 };

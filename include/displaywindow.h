@@ -1,7 +1,7 @@
 #ifndef DISPLAYWINDOW_H
 #define DISPLAYWINDOW_H
 
-#include <GL/glew.h>
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
 #include "camera.h"
