@@ -3,8 +3,6 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
 
 // Include standard headers
 #include <iostream>
@@ -14,12 +12,14 @@
 #include "../include/shader.h"
 #include "../include/camera.h"
 #include "../include/inputHandler.h"
+#include "../include/misc.h"
+#include "../include/model.h"
 
 // settings
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
-unsigned int loadTexture(char const * path);
+
 
 
 
@@ -28,11 +28,17 @@ int main()
     Displaywindow displaywindow = Displaywindow(SCR_WIDTH, SCR_HEIGHT, "My Window");
 
     //Shader stuff init
-    Shaderprogram cube_shaderprogram = Shaderprogram("/home/nikita/Code/world_gen/src/shaders/vertexShader.glsl", "/home/nikita/Code/world_gen/src/shaders/fragmentShader.glsl");
-    Shaderprogram lamp_shaderprogram = Shaderprogram("/home/nikita/Code/world_gen/src/shaders/lampVertexShader.glsl", "/home/nikita/Code/world_gen/src/shaders/lampFragmentShader.glsl");
+    Shaderprogram cube_shaderprogram = Shaderprogram("/home/nikita/Code/world_gen/src/shaders/block.vs", "/home/nikita/Code/world_gen/src/shaders/block.fs");
+    Shaderprogram lamp_shaderprogram = Shaderprogram("/home/nikita/Code/world_gen/src/shaders/lamp.vs", "/home/nikita/Code/world_gen/src/shaders/lamp.fs");
 
     Camera camera = Camera(glm::vec3(4,0,0));
     InputHandler input_handler = InputHandler(&displaywindow, &camera);
+
+
+    //model
+
+    Model ourModel("/home/nikita/Code/world_gen/resources/nanosuit/nanosuit.obj");
+    Shaderprogram obj_shaderprogram = Shaderprogram("/home/nikita/Code/world_gen/src/shaders/object.vs", "/home/nikita/Code/world_gen/src/shaders/object.fs");
 
 
 
@@ -200,7 +206,10 @@ int main()
         cube_shaderprogram.setUniformFloat("spotLight.linear", 0.09);
         cube_shaderprogram.setUniformFloat("spotLight.quadratic", 0.032);
         cube_shaderprogram.setUniformFloat("spotLight.cutOff", glm::cos(glm::radians(10.5f)));
-        cube_shaderprogram.setUniformFloat("spotLight.outerCutOff", glm::cos(glm::radians(12.0f)));     
+        cube_shaderprogram.setUniformFloat("spotLight.outerCutOff", glm::cos(glm::radians(12.0f)));    
+
+        cube_shaderprogram.setUniformVec3("spotLight.position", camera.position);
+        cube_shaderprogram.setUniformVec3("spotLight.direction", camera.front); 
 
 
 
@@ -231,8 +240,6 @@ int main()
 
         //activate shader
         cube_shaderprogram.use();
-        cube_shaderprogram.setUniformVec3("spotLight.position", camera.position);
-        cube_shaderprogram.setUniformVec3("spotLight.direction", camera.front);
         cube_shaderprogram.setUniformVec3("viewPos", camera.position);
         glm::mat4 projection = glm::perspective(glm::radians(camera.zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
         glm::mat4 view = camera.GetViewMatrix();
@@ -279,6 +286,27 @@ int main()
 
 
 
+
+
+
+        //object
+        obj_shaderprogram.use();
+        obj_shaderprogram.setUniformMat4("projection", projection);
+        obj_shaderprogram.setUniformMat4("view", view);
+        // render the loaded model
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f)); // translate it down so it's at the center of the scene
+        model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));	// it's a bit too big for our scene, so scale it down
+        obj_shaderprogram.setUniformMat4("model", model);
+        ourModel.draw(obj_shaderprogram);
+
+
+
+
+
+
+
+
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         glfwSwapBuffers(displaywindow.window);
         glfwPollEvents();
@@ -300,41 +328,3 @@ int main()
 
 
 
-// utility function for loading a 2D texture from file
-// ---------------------------------------------------
-unsigned int loadTexture(char const * path)
-{
-    unsigned int textureID;
-    glGenTextures(1, &textureID);
-
-    int width, height, nrComponents;
-    unsigned char *data = stbi_load(path, &width, &height, &nrComponents, 0);
-    if (data)
-    {
-        GLenum format;
-        if (nrComponents == 1)
-            format = GL_RED;
-        else if (nrComponents == 3)
-            format = GL_RGB;
-        else if (nrComponents == 4)
-            format = GL_RGBA;
-
-        glBindTexture(GL_TEXTURE_2D, textureID);
-        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-        stbi_image_free(data);
-    }
-    else
-    {
-        std::cout << "Texture failed to load at path: " << path << std::endl;
-        stbi_image_free(data);
-    }
-
-    return textureID;
-}
