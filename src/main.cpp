@@ -6,6 +6,7 @@
 
 // Include standard headers
 #include <iostream>
+#include <unordered_map>
 
 #include "../include/displaywindow.h"
 #include "../include/shaderprogram.h"
@@ -14,25 +15,26 @@
 #include "../include/inputHandler.h"
 #include "../include/misc.h"
 #include "../include/model.h"
+#include "../include/block.h"
 
 // settings
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
 
-
-
-
 int main()
 {
     Displaywindow displaywindow = Displaywindow(SCR_WIDTH, SCR_HEIGHT, "My Window");
+    Camera camera = Camera(glm::vec3(4,0,0));
+    InputHandler input_handler = InputHandler(&displaywindow, &camera);
 
     //Shader stuff init
     Shaderprogram cube_shaderprogram = Shaderprogram("/home/nikita/Code/world_gen/src/shaders/block.vs", "/home/nikita/Code/world_gen/src/shaders/block.fs");
     Shaderprogram lamp_shaderprogram = Shaderprogram("/home/nikita/Code/world_gen/src/shaders/lamp.vs", "/home/nikita/Code/world_gen/src/shaders/lamp.fs");
 
-    Camera camera = Camera(glm::vec3(4,0,0));
-    InputHandler input_handler = InputHandler(&displaywindow, &camera);
+    std::unordered_map<unsigned int, BlockModel> block_type_map = {{1, BlockModel()}};
+    BlockModel block = BlockModel();
+
 
 
     //model
@@ -91,20 +93,6 @@ int main()
         -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f
     };
 
-    // world space positions of our cubes
-    glm::vec3 cubePositions[] = {
-        glm::vec3( 0.0f,  0.0f,  0.0f),
-        glm::vec3( 2.0f,  5.0f, -15.0f),
-        glm::vec3(-1.5f, -2.2f, -2.5f),
-        glm::vec3(-3.8f, -2.0f, -12.3f),
-        glm::vec3( 2.4f, -0.4f, -3.5f),
-        glm::vec3(-1.7f,  3.0f, -7.5f),
-        glm::vec3( 1.3f, -2.0f, -2.5f),
-        glm::vec3( 1.5f,  2.0f, -2.5f),
-        glm::vec3( 1.5f,  0.2f, -1.5f),
-        glm::vec3(-1.3f,  1.0f, -1.5f)
-    };
-
     // positions of the point lights
     glm::vec3 pointLightPositions[] = {
         glm::vec3( 0.7f,  0.2f,  2.0f),
@@ -114,34 +102,17 @@ int main()
     };
 
     // first, configure the cube's VAO (and VBO)
-    unsigned int VBO, cubeVAO;
-    glGenVertexArrays(1, &cubeVAO);
-    glGenBuffers(1, &VBO);
+    unsigned int lightVAO, lightVBO;
+    glGenVertexArrays(1, &lightVAO);
+    glGenBuffers(1, &lightVBO);
 
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBindVertexArray(lightVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, lightVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-    glBindVertexArray(cubeVAO);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-    glEnableVertexAttribArray(2);
-
-    // second, configure the light's VAO (VBO stays the same; the vertices are the same for the light object which is also a 3D cube)
-    unsigned int lightVAO;
-    glGenVertexArrays(1, &lightVAO);
-    glBindVertexArray(lightVAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
     // note that we update the lamp's position attribute's stride to reflect the updated buffer data
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
-
-    // load textures 
-    unsigned int diffuse_map = loadTexture("/home/nikita/Code/world_gen/container2.png");
-    unsigned int specular_map = loadTexture("/home/nikita/Code/world_gen/container2_specular.png");
 
 
 
@@ -246,26 +217,14 @@ int main()
         cube_shaderprogram.setUniformMat4("projection", projection);
         cube_shaderprogram.setUniformMat4("view", view);
 
-        // bind diffuse and specular maps
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, diffuse_map);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, specular_map);
-
-
         //render container
-        glBindVertexArray(cubeVAO);
         for (int i=0; i<10; i++)
         {
-            //calculate model matrix for each object
-            glm::mat4 model = glm::mat4(1.0f);
-            model = glm::translate(model, cubePositions[i]);
-            float angle = 8.0f * (i+0.5f);
-            model = glm::rotate(model, glm::radians((float)glfwGetTime()*angle), glm::vec3(1.0f, 0.3f, 0.5f));
-            cube_shaderprogram.setUniformMat4("model", model);
-
-            //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-            glDrawArrays(GL_TRIANGLES, 0, 36);
+            for (int j=0; j<10; j++)
+            {
+                glm::vec3 position = glm::vec3(i,-2,j);
+                block.draw(cube_shaderprogram, position);
+            }
         }
 
         //draw lamps
@@ -313,9 +272,8 @@ int main()
     }
 
     // optional: de-allocate all resources once they've outlived their purpose:
-    glDeleteVertexArrays(1, &cubeVAO);
     glDeleteVertexArrays(1, &lightVAO);
-    glDeleteBuffers(1, &VBO);
+    glDeleteBuffers(1, &lightVBO);
 
     // glfw: terminate, clearing all previously allocated GLFW resources.
     glfwTerminate();

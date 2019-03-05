@@ -5,11 +5,13 @@
 
 #include <unordered_map>
 
-class Block
+#include "shaderprogram.h"
+
+class BlockModel
 {
 public:
-    Block();
-    void draw(Shaderprogram& shaderprogram);
+    BlockModel();
+    void draw(Shaderprogram& shaderprogram, glm::vec3 world_pos);
     void setup();
 private:
     unsigned int VAO;
@@ -21,18 +23,22 @@ private:
 };
 
 
+class BlockInfo
+{
+    unsigned int blockID;
+    //lightning, other things needed to be block-specific
+};
+
+
 class Chunk
 {
 public:
-    glm::vec3 position;
-    // static uint WIDTH = 32;
-    // static uint HEIGHT = 64;
-    // Block blocks[WIDTH][WIDTH][HEIGHT];
     Chunk(glm::vec3 position);
-    std::unordered_map<glm::vec3, Block> block_map;
-
     void draw(Shaderprogram& shaderprogram);
 private:
+    glm::vec3 position;
+    //std::unordered_map<glm::vec3, BlockInfo> block_info_map;   vec3 needs hash function  
+    std::unordered_map<unsigned int, BlockModel>* p_block_model_map; //this should maybe just be in the block renderer instead
 };
 
 #endif // BLOCK_CHUNK_H
