@@ -32,8 +32,7 @@ int main()
     Shaderprogram cube_shaderprogram = Shaderprogram("/home/nikita/Code/world_gen/src/shaders/block.vs", "/home/nikita/Code/world_gen/src/shaders/block.fs");
     Shaderprogram lamp_shaderprogram = Shaderprogram("/home/nikita/Code/world_gen/src/shaders/lamp.vs", "/home/nikita/Code/world_gen/src/shaders/lamp.fs");
 
-    std::unordered_map<unsigned int, BlockModel> block_type_map = {{1, BlockModel()}};
-    BlockModel block = BlockModel();
+    Chunk chunk = Chunk(glm::vec3(0,0,0));
 
 
 
@@ -135,7 +134,7 @@ int main()
         // directional light
         cube_shaderprogram.setUniformVec3("dirLight.direction", -0.2f, -1.0f, -0.3f);
         cube_shaderprogram.setUniformVec3("dirLight.ambient", 0.05f, 0.05f, 0.05f);
-        cube_shaderprogram.setUniformVec3("dirLight.diffuse", 0.4f, 0.4f, 0.4f);
+        cube_shaderprogram.setUniformVec3("dirLight.diffuse", 0.8f, 0.8f, 0.8f);
         cube_shaderprogram.setUniformVec3("dirLight.specular", 0.5f, 0.5f, 0.5f);
         // point light 1
         cube_shaderprogram.setUniformVec3("pointLights[0].position", pointLightPositions[0]);
@@ -217,15 +216,8 @@ int main()
         cube_shaderprogram.setUniformMat4("projection", projection);
         cube_shaderprogram.setUniformMat4("view", view);
 
-        //render container
-        for (int i=0; i<10; i++)
-        {
-            for (int j=0; j<10; j++)
-            {
-                glm::vec3 position = glm::vec3(i,-2,j);
-                block.draw(cube_shaderprogram, position);
-            }
-        }
+        //render cubes
+        chunk.draw(cube_shaderprogram);
 
         //draw lamps
         lamp_shaderprogram.use();

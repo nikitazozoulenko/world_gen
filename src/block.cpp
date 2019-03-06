@@ -7,9 +7,58 @@
 
 #include <iostream>
 
-BlockModel::BlockModel()
+
+
+Chunk::Chunk(glm::vec3 position)
 {
-    setup();
+    this->position = position;
+
+    //init chunk here genChunk(position)
+    for (int x=0; x<WIDTH; x++)
+    {
+        for (int y=0; y<HEIGHT; y++)
+        {
+            for (int z=0; z<WIDTH; z++)
+            {
+                if(y*y<std::sqrt(x*x+z*z))
+                {
+                    blocks_array[x][y][z] = 1;                
+                }
+                else
+                {
+                    blocks_array[x][y][z] = 0;
+                }
+                
+            }
+        }
+    }
+}
+
+
+void Chunk::draw(Shaderprogram& shaderprogram)
+{
+    for (int x=0; x<WIDTH; x++)
+    {
+        for (int y=0; y<HEIGHT; y++)
+        {
+            for (int z=0; z<WIDTH; z++)
+            {
+                unsigned int blockID = blocks_array[x][y][z];
+                if (blockID!=0) //if block in map?
+                {
+                    //block_model_map[blockID].draw(shaderprogram, position+glm::vec3(x,y,z));
+                    //std::cout << "x" << x << "   y" << y << "   z" << z << std::endl;
+                    block_model.draw(shaderprogram, glm::vec3(x,y,z-10));
+                }
+            }
+        }
+    }
+}
+
+
+BlockModel::BlockModel(std::string folder)
+{
+    setup(folder);
 }
 
 void BlockModel::draw(Shaderprogram& shaderprogram, glm::vec3 world_pos)
@@ -31,7 +80,7 @@ void BlockModel::draw(Shaderprogram& shaderprogram, glm::vec3 world_pos)
 }
 
 
-void BlockModel::setup()
+void BlockModel::setup(std::string folder)
 {
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
@@ -96,6 +145,6 @@ void BlockModel::setup()
     glEnableVertexAttribArray(2);
 
     // load textures 
-    diffuse_map = loadTexture("/home/nikita/Code/world_gen/container2.png");
-    specular_map = loadTexture("/home/nikita/Code/world_gen/container2_specular.png");
+    diffuse_map = loadTexture(("/home/nikita/Code/world_gen/resources/blocks/"+folder+"/texture.png").c_str());
+    specular_map = loadTexture(("/home/nikita/Code/world_gen/resources/blocks/"+folder+"/specular.png").c_str());
 }
