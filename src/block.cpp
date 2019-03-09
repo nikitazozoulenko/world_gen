@@ -9,9 +9,12 @@
 
 
 
-Chunk::Chunk(glm::vec3 position)
+Chunk::Chunk(glm::vec2 position)
 {
     this->position = position;
+
+    BlockModel grass = BlockModel("grass");
+    block_model_map[1] = grass;
 
     //init chunk here genChunk(position)
     for (int x=0; x<WIDTH; x++)
@@ -22,13 +25,8 @@ Chunk::Chunk(glm::vec3 position)
             {
                 if(y*y<std::sqrt(x*x+z*z))
                 {
-                    blocks_array[x][y][z] = 1;                
-                }
-                else
-                {
-                    blocks_array[x][y][z] = 0;
-                }
-                
+                    blocks_array[x][y][z].blockID = 1;                
+                }    
             }
         }
     }
@@ -43,12 +41,11 @@ void Chunk::draw(Shaderprogram& shaderprogram)
         {
             for (int z=0; z<WIDTH; z++)
             {
-                unsigned int blockID = blocks_array[x][y][z];
+                BlockInfo block_info = blocks_array[x][y][z];
+                unsigned int blockID = block_info.blockID;
                 if (blockID!=0) //if block in map?
                 {
-                    //block_model_map[blockID].draw(shaderprogram, position+glm::vec3(x,y,z));
-                    //std::cout << "x" << x << "   y" << y << "   z" << z << std::endl;
-                    block_model.draw(shaderprogram, glm::vec3(x,y,z-10));
+                    block_model_map[blockID].draw(shaderprogram, glm::vec3(WIDTH*position.x+x, y-10, WIDTH*position.y+z));
                 }
             }
         }
@@ -59,6 +56,25 @@ void Chunk::draw(Shaderprogram& shaderprogram)
 BlockModel::BlockModel(std::string folder)
 {
     setup(folder);
+}
+
+BlockModel::BlockModel() //WARNING, ONLY FOR UNORDERED_MAP
+{
+    VAO = 0;
+    VBO = 0;
+    EBO = 0;
+    diffuse_map = 0;
+    specular_map = 0;
+
+}
+
+BlockModel::BlockModel(const BlockModel& obj)
+{
+    VAO = obj.VAO;
+    VBO = obj.VBO;
+    EBO = obj.EBO;
+    diffuse_map = obj.diffuse_map;
+    specular_map = obj.specular_map;
 }
 
 void BlockModel::draw(Shaderprogram& shaderprogram, glm::vec3 world_pos)

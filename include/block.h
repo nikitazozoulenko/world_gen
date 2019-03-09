@@ -11,7 +11,9 @@
 class BlockModel
 {
 public:
+    BlockModel(); //this is required for unordered_map
     BlockModel(std::string folder);
+    BlockModel(const BlockModel &obj);
     void draw(Shaderprogram& shaderprogram, glm::vec3 world_pos);
     void setup(std::string folder);
 private:
@@ -24,9 +26,10 @@ private:
 };
 
 
-class BlockInfo //TODO
+struct BlockInfo //TODO
 {
-    unsigned int blockID; //0 is air
+public:
+    unsigned int blockID = 0; //0 is air
     //lightning, other things needed to be block-specific
 };
 
@@ -34,16 +37,14 @@ class BlockInfo //TODO
 class Chunk
 {
 public:
-    Chunk(glm::vec3 position);
+    Chunk(glm::vec2 position);
     void draw(Shaderprogram& shaderprogram);
 private:
     static const unsigned int WIDTH = 32;
     static const unsigned int HEIGHT = 32;
-    glm::vec3 position;
-    unsigned int blocks_array[WIDTH][HEIGHT][WIDTH];
-    //std::unordered_map<glm::vec3, BlockInfo> block_info_map;   vec3 needs hash function  
-    //std::unordered_map<unsigned int, BlockModel> block_model_map;
-    BlockModel block_model = BlockModel("grass");
+    glm::vec2 position;
+    BlockInfo blocks_array[WIDTH][HEIGHT][WIDTH];
+    std::unordered_map<unsigned int, BlockModel> block_model_map;
 };
 
 #endif // BLOCK_CHUNK_H

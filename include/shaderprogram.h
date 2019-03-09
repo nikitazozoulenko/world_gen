@@ -15,6 +15,7 @@
 class Shaderprogram 
 {
 public:
+    Shaderprogram() = default;
     Shaderprogram(const char * vertex_path, const char * fragment_path);
     void checkProgramError(unsigned int flag, const std::string& error_message);
     void setUniformMat4(const char * name, glm::mat4& matrix);
