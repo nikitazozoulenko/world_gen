@@ -1,5 +1,7 @@
 #include "../include/blockRenderer.h"
 
+#include <iostream>
+
 BlockRenderer::BlockRenderer(GameWorld* p_game_world, Camera* p_camera)
 {
     this->p_game_world = p_game_world;
@@ -17,7 +19,6 @@ void BlockRenderer::render()
     //update view matrix every frame
     glm::mat4 view = p_camera->GetViewMatrix();
     block_shaderprogram.setUniformMat4("view", view);
-
     //render cubes
     for (Chunk& chunk : p_game_world->chunks)
     {

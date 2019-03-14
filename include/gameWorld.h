@@ -9,7 +9,7 @@ class GameWorld
 public:
     glm::vec3 sun_direction;
     std::vector<Chunk> chunks;
-    //WorldGenerator world_gen
+    //WorldGenerator* p_world_gen
 
     GameWorld();
 private:

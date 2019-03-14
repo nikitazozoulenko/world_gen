@@ -8,28 +8,18 @@
 #include <iostream>
 
 
-
-Chunk::Chunk(glm::vec2 position)
+Chunk::Chunk(glm::vec2 position, Array3D<WIDTH, HEIGHT, WIDTH> block_array)
 {
     this->position = position;
 
     BlockModel grass = BlockModel("grass");
+    BlockModel metal = BlockModel("metal");
+    BlockModel container = BlockModel("container");
     block_model_map[1] = grass;
+    block_model_map[2] = metal; 
+    block_model_map[3] = container;
 
-    //init chunk here genChunk(position)
-    for (int x=0; x<WIDTH; x++)
-    {
-        for (int y=0; y<HEIGHT; y++)
-        {
-            for (int z=0; z<WIDTH; z++)
-            {
-                if(y*y<std::sqrt(x*x+z*z))
-                {
-                    blocks_array[x][y][z].blockID = 1;                
-                }    
-            }
-        }
-    }
+    this->block_array = block_array;
 }
 
 
@@ -41,7 +31,7 @@ void Chunk::draw(Shaderprogram& shaderprogram)
         {
             for (int z=0; z<WIDTH; z++)
             {
-                BlockInfo block_info = blocks_array[x][y][z];
+                BlockInfo block_info = block_array.at(x, y, z);
                 unsigned int blockID = block_info.blockID;
                 if (blockID!=0) //if block in map?
                 {

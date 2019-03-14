@@ -1,5 +1,7 @@
 #include "../include/masterRenderer.h"
 
+#include <iostream>
+
 MasterRenderer::MasterRenderer(GameWorld* p_game_world, Camera* p_camera) : block_renderer(BlockRenderer(p_game_world, p_camera)), p_camera(p_camera)
 {
     glEnable(GL_DEPTH_TEST);

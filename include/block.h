@@ -5,6 +5,7 @@
 
 #include <unordered_map>
 #include <string>
+#include <array>
 
 #include "shaderprogram.h"
 
@@ -34,16 +35,31 @@ public:
 };
 
 
+template <uint x, uint y, uint z>
+class Array3D
+{
+public:
+    Array3D() = default;
+    BlockInfo& at(int a, int b, int c)
+    {
+        return data[a+x*b+x*y*c];
+    }
+private:
+    std::array<BlockInfo, x*y*z> data;
+};
+
+
 class Chunk
 {
 public:
-    Chunk(glm::vec2 position);
-    void draw(Shaderprogram& shaderprogram);
-private:
     static const unsigned int WIDTH = 32;
     static const unsigned int HEIGHT = 32;
+
+    Chunk(glm::vec2 position, Array3D<WIDTH, HEIGHT, WIDTH> blocks_array);
+    void draw(Shaderprogram& shaderprogram);
+private:
     glm::vec2 position;
-    BlockInfo blocks_array[WIDTH][HEIGHT][WIDTH];
+    Array3D<WIDTH, HEIGHT, WIDTH> block_array;
     std::unordered_map<unsigned int, BlockModel> block_model_map;
 };
 

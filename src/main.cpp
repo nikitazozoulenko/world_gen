@@ -37,14 +37,12 @@ int main()
         // per-frame time logic
         float currentFrame = glfwGetTime();
         delta_time = currentFrame - last_frame_time;
-        last_frame_time = currentFrame;
 
         // input
         input_handler.processInput(delta_time);
         
         //render
         renderer.render();
-
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         glfwSwapBuffers(displaywindow.window);
         glfwPollEvents();
