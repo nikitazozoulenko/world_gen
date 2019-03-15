@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <string>
 #include <array>
+#include <vector>
 
 #include "shaderprogram.h"
 
@@ -15,15 +16,13 @@ public:
     BlockModel(); //this is required for unordered_map
     BlockModel(std::string folder);
     BlockModel(const BlockModel &obj);
-    void draw(Shaderprogram& shaderprogram, glm::vec3 world_pos);
     void setup(std::string folder);
-private:
     unsigned int VAO;
     unsigned int VBO;
-    unsigned int EBO;
 
     unsigned int diffuse_map;
     unsigned int specular_map;
+private:
 };
 
 
@@ -40,27 +39,29 @@ class Array3D
 {
 public:
     Array3D() = default;
-    BlockInfo& at(int a, int b, int c)
-    {
-        return data[a+x*b+x*y*c];
-    }
+    inline BlockInfo& at(int a, int b, int c){ return data[a+x*b+x*y*c]; }
 private:
     std::array<BlockInfo, x*y*z> data;
 };
 
-
+//every block is stored in an array3D of BlockInfos
+//for rendering we use a map of vectors of glm::vec3s (index to array3D)
 class Chunk
 {
 public:
-    static const unsigned int WIDTH = 32;
-    static const unsigned int HEIGHT = 32;
+    static const unsigned int WIDTH = 32;   // x
+    static const unsigned int HEIGHT = 32;  // y
+    static const unsigned int BREADTH = 32; // z
 
-    Chunk(glm::vec2 position, Array3D<WIDTH, HEIGHT, WIDTH> blocks_array);
-    void draw(Shaderprogram& shaderprogram);
+    Chunk(glm::vec2 position, Array3D<WIDTH, HEIGHT, BREADTH> blocks_array);
+    void draw(Shaderprogram& shaderprogram, std::unordered_map<unsigned int, BlockModel>& model_map);
+    void setBlock(int x, int y, int z, BlockInfo block_info);
+    BlockInfo getBlock(int x, int y, int z);
+    void removeBlock(int x, int y, int z);
 private:
     glm::vec2 position;
-    Array3D<WIDTH, HEIGHT, WIDTH> block_array;
-    std::unordered_map<unsigned int, BlockModel> block_model_map;
+    Array3D<WIDTH, HEIGHT, BREADTH> block_array;
+    std::unordered_map<unsigned int, std::vector<glm::vec3>> block_locations;
 };
 
 #endif // BLOCK_CHUNK_H

@@ -1,16 +1,18 @@
 #ifndef WORLDGENERATOR_H
 #define WORLDGENERATOR_H
 
-#include "gameWorld.h"
+#include <functional>
+
 #include "block.h"
 
-class WorldGenerator 
+class WorldGenerator
 {
 public:
-    WorldGenerator(int seed = 0);
+    WorldGenerator(int seed=0);
     Chunk generateChunk(glm::vec2 position);
+    std::unordered_map<unsigned int, BlockModel> block_model_map;
 private:
-    GameWorld* p_game_world;
+    int seed;
     glm::vec2 gradients[4]; //2d is 4
     void setSeed(int seed);
     float lerp(float val0, float val1, float x);

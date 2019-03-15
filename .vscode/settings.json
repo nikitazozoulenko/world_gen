@@ -46,6 +46,13 @@
         "typeinfo": "cpp",
         "utility": "cpp",
         "variant": "cpp",
-        "string": "cpp"
+        "string": "cpp",
+        "bitset": "cpp",
+        "complex": "cpp",
+        "memory": "cpp",
+        "typeindex": "cpp",
+        "strstream": "cpp",
+        "iomanip": "cpp",
+        "thread": "cpp"
     }
 }

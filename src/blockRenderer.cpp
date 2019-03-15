@@ -6,8 +6,20 @@ BlockRenderer::BlockRenderer(GameWorld* p_game_world, Camera* p_camera)
 {
     this->p_game_world = p_game_world;
     this->p_camera = p_camera;
+    createModelMap();
+    createShaders();
+}
 
-    setup();
+
+void BlockRenderer::createModelMap()
+{
+    std::cout << "creating model map" << std::endl;
+    BlockModel grass = BlockModel("grass");
+    BlockModel metal = BlockModel("metal");
+    BlockModel container = BlockModel("container");
+    model_map[1] = grass;
+    model_map[2] = metal; 
+    model_map[3] = container;
 }
 
 
@@ -19,15 +31,16 @@ void BlockRenderer::render()
     //update view matrix every frame
     glm::mat4 view = p_camera->GetViewMatrix();
     block_shaderprogram.setUniformMat4("view", view);
+
     //render cubes
     for (Chunk& chunk : p_game_world->chunks)
     {
-        chunk.draw(block_shaderprogram);
+        chunk.draw(block_shaderprogram, model_map);
     }
 }
 
 
-void BlockRenderer::setup()
+void BlockRenderer::createShaders()
 {
     block_shaderprogram = Shaderprogram("/home/nikita/Code/world_gen/src/shaders/block.vs", "/home/nikita/Code/world_gen/src/shaders/block.fs");
 

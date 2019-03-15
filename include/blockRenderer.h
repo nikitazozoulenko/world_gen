@@ -4,7 +4,6 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-
 #include "shaderprogram.h"
 #include "gameWorld.h"
 #include "camera.h"
@@ -16,9 +15,12 @@ public:
 
     BlockRenderer(GameWorld* p_game_world, Camera* p_camera);
     void render();
-    void setup();
 private:
     GameWorld* p_game_world;
     Camera* p_camera;
+
+    void createModelMap();
+    void createShaders();
+    std::unordered_map <unsigned int, BlockModel> model_map;
 };
 #endif // BLOCKRENDERER_H

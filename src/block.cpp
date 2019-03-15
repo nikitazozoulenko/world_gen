@@ -8,36 +8,58 @@
 #include <iostream>
 
 
-Chunk::Chunk(glm::vec2 position, Array3D<WIDTH, HEIGHT, WIDTH> block_array)
+Chunk::Chunk(glm::vec2 position, Array3D<WIDTH, HEIGHT, BREADTH> block_array)
 {
     this->position = position;
-
-    BlockModel grass = BlockModel("grass");
-    BlockModel metal = BlockModel("metal");
-    BlockModel container = BlockModel("container");
-    block_model_map[1] = grass;
-    block_model_map[2] = metal; 
-    block_model_map[3] = container;
-
     this->block_array = block_array;
+
+    //loop through the block map and add to vector
+    //the vector is used for more efficient rendering
+    for(int x=0; x<WIDTH; x++)
+    {
+        for(int y=0; y<HEIGHT; y++)
+        {
+            for(int z=0; z<BREADTH; z++)
+            {   
+                unsigned int blockID = block_array.at(x, y, z).blockID;
+                if(blockID!=0)
+                {
+                    //TODO change to unordered_set insead of vector
+                    this->block_locations[blockID].push_back(glm::vec3(x,y,z));
+                }
+            }
+        }
+    }
 }
 
 
-void Chunk::draw(Shaderprogram& shaderprogram)
+void Chunk::draw(Shaderprogram& shaderprogram, std::unordered_map<unsigned int, BlockModel>& model_map)
 {
-    for (int x=0; x<WIDTH; x++)
-    {
-        for (int y=0; y<HEIGHT; y++)
+    for (auto& pair : block_locations)
+    {   
+        unsigned int blockID = pair.first;
+        std::vector<glm::vec3> vector = pair.second;
+        BlockModel block_model = model_map[blockID];
+
+        // bind vao, diffuse and specular maps
+        glBindVertexArray(block_model.VAO);
+        glBindTexture(GL_TEXTURE_2D, block_model.diffuse_map);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, block_model.specular_map);
+
+
+        for (auto& pos : vector)
         {
-            for (int z=0; z<WIDTH; z++)
-            {
-                BlockInfo block_info = block_array.at(x, y, z);
-                unsigned int blockID = block_info.blockID;
-                if (blockID!=0) //if block in map?
-                {
-                    block_model_map[blockID].draw(shaderprogram, glm::vec3(WIDTH*position.x+x, y-10, WIDTH*position.y+z));
-                }
-            }
+            /////////////////////draw single block//////////////////////////////
+
+            //calculate model matrix for each object
+            glm::mat4 model = glm::mat4(1.0f);
+            model = glm::translate(model,glm::vec3(position.x*WIDTH, 0,  position.y*BREADTH) + pos);
+            shaderprogram.setUniformMat4("model", model);
+
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+            //draw ends
+            ////////////////////draw ends////////////////////////////////////////
         }
     }
 }
@@ -48,11 +70,10 @@ BlockModel::BlockModel(std::string folder)
     setup(folder);
 }
 
-BlockModel::BlockModel() //WARNING, ONLY FOR UNORDERED_MAP
+BlockModel::BlockModel() //WARNING, CONSTRUCTOR ONLY FOR UNORDERED_MAP
 {
     VAO = 0;
     VBO = 0;
-    EBO = 0;
     diffuse_map = 0;
     specular_map = 0;
 
@@ -62,27 +83,8 @@ BlockModel::BlockModel(const BlockModel& obj)
 {
     VAO = obj.VAO;
     VBO = obj.VBO;
-    EBO = obj.EBO;
     diffuse_map = obj.diffuse_map;
     specular_map = obj.specular_map;
-}
-
-void BlockModel::draw(Shaderprogram& shaderprogram, glm::vec3 world_pos)
-{
-        // bind diffuse and specular maps
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, diffuse_map);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, specular_map);
-
-        glBindVertexArray(VAO);
-
-        //calculate model matrix for each object
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, world_pos);
-        shaderprogram.setUniformMat4("model", model);
-
-        glDrawArrays(GL_TRIANGLES, 0, 36);
 }
 
 

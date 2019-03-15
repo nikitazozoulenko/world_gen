@@ -2,6 +2,7 @@
 #define GAMEWORLD_H
 
 #include "block.h"
+#include "worldGenerator.h"
 
 #include <vector>
 class GameWorld
@@ -9,10 +10,10 @@ class GameWorld
 public:
     glm::vec3 sun_direction;
     std::vector<Chunk> chunks;
-    //WorldGenerator* p_world_gen
 
-    GameWorld();
+    GameWorld(WorldGenerator* p_world_gen);
 private:
+    WorldGenerator* p_world_gen;
 };
 
 #endif // GAMEWORLD_H

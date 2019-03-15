@@ -18,6 +18,7 @@
 #include "../include/block.h"
 #include "../include/gameWorld.h"
 #include "../include/masterRenderer.h"
+#include "../include/worldGenerator.h"
 
 
 int main()
@@ -26,7 +27,8 @@ int main()
     Camera camera = Camera(glm::vec3(4,0,0));
     InputHandler input_handler = InputHandler(&displaywindow, &camera);
 
-    GameWorld game_world;
+    WorldGenerator world_gen = WorldGenerator(123456);
+    GameWorld game_world = GameWorld(&world_gen);
     MasterRenderer renderer = MasterRenderer(&game_world, &camera);
 
     // render loop
