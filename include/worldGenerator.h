@@ -13,10 +13,10 @@ public:
     std::unordered_map<unsigned int, BlockModel> block_model_map;
 private:
     int seed;
-    glm::vec2 gradients[4]; //2d is 4
-    void setSeed(int seed);
+    glm::vec2 gradients[4]; //2dim is 4 vectors
     float lerp(float val0, float val1, float x);
-    float getPerlinValue(float x_norm, float y_norm, glm::vec2 world_pos);
+    float totalPerlinValue(int world_x, int world_z);
+    float getPerlinValue(float x_norm, float y_norm, glm::vec2 corner_pos, int amplitude);
     int random(glm::vec2 pos);
 };
 

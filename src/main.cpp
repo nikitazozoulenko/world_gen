@@ -42,6 +42,8 @@ int main()
 
         // input
         input_handler.processInput(delta_time);
+
+        std::cout << (int) camera.position.x << " " << (int) camera.position.y << " " << (int) camera.position.z << std::endl;
         
         //render
         renderer.render();

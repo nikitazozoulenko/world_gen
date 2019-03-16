@@ -26,12 +26,16 @@ private:
 };
 
 
+
+
 struct BlockInfo //TODO
 {
 public:
     unsigned int blockID = 0; //0 is air
     //lightning, other things needed to be block-specific
 };
+
+
 
 
 template <uint x, uint y, uint z>
@@ -44,14 +48,17 @@ private:
     std::array<BlockInfo, x*y*z> data;
 };
 
+
+
+
 //every block is stored in an array3D of BlockInfos
 //for rendering we use a map of vectors of glm::vec3s (index to array3D)
 class Chunk
 {
 public:
-    static const unsigned int WIDTH = 32;   // x
-    static const unsigned int HEIGHT = 32;  // y
-    static const unsigned int BREADTH = 32; // z
+    static const unsigned int WIDTH = 16;   // x
+    static const unsigned int HEIGHT = 128;  // y
+    static const unsigned int BREADTH = 16; // z
 
     Chunk(glm::vec2 position, Array3D<WIDTH, HEIGHT, BREADTH> blocks_array);
     void draw(Shaderprogram& shaderprogram, std::unordered_map<unsigned int, BlockModel>& model_map);
