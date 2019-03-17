@@ -1,5 +1,5 @@
-#ifndef BLOCK_CHUNK_H
-#define BLOCK_CHUNK_H
+#ifndef BLOCK_BLOCK_H
+#define BLOCK_BLOCK_H
 
 #include <glm/glm.hpp>
 
@@ -16,9 +16,13 @@ public:
     BlockModel(); //this is required for unordered_map
     BlockModel(std::string folder);
     BlockModel(const BlockModel &obj);
-    void setup(std::string folder);
+    void setup_side_cube(std::string folder);
+    void setup_normal_cube(std::string folder);
     unsigned int VAO;
     unsigned int VBO;
+    unsigned int EBO;
+
+    int num_indices;
 
     unsigned int diffuse_map;
     unsigned int specular_map;
@@ -27,48 +31,12 @@ private:
 
 
 
-
-struct BlockInfo //TODO
+struct BlockInfo
 {
 public:
     unsigned int blockID = 0; //0 is air
+    bool visible = false;
     //lightning, other things needed to be block-specific
 };
 
-
-
-
-template <uint x, uint y, uint z>
-class Array3D
-{
-public:
-    Array3D() = default;
-    inline BlockInfo& at(int a, int b, int c){ return data[a+x*b+x*y*c]; }
-private:
-    std::array<BlockInfo, x*y*z> data;
-};
-
-
-
-
-//every block is stored in an array3D of BlockInfos
-//for rendering we use a map of vectors of glm::vec3s (index to array3D)
-class Chunk
-{
-public:
-    static const unsigned int WIDTH = 16;   // x
-    static const unsigned int HEIGHT = 128;  // y
-    static const unsigned int BREADTH = 16; // z
-
-    Chunk(glm::vec2 position, Array3D<WIDTH, HEIGHT, BREADTH> blocks_array);
-    void draw(Shaderprogram& shaderprogram, std::unordered_map<unsigned int, BlockModel>& model_map);
-    void setBlock(int x, int y, int z, BlockInfo block_info);
-    BlockInfo getBlock(int x, int y, int z);
-    void removeBlock(int x, int y, int z);
-private:
-    glm::vec2 position;
-    Array3D<WIDTH, HEIGHT, BREADTH> block_array;
-    std::unordered_map<unsigned int, std::vector<glm::vec3>> block_locations;
-};
-
-#endif // BLOCK_CHUNK_H
+#endif // BLOCK_BLOCK_H

@@ -6,9 +6,9 @@ Camera::Camera(glm::vec3 cam_pos, glm::vec3 cam_up, float cam_yaw, float cam_pit
     worldUp = cam_up;
     yaw = cam_yaw;
     pitch = cam_pitch;
-    movementSpeed = 0.07f;
+    movementSpeed = 20.0f;
     mouseSensitivity = 0.1f;
-    zoom = 45.0f;
+    zoom = 70.0f;
     UpdateCameraVectors();
 }
 
@@ -65,12 +65,13 @@ void Camera::ProcessMouseMovement(float xoffset, float yoffset, bool constrainPi
 // Processes input received from a mouse scroll-wheel event. Only requires input on the vertical wheel-axis
 void Camera::ProcessMouseScroll(float yoffset)
 {
-    if (zoom >= 1.0f && zoom <= 45.0f)
+    float max_zoom = 70.0f;
+    if (zoom >= 1.0f && zoom <= max_zoom)
         zoom -= yoffset;
     if (zoom <= 1.0f)
         zoom = 1.0f;
-    if (zoom >= 45.0f)
-        zoom = 45.0f;
+    if (zoom >= max_zoom)
+        zoom = max_zoom;
 }
 
 

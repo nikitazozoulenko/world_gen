@@ -15,11 +15,11 @@ void BlockRenderer::createModelMap()
 {
     std::cout << "creating model map" << std::endl;
     BlockModel grass = BlockModel("grass");
-    BlockModel metal = BlockModel("metal");
-    BlockModel container = BlockModel("container");
-    model_map[1] = grass;
-    model_map[2] = metal; 
-    model_map[3] = container;
+    BlockModel dirt = BlockModel("dirt");
+    BlockModel stone = BlockModel("stone");
+    model_map[1] = dirt;
+    model_map[2] = grass; 
+    model_map[3] = stone;
 }
 
 
@@ -27,6 +27,7 @@ void BlockRenderer::render()
 {
     //bind shaders
     block_shaderprogram.use();
+    setProjectionMatrix();
 
     //update view matrix every frame
     glm::mat4 view = p_camera->GetViewMatrix();
@@ -37,6 +38,14 @@ void BlockRenderer::render()
     {
         chunk.draw(block_shaderprogram, model_map);
     }
+}
+
+
+void BlockRenderer::setProjectionMatrix()
+{
+    block_shaderprogram.use();
+    glm::mat4 projection = glm::perspective(glm::radians(p_camera->zoom), (float)1600 / (float)900, 0.1f, 1000.0f);
+    block_shaderprogram.setUniformMat4("projection", projection);
 }
 
 
@@ -52,7 +61,7 @@ void BlockRenderer::createShaders()
 
     // directional light, (sun)
     block_shaderprogram.setUniformVec3("dirLight.direction", p_game_world->sun_direction);
-    block_shaderprogram.setUniformVec3("dirLight.ambient", 0.05f, 0.05f, 0.05f);
+    block_shaderprogram.setUniformVec3("dirLight.ambient", 0.5f, 0.5f, 0.5f);
     block_shaderprogram.setUniformVec3("dirLight.diffuse", 0.8f, 0.8f, 0.8f);
     block_shaderprogram.setUniformVec3("dirLight.specular", 0.5f, 0.5f, 0.5f);
 

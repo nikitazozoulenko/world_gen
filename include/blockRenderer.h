@@ -15,6 +15,7 @@ public:
 
     BlockRenderer(GameWorld* p_game_world, Camera* p_camera);
     void render();
+    void setProjectionMatrix();
 private:
     GameWorld* p_game_world;
     Camera* p_camera;

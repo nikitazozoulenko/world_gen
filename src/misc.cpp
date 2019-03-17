@@ -10,6 +10,8 @@
 // ---------------------------------------------------
 unsigned int loadTexture(char const * path)
 {   
+    stbi_set_flip_vertically_on_load(true);
+    
     std::cout << path << std::endl;
     unsigned int textureID;
     glGenTextures(1, &textureID);

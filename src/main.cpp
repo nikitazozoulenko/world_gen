@@ -23,7 +23,7 @@
 
 int main()
 {
-    Displaywindow displaywindow = Displaywindow(800, 600, "My Window"); //note, have to change SCRWIDTH SCRHEIGHT in multiple places (masterrenderer proj matrix)
+    Displaywindow displaywindow = Displaywindow(1600, 900, "My Window"); //note, have to change SCRWIDTH SCRHEIGHT in multiple places (masterrenderer proj matrix)
     Camera camera = Camera(glm::vec3(4,0,0));
     InputHandler input_handler = InputHandler(&displaywindow, &camera);
 
@@ -39,10 +39,13 @@ int main()
         // per-frame time logic
         float currentFrame = glfwGetTime();
         delta_time = currentFrame - last_frame_time;
+        last_frame_time = currentFrame;
+        std::cout << "FPS " << 1.0f/delta_time << std::endl;
 
         // input
         input_handler.processInput(delta_time);
 
+        //CAMERA POSITION
         std::cout << (int) camera.position.x << " " << (int) camera.position.y << " " << (int) camera.position.z << std::endl;
         
         //render
