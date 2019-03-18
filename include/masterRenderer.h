@@ -5,8 +5,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "blockRenderer.h"
+#include "objectRenderer.h"
 #include "camera.h"
-#include "model.h"
 
 class MasterRenderer
 {
@@ -15,11 +15,8 @@ public:
     void render();
 private:
     BlockRenderer block_renderer;
+    ObjectRenderer obj_renderer;
     Camera* p_camera;
-
-    //temporary
-    Model ourModel = Model("/home/nikita/Code/world_gen/resources/nanosuit/nanosuit.obj");
-    Shaderprogram obj_shaderprogram = Shaderprogram("/home/nikita/Code/world_gen/src/shaders/object.vs", "/home/nikita/Code/world_gen/src/shaders/object.fs");
-
+    GameWorld* p_game_world;
 };
 #endif // MASTERRENDERER_H

@@ -8,6 +8,7 @@ BlockRenderer::BlockRenderer(GameWorld* p_game_world, Camera* p_camera)
     this->p_camera = p_camera;
     createModelMap();
     createShaders();
+    setProjectionMatrix();
 }
 
 
@@ -27,11 +28,10 @@ void BlockRenderer::render()
 {
     //bind shaders
     block_shaderprogram.use();
-    setProjectionMatrix();
 
-    //update view matrix every frame
-    glm::mat4 view = p_camera->GetViewMatrix();
-    block_shaderprogram.setUniformMat4("view", view);
+    //update view matrix every frame   (proj matrix really should NOT be set every frame)
+    setProjectionMatrix();
+    setViewMatrix();
 
     //render cubes
     for (auto& pair : p_game_world->chunks)
@@ -43,9 +43,15 @@ void BlockRenderer::render()
 
 void BlockRenderer::setProjectionMatrix()
 {
-    block_shaderprogram.use();
     glm::mat4 projection = glm::perspective(glm::radians(p_camera->zoom), (float)1600 / (float)900, 0.1f, 1000.0f);
     block_shaderprogram.setUniformMat4("projection", projection);
+}
+
+
+void BlockRenderer::setViewMatrix()
+{
+    glm::mat4 view = p_camera->GetViewMatrix();
+    block_shaderprogram.setUniformMat4("view", view);
 }
 
 
@@ -64,5 +70,4 @@ void BlockRenderer::createShaders()
     block_shaderprogram.setUniformVec3("dirLight.ambient", 0.5f, 0.5f, 0.5f);
     block_shaderprogram.setUniformVec3("dirLight.diffuse", 0.8f, 0.8f, 0.8f);
     block_shaderprogram.setUniformVec3("dirLight.specular", 0.5f, 0.5f, 0.5f);
-
 }
