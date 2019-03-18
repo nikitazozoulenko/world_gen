@@ -10,11 +10,11 @@ GameWorld::GameWorld(WorldGenerator* p_world_gen)
 
     //code for chunk creaton here
 
-    for(int x=-7; x<7; x++)
+    for(int x=-4; x<4; x++)
     {
-        for (int z=-7; z<7; z++)
+        for (int z=-4; z<4; z++)
         {
-            chunks.push_back(p_world_gen->generateChunk(glm::vec2(x, z)));
+            chunks[glm::vec2(x, z)] = p_world_gen->generateChunk(glm::vec2(x, z));
         }
     }
 }

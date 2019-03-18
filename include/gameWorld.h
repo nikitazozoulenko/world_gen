@@ -4,12 +4,16 @@
 #include "block.h"
 #include "worldGenerator.h"
 
-#include <vector>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/glm.hpp>
+#include <glm/gtx/hash.hpp>
+#include <unordered_map>
+
 class GameWorld
 {
 public:
     glm::vec3 sun_direction;
-    std::vector<Chunk> chunks;
+    std::unordered_map<glm::vec2, Chunk, std::hash<glm::vec2>> chunks;
 
     GameWorld(WorldGenerator* p_world_gen);
 private:

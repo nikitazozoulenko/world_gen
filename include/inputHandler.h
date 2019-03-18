@@ -25,7 +25,8 @@ private:
 
     static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
     static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
-    static void mouse_callback(GLFWwindow* window, double xpos, double ypos);
+    static void cursor_pos_callback(GLFWwindow* window, double xpos, double ypos);
+    static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
 };
 
 #endif // INPUTHANDLER_H

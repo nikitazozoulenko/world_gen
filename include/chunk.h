@@ -32,6 +32,7 @@ public:
     static const unsigned int HEIGHT = 100;  // y
     static const unsigned int BREADTH = 32; // z
 
+    Chunk() = default;  //for std map
     Chunk(glm::vec2 position, Array3D<WIDTH, HEIGHT, BREADTH> blocks_array);
     void draw(Shaderprogram& shaderprogram, std::unordered_map<unsigned int, BlockModel>& model_map);
     void setBlock(int x, int y, int z, BlockInfo block_info);

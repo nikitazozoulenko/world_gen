@@ -72,9 +72,9 @@ float WorldGenerator::totalPerlinValue(int world_x, int world_z)
         if (world_z < 0)
             z_corner -= 1;
         if (world_x % width == 0 && world_x < 0)
-           x_norm = 1-x_norm;
+            x_norm = 1-x_norm;
         if (world_z % width == 0 && world_z < 0)
-           z_norm = 1-z_norm;
+            z_norm = 1-z_norm;
 
         total_perlin += getPerlinValue(x_norm, z_norm, glm::vec2(x_corner, z_corner), amplitude);
     }

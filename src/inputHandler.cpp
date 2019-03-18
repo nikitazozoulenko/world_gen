@@ -48,7 +48,8 @@ void InputHandler::setCallbacks()
 
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwSetScrollCallback(window, scroll_callback);
-    glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetCursorPosCallback(window, cursor_pos_callback);
+    glfwSetMouseButtonCallback(window, mouse_button_callback);
 }
 
 
@@ -73,7 +74,7 @@ void InputHandler::scroll_callback(GLFWwindow* window, double xoffset, double yo
 
 // glfw: whenever the mouse moves, this callback is called
 // -------------------------------------------------------
-void InputHandler::mouse_callback(GLFWwindow* window, double xpos, double ypos)
+void InputHandler::cursor_pos_callback(GLFWwindow* window, double xpos, double ypos)
 {   
     InputHandler* my_input_handler = (InputHandler*)glfwGetWindowUserPointer(window);
     if (my_input_handler->firstmouse)
@@ -90,4 +91,13 @@ void InputHandler::mouse_callback(GLFWwindow* window, double xpos, double ypos)
     my_input_handler->mouse_y = ypos;
 
     my_input_handler->p_camera->ProcessMouseMovement(xoffset, yoffset);
+}
+
+
+void InputHandler::mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
+{
+    InputHandler* my_input_handler = (InputHandler*)glfwGetWindowUserPointer(window);
+    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+        std::cout << "pressed" << std::endl;
+
 }

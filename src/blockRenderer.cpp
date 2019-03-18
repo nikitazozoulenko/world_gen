@@ -34,9 +34,9 @@ void BlockRenderer::render()
     block_shaderprogram.setUniformMat4("view", view);
 
     //render cubes
-    for (Chunk& chunk : p_game_world->chunks)
+    for (auto& pair : p_game_world->chunks)
     {
-        chunk.draw(block_shaderprogram, model_map);
+        pair.second.draw(block_shaderprogram, model_map);
     }
 }
 
