@@ -25,10 +25,11 @@ int main()
 {
     Displaywindow displaywindow = Displaywindow(1600, 900, "My Window"); //note, have to change SCRWIDTH SCRHEIGHT in multiple places (masterrenderer proj matrix)
     Camera camera = Camera(glm::vec3(4,0,0));
-    InputHandler input_handler = InputHandler(&displaywindow, &camera);
-
     WorldGenerator world_gen = WorldGenerator(123456);
     GameWorld game_world = GameWorld(&world_gen);
+
+    InputHandler input_handler = InputHandler(&displaywindow, &camera, &game_world);
+
     MasterRenderer renderer = MasterRenderer(&game_world, &camera);
 
     // render loop
@@ -40,13 +41,12 @@ int main()
         float currentFrame = glfwGetTime();
         delta_time = currentFrame - last_frame_time;
         last_frame_time = currentFrame;
-        std::cout << "FPS " << 1.0f/delta_time << std::endl;
 
         // input
         input_handler.processInput(delta_time);
 
         //CAMERA POSITION
-        std::cout << (int) camera.position.x << " " << (int) camera.position.y << " " << (int) camera.position.z << std::endl;
+        //std::cout <<  (int) camera.position.x << " " << (int) camera.position.y << " " << (int) camera.position.z << "     FPS " << (int) (1.0f/delta_time)  << std::endl;
         
         //render
         renderer.render();

@@ -1,12 +1,15 @@
 #ifndef BLOCK_CHUNK_H
 #define BLOCK_CHUNK_H
 
-#include <glm/glm.hpp>
-
 #include <unordered_map>
 #include <string>
 #include <array>
-#include <vector>
+#include <unordered_set>
+
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/glm.hpp>
+#include <glm/gtx/hash.hpp>
+
 
 #include "shaderprogram.h"
 #include "block.h"
@@ -35,13 +38,11 @@ public:
     Chunk() = default;  //for std map
     Chunk(glm::vec2 position, Array3D<WIDTH, HEIGHT, BREADTH> blocks_array);
     void draw(Shaderprogram& shaderprogram, std::unordered_map<unsigned int, BlockModel>& model_map);
-    void setBlock(int x, int y, int z, BlockInfo block_info);
-    BlockInfo getBlock(int x, int y, int z);
-    void removeBlock(int x, int y, int z);
+    BlockInfo& getBlockInfo(int x, int y, int z);
+    std::unordered_map<unsigned int, std::unordered_set<glm::vec3, std::hash<glm::vec3>>> block_locations;
 private:
     glm::vec2 position;
     Array3D<WIDTH, HEIGHT, BREADTH> block_array;
-    std::unordered_map<unsigned int, std::vector<glm::vec3>> block_locations;
 };
 
 #endif // BLOCK_CHUNK_H

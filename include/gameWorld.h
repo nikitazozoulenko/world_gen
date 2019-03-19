@@ -13,9 +13,13 @@ class GameWorld
 {
 public:
     glm::vec3 sun_direction;
-    std::unordered_map<glm::vec2, Chunk, std::hash<glm::vec2>> chunks;
+    std::unordered_map<glm::ivec2, Chunk, std::hash<glm::ivec2>> chunks;
 
     GameWorld(WorldGenerator* p_world_gen);
+    void removeBlock(float world_x, float world_y, float world_z);
+    BlockInfo& getBlockInfo(float world_x, float world_y, float world_z);
+    bool isInBounds(float world_x, float world_y, float world_z);
+    void updateVisible(float world_x, float world_y, float world_z, bool visible);
 private:
     WorldGenerator* p_world_gen;
 };

@@ -53,6 +53,8 @@
         "typeindex": "cpp",
         "strstream": "cpp",
         "iomanip": "cpp",
-        "thread": "cpp"
+        "thread": "cpp",
+        "set": "cpp",
+        "unordered_set": "cpp"
     }
 }

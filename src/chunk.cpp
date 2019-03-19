@@ -25,7 +25,7 @@ Chunk::Chunk(glm::vec2 position, Array3D<WIDTH, HEIGHT, BREADTH> block_array)
                 if(block_info.visible)
                 {
                     //TODO change to unordered_set insead of vector
-                    this->block_locations[block_info.blockID].push_back(glm::vec3(x,y,z));
+                    this->block_locations[block_info.blockID].insert(glm::vec3(x,y,z));
                 }
             }
         }
@@ -38,7 +38,7 @@ void Chunk::draw(Shaderprogram& shaderprogram, std::unordered_map<unsigned int, 
     for (auto& pair : block_locations)
     {   
         unsigned int blockID = pair.first;
-        std::vector<glm::vec3> locations = pair.second;
+        std::unordered_set<glm::vec3> locations = pair.second;
         BlockModel block_model = model_map[blockID];
 
         // bind vao, diffuse and specular maps
@@ -50,11 +50,13 @@ void Chunk::draw(Shaderprogram& shaderprogram, std::unordered_map<unsigned int, 
 
         //model matrices for instanced rendering
         glm::mat4 model_matrices[locations.size()];
-        for (int i=0; i<locations.size(); i++)
+        int counter = 0;
+        for (auto& pos : locations)
         {   //calculate model matrix for each object
             glm::mat4 model = glm::mat4(1.0f);
-            model = glm::translate(model,glm::vec3(position.x*WIDTH, 0,  position.y*BREADTH) + locations[i]);
-            model_matrices[i] = model;
+            model = glm::translate(model,glm::vec3(position.x*WIDTH, 0,  position.y*BREADTH) + pos);
+            model_matrices[counter] = model;
+            counter++;
         }
 
         unsigned int instance_buffer;
@@ -81,4 +83,9 @@ void Chunk::draw(Shaderprogram& shaderprogram, std::unordered_map<unsigned int, 
         //remove vbo here????
         glDeleteBuffers(1, &instance_buffer);
     }
+}
+
+BlockInfo& Chunk::getBlockInfo(int x, int y, int z)
+{
+    return block_array.at(x, y, z);
 }
