@@ -1,6 +1,7 @@
 #include "../include/inputHandler.h"
 
 #include <iostream>
+#include <cmath>
 
 static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
@@ -105,15 +106,16 @@ void InputHandler::helper_mouse_fun(float x, float y, float z, InputHandler* inp
     float dir_x = inp->p_camera->front.x;
     float dir_y = inp->p_camera->front.y;
     float dir_z = inp->p_camera->front.z;
-    if((x-player_x)*(x-player_x) + (y-player_y)*(y-player_y) + (z-player_z)*(z-player_z) < 3*3)
+    if((x-player_x)*(x-player_x) + (y-player_y)*(y-player_y) + (z-player_z)*(z-player_z) < 10*10)
     {
-        BlockInfo info = inp->p_game_world->getBlockInfo(x,y,z);
-        if(info.blockID != 0)
+        if(inp->p_game_world->isInBounds(x,y,z))
         {
-            inp->p_game_world->removeBlock(x,y,z);
+            BlockInfo info = inp->p_game_world->getBlockInfo(x,y,z);
+            if(info.blockID != 0)
+            {
+                inp->p_game_world->removeBlock(x,y,z);
+            }
         }
-        else
-        {
         float x_len = (int)x - x;
         float tx = std::max(x_len/dir_x, (1+x_len)/dir_x);
         float y_len = (int)y - y;
@@ -128,18 +130,24 @@ void InputHandler::helper_mouse_fun(float x, float y, float z, InputHandler* inp
         std::cout << "tx "<<tx << "   ty "<<ty<< "   tz "<<tz<<std::endl;
 
         float t;
-        float eps = 0.0001;
+        float eps = 0.001;
         if(tx<ty && tx<tz)
+        {
             t=tx + eps;
+        }
         else if(ty<tx && ty<tz)
+        {
             t=ty + eps;
+        }
         else
+        {
             t=tz + eps;
+        }
+
 
         std::cout << std::endl;
 
         helper_mouse_fun(x+t*dir_x, y+t*dir_y, z+t*dir_z, inp);
-        }
     }
 }
 

@@ -6,6 +6,7 @@
 
 #include "blockRenderer.h"
 #include "objectRenderer.h"
+#include "uiRenderer.h"
 #include "camera.h"
 
 class MasterRenderer
@@ -16,6 +17,7 @@ public:
 private:
     BlockRenderer block_renderer;
     ObjectRenderer obj_renderer;
+    UIRenderer ui_renderer;
     Camera* p_camera;
     GameWorld* p_game_world;
 };

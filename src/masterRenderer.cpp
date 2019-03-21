@@ -4,7 +4,8 @@
 
 MasterRenderer::MasterRenderer(GameWorld* p_game_world, Camera* p_camera) 
     : block_renderer(BlockRenderer(p_game_world, p_camera)),
-      obj_renderer(ObjectRenderer(p_game_world, p_camera)), 
+      obj_renderer(ObjectRenderer(p_game_world, p_camera)),
+      ui_renderer(UIRenderer(p_game_world, p_camera)),
       p_camera(p_camera),
       p_game_world(p_game_world)
 {
@@ -26,4 +27,7 @@ void MasterRenderer::render()
 
     //objects
     obj_renderer.render();
+
+    //finally ui
+    ui_renderer.render();
 }

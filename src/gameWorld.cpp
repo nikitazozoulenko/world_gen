@@ -20,6 +20,7 @@ GameWorld::GameWorld(WorldGenerator* p_world_gen)
     }
 }
 
+
 bool GameWorld::isInBounds(float world_x, float world_y, float world_z)
 {
     int chunk_x = std::floor(world_x/Chunk::WIDTH);
