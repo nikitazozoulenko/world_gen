@@ -50,31 +50,20 @@ float WorldGenerator::totalPerlinValue(int world_x, int world_z)
 {
     float total_perlin = 0;
 
-    std::vector<int> sizes = {100, 50, 8};
-    std::vector<float> amplitudes = {50.0f, 15.0f, 2.0f};
+    std::vector<float> sizes = {100.0f, 50.0f, 25.0f};
+    std::vector<float> amplitudes = {30.0f, 20.0f, 15.0f};
     for (int i=0; i<sizes.size(); i++)
     {
-        int width = sizes[i];
-        int amplitude = amplitudes[i];
+        float width = sizes[i];
+        float amplitude = amplitudes[i];
 
-        int x_corner = world_x/width;
-        int z_corner = world_z/width;
-        float x_norm = std::fmod(world_x+0.5f, width)/(float)width;
-        float z_norm = std::fmod(world_z+0.5f, width)/(float)width;
+        int x_corner = std::floor(world_x / width);
+        int z_corner = std::floor(world_z / width);
 
-        //negative checking
-        if (x_norm < 0)
-            x_norm += 1;
-        if (z_norm < 0)
-            z_norm += 1;
-        if (world_x < 0)
-            x_corner -= 1;
-        if (world_z < 0)
-            z_corner -= 1;
-        if (world_x % width == 0 && world_x < 0)
-            x_norm = 1-x_norm;
-        if (world_z % width == 0 && world_z < 0)
-            z_norm = 1-z_norm;
+        int local_x = std::floor(world_x) - x_corner*width;
+        int local_z = std::floor(world_z) - z_corner*width;
+        float x_norm = (local_x+0.5f) / width;
+        float z_norm = (local_z+0.5f) / width;
 
         total_perlin += getPerlinValue(x_norm, z_norm, glm::vec2(x_corner, z_corner), amplitude);
     }

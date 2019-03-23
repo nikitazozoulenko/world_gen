@@ -11,9 +11,9 @@ GameWorld::GameWorld(WorldGenerator* p_world_gen)
 
     //code for chunk creaton here
 
-    for(int x=-1; x<5; x++)
+    for(int x=-3; x<3; x++)
     {
-        for (int z=-1; z<5; z++)
+        for (int z=-3; z<3; z++)
         {
             chunks[glm::ivec2(x, z)] = p_world_gen->generateChunk(glm::ivec2(x, z));
         }
