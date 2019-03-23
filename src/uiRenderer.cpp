@@ -20,7 +20,6 @@ void UIRenderer::render()
     //render here
     for (auto& quad : quads)
     {
-        std::cout << "rendering quad" << std::endl;
         quad.draw(ui_shaderprogram);
     }
 }
@@ -78,8 +77,7 @@ void UIQuad::setup(float x0, float x1, float y0, float y1, std::string filename)
 
 void UIQuad::draw(Shaderprogram& shaderprogram)
 {
-    // bind vao, diffuse and specular maps
-    std::cout << "texture " << texture << std::endl;
+    // bind vao, texture
     glBindVertexArray(VAO);
     glBindTexture(GL_TEXTURE_2D, texture);
     glDrawArrays(GL_TRIANGLES, 0, 6);

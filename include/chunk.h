@@ -31,9 +31,9 @@ private:
 class Chunk
 {
 public:
-    static const unsigned int WIDTH = 32;   // x
-    static const unsigned int HEIGHT = 100;  // y
-    static const unsigned int BREADTH = 32; // z
+    static const int WIDTH = 32;    // x
+    static const int HEIGHT = 100;  // y
+    static const int BREADTH = 32;  // z
 
     Chunk() = default;  //for std map
     Chunk(glm::vec2 position, Array3D<WIDTH, HEIGHT, BREADTH> blocks_array);

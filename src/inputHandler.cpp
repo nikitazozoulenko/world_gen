@@ -97,9 +97,6 @@ void InputHandler::cursor_pos_callback(GLFWwindow* window, double xpos, double y
 
 void InputHandler::helper_mouse_fun(float x, float y, float z, InputHandler* inp)
 {
-    std::cout << "pressed" << std::endl;
-    std::cout << "ints: x "<<(int)x << "y "<<(int)y<< "z "<<(int)z<<std::endl;
-    std::cout << "floats: x "<<x << "y "<<y<< "z "<<z<<std::endl;
     float player_x = inp->p_camera->position.x;
     float player_y = inp->p_camera->position.y;
     float player_z = inp->p_camera->position.z;
@@ -116,18 +113,13 @@ void InputHandler::helper_mouse_fun(float x, float y, float z, InputHandler* inp
                 inp->p_game_world->removeBlock(x,y,z);
             }
         }
-        float x_len = (int)x - x;
+        //stops working at negatives?
+        float x_len = std::floor(x) - x;
         float tx = std::max(x_len/dir_x, (1+x_len)/dir_x);
-        float y_len = (int)y - y;
+        float y_len = std::floor(y) - y;
         float ty = std::max(y_len/dir_y, (1+y_len)/dir_y);
-        float z_len = (int)z - z;
+        float z_len = std::floor(z) - z;
         float tz = std::max(z_len/dir_z, (1+z_len)/dir_z);
-
-        std::cout << "dir x "<<dir_x << "dir y "<<dir_y<< "dir z "<<dir_z<<std::endl;
-        std::cout << "tx "<<tx << "   ty "<<ty<< "   tz "<<tz<<std::endl;
-        std::cout << "xlen "<<x_len << "   ylen "<<y_len<< "   zlen "<<z_len<<std::endl;
-        std::cout << "x_travel "<<tx*dir_x << "   y_travel "<<ty*dir_y<< "   z_travel "<<tz*dir_z<<std::endl;
-        std::cout << "tx "<<tx << "   ty "<<ty<< "   tz "<<tz<<std::endl;
 
         float t;
         float eps = 0.001;
@@ -143,9 +135,6 @@ void InputHandler::helper_mouse_fun(float x, float y, float z, InputHandler* inp
         {
             t=tz + eps;
         }
-
-
-        std::cout << std::endl;
 
         helper_mouse_fun(x+t*dir_x, y+t*dir_y, z+t*dir_z, inp);
     }

@@ -11,9 +11,9 @@ GameWorld::GameWorld(WorldGenerator* p_world_gen)
 
     //code for chunk creaton here
 
-    for(int x=0; x<8; x++)
+    for(int x=-1; x<5; x++)
     {
-        for (int z=0; z<8; z++)
+        for (int z=-1; z<5; z++)
         {
             chunks[glm::ivec2(x, z)] = p_world_gen->generateChunk(glm::ivec2(x, z));
         }
@@ -26,8 +26,7 @@ bool GameWorld::isInBounds(float world_x, float world_y, float world_z)
     int chunk_x = std::floor(world_x/Chunk::WIDTH);
     int chunk_z = std::floor(world_z/Chunk::BREADTH);
     glm::ivec2 pos = glm::ivec2(chunk_x, chunk_z);
-    std::cout << "ch x " << chunk_x<<"ch z " << chunk_z << std::endl;
-    if (world_y>-1 && world_y<Chunk::HEIGHT)
+    if (world_y>=0 && world_y<Chunk::HEIGHT)
         if(chunks.find(pos)!=chunks.end())
             return true;
     return false;
@@ -58,7 +57,6 @@ void GameWorld::removeBlock(float world_x, float world_y, float world_z)
 {
     if (isInBounds(world_x, world_y, world_z))
     {
-        std::cout << "removing block at x " << std::floor(world_x) << "y " << std::floor(world_y) << "z " << std::floor(world_z) << std::endl;
         BlockInfo& info = getBlockInfo(world_x, world_y, world_z);
         int chunk_x = std::floor(world_x/Chunk::WIDTH);
         int chunk_z = std::floor(world_z/Chunk::BREADTH);
