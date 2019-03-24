@@ -9,7 +9,7 @@ class Camera
 {
 public:
     // Camera Attributes
-    glm::vec3 position;
+    glm::vec3& pos;
     glm::vec3 front;
     glm::vec3 up;
     glm::vec3 right;
@@ -33,8 +33,8 @@ public:
         DOWN
     };
 
-    Camera(glm::vec3 cam_pos, glm::vec3 cam_up = glm::vec3(0.0f, 1.0f, 0.0f), float cam_yaw = -90.0f, float cam_pitch = 0.0f, glm::vec3 cam_front = glm::vec3(0.0f, 0.0f, -1.0f));
-    glm::mat4 GetViewMatrix();
+    Camera(glm::vec3& pos, glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = 0.0f, float pitch = 0.0f, glm::vec3 front = glm::vec3(0.0f, 0.0f, -1.0f));
+    glm::mat4 getViewMatrix();
     void ProcessKeyboard(int direction, float deltaTime);
     void ProcessMouseMovement(float xoffset, float yoffset, bool constrainPitch = true);
     void ProcessMouseScroll(float yoffset);

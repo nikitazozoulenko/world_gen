@@ -2,10 +2,9 @@
 
 #include <iostream>
 
-ObjectRenderer::ObjectRenderer(GameWorld* p_game_world, Camera* p_camera)
+ObjectRenderer::ObjectRenderer(GameWorld* p_game_world)
 {
     this->p_game_world = p_game_world;
-    this->p_camera = p_camera;
     createShaders();
 }
 
@@ -30,14 +29,14 @@ void ObjectRenderer::render()
 
 void ObjectRenderer::setProjectionMatrix()
 {
-    glm::mat4 projection = glm::perspective(glm::radians(p_camera->zoom), (float)1600 / (float)900, 0.1f, 1000.0f);
+    glm::mat4 projection = glm::perspective(glm::radians(p_game_world->player.camera.zoom), (float)1600 / (float)900, 0.1f, 1000.0f);
     obj_shaderprogram.setUniformMat4("projection", projection);
 }
 
 
 void ObjectRenderer::setViewMatrix()
 {
-    glm::mat4 view = p_camera->GetViewMatrix();
+    glm::mat4 view = p_game_world->player.camera.getViewMatrix();
     obj_shaderprogram.setUniformMat4("view", view);
 }
 

@@ -2,10 +2,9 @@
 
 #include <iostream>
 
-BlockRenderer::BlockRenderer(GameWorld* p_game_world, Camera* p_camera)
+BlockRenderer::BlockRenderer(GameWorld* p_game_world)
 {
     this->p_game_world = p_game_world;
-    this->p_camera = p_camera;
     createModelMap();
     createShaders();
     setProjectionMatrix();
@@ -43,14 +42,14 @@ void BlockRenderer::render()
 
 void BlockRenderer::setProjectionMatrix()
 {
-    glm::mat4 projection = glm::perspective(glm::radians(p_camera->zoom), (float)1600 / (float)900, 0.1f, 1000.0f);
+    glm::mat4 projection = glm::perspective(glm::radians(p_game_world->player.camera.zoom), (float)1600 / (float)900, 0.1f, 1000.0f);
     block_shaderprogram.setUniformMat4("projection", projection);
 }
 
 
 void BlockRenderer::setViewMatrix()
 {
-    glm::mat4 view = p_camera->GetViewMatrix();
+    glm::mat4 view = p_game_world->player.camera.getViewMatrix();
     block_shaderprogram.setUniformMat4("view", view);
 }
 

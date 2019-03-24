@@ -2,11 +2,10 @@
 
 #include <iostream>
 
-MasterRenderer::MasterRenderer(GameWorld* p_game_world, Camera* p_camera) 
-    : block_renderer(BlockRenderer(p_game_world, p_camera)),
-      obj_renderer(ObjectRenderer(p_game_world, p_camera)),
-      ui_renderer(UIRenderer(p_game_world, p_camera)),
-      p_camera(p_camera),
+MasterRenderer::MasterRenderer(GameWorld* p_game_world) 
+    : block_renderer(BlockRenderer(p_game_world)),
+      obj_renderer(ObjectRenderer(p_game_world)),
+      ui_renderer(UIRenderer(p_game_world)),
       p_game_world(p_game_world)
 {
     glEnable(GL_DEPTH_TEST);

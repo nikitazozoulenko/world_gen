@@ -12,13 +12,12 @@
 class MasterRenderer
 {
 public:
-    MasterRenderer(GameWorld* p_game_world, Camera* p_camera);
+    MasterRenderer(GameWorld* p_game_world);
     void render();
 private:
     BlockRenderer block_renderer;
     ObjectRenderer obj_renderer;
     UIRenderer ui_renderer;
-    Camera* p_camera;
     GameWorld* p_game_world;
 };
 #endif // MASTERRENDERER_H

@@ -6,21 +6,19 @@
 
 #include "shaderprogram.h"
 #include "gameWorld.h"
-#include "camera.h"
 
 class BlockRenderer
 {
 public:
     Shaderprogram block_shaderprogram;
 
-    BlockRenderer(GameWorld* p_game_world, Camera* p_camera);
+    BlockRenderer(GameWorld* p_game_world);
     void render();
     void setProjectionMatrix();
     void setViewMatrix();
     
 private:
     GameWorld* p_game_world;
-    Camera* p_camera;
 
     void createModelMap();
     void createShaders();

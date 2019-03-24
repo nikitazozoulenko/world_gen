@@ -11,25 +11,26 @@
 class InputHandler
 {
 public:
-    InputHandler(Displaywindow* ptr_displaywindow, Camera* ptr_camera, GameWorld* p_game_world);
-    void processInput(float delta_time);
+    InputHandler(Displaywindow* p_displaywindow, GameWorld* p_game_world);
+    void processKeyboardInput();
     void setCallbacks();
+    void updateDeltaTime();
+
 protected:
 private:
     Displaywindow* p_displaywindow;
-    Camera* p_camera;
     GameWorld* p_game_world;
 
     float mouse_x;
     float mouse_y;
     bool firstmouse = true;
+    float delta_time = 0;
+    float last_frame_time = 0;
 
     static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
     static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
     static void cursor_pos_callback(GLFWwindow* window, double xpos, double ypos);
-
     static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
-    static void helper_mouse_fun(float x, float y, float z, InputHandler* inp);
 
 };
 

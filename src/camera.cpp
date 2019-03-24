@@ -1,22 +1,21 @@
 #include "../include/camera.h"
 
-Camera::Camera(glm::vec3 cam_pos, glm::vec3 cam_up, float cam_yaw, float cam_pitch, glm::vec3 cam_front)
+Camera::Camera(glm::vec3& pos, glm::vec3 up, float yaw, float pitch, glm::vec3 front) : pos(pos)
 {
-    position = cam_pos;
-    worldUp = cam_up;
-    yaw = cam_yaw;
-    pitch = cam_pitch;
-    movementSpeed = 5.0f;
-    mouseSensitivity = 0.1f;
-    zoom = 70.0f;
+    this->worldUp = up;
+    this->yaw = yaw;
+    this->pitch = pitch;
+    this->movementSpeed = 5.0f;
+    this->mouseSensitivity = 0.1f;
+    this->zoom = 70.0f;
     UpdateCameraVectors();
 }
 
 
 // Returns the view matrix calculated using Euler Angles and the LookAt Matrix
-glm::mat4 Camera::GetViewMatrix()
+glm::mat4 Camera::getViewMatrix()
 {
-    return glm::lookAt(position, position + front, up);
+    return glm::lookAt(pos, pos + front, up);
 }
 
 
@@ -25,17 +24,17 @@ void Camera::ProcessKeyboard(int direction, float deltaTime)
 {
     float velocity = movementSpeed * deltaTime;
     if (direction == FORWARD)
-        position += front * velocity;
+        pos += front * velocity;
     if (direction == BACKWARD)
-        position -= front * velocity;
+        pos -= front * velocity;
     if (direction == LEFT)
-        position -= right * velocity;
+        pos -= right * velocity;
     if (direction == RIGHT)
-        position += right * velocity;
+        pos += right * velocity;
     if (direction == UP)
-        position += up * velocity;
+        pos += up * velocity;
     if (direction == DOWN)
-        position -= up * velocity;
+        pos -= up * velocity;
 }
 
 

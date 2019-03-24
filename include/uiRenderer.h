@@ -26,13 +26,12 @@ class UIRenderer
 public:
     Shaderprogram ui_shaderprogram;
 
-    UIRenderer(GameWorld* p_game_world, Camera* p_camera);
+    UIRenderer(GameWorld* p_game_world);
     void render();
     void createUI();
     
 private:
     GameWorld* p_game_world;
-    Camera* p_camera;
     std::vector<UIQuad> quads;
 
     void createShaders();

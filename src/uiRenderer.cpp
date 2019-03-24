@@ -3,10 +3,9 @@
 #include <iostream>
 #include "../include/misc.h"
 
-UIRenderer::UIRenderer(GameWorld* p_game_world, Camera* p_camera)
+UIRenderer::UIRenderer(GameWorld* p_game_world)
 {
     this->p_game_world = p_game_world;
-    this->p_camera = p_camera;
     createShaders();
     createUI();
 }
