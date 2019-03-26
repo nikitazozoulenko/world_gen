@@ -11,9 +11,9 @@ GameWorld::GameWorld(WorldGenerator* p_world_gen) : player(Player())
     this->block_is_targeted = false;
 
     //code for chunk creaton here
-    for(int x=-3; x<3; x++)
+    for(int x=-1; x<1; x++)
     {
-        for (int z=-3; z<3; z++)
+        for (int z=-1; z<1; z++)
         {
             chunks[glm::ivec2(x, z)] = p_world_gen->generateChunk(glm::ivec2(x, z));
         }
@@ -33,7 +33,7 @@ bool GameWorld::isInBounds(float x, float y, float z)
 bool GameWorld::isInBounds(int x, int y, int z)
 {
     int chunk_x = std::floor(x / (float)Chunk::WIDTH);
-    int chunk_z = std::floor(y / (float) Chunk::BREADTH);
+    int chunk_z = std::floor(z / (float) Chunk::BREADTH);
     glm::ivec2 pos = glm::ivec2(chunk_x, chunk_z);
     if (y>=0 && y<Chunk::HEIGHT)
         if(chunks.find(pos)!=chunks.end())

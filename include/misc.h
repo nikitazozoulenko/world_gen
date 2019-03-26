@@ -12,3 +12,4 @@
 unsigned int loadTexture(char const * path);
 
 #endif // MY_MISC_FUNCS_H
+
