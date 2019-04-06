@@ -19,6 +19,7 @@ private:
     float totalPerlinValue(int world_x, int world_z);
     float getPerlinValue(float x_norm, float y_norm, glm::vec2 corner_pos, float amplitude);
     void visibiltyChecking(Array3D<2+Chunk::WIDTH, Chunk::HEIGHT, 2+Chunk::BREADTH>& block_array, Array3D<Chunk::WIDTH, Chunk::HEIGHT, Chunk::BREADTH>& final_block_array);
+    void addSunlight(Array3D<2+Chunk::WIDTH, Chunk::HEIGHT, 2+Chunk::BREADTH>& block_array, Array3D<Chunk::WIDTH, Chunk::HEIGHT, Chunk::BREADTH>& final_block_array);
     int random(glm::vec2 pos);
 };
 

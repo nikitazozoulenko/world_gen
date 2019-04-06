@@ -1,4 +1,6 @@
-#include "../include/worldGenerator.h"   
+#include "../include/worldGenerator.h"
+#include "../include/chunk.h"
+#include "../include/misc.h"
 
 #include <iostream>
 #include <cstdlib>
@@ -17,14 +19,15 @@ WorldGenerator::WorldGenerator(int seed) //TODO seed
 
 Chunk WorldGenerator::generateChunk(glm::vec2 chunk_pos) 
 {   
-    //generate a bit larger chunk for visibility checking
-    Array3D<2+Chunk::WIDTH, Chunk::HEIGHT, 2+Chunk::BREADTH> block_array;
-    //init chunk here genChunk(position)
-    for (int x=0; x<2+Chunk::WIDTH; x++)
+    //generates block_array then passes it to chunk constructor for lighting
+
+    Array3D<Chunk::WIDTH, Chunk::HEIGHT, Chunk::BREADTH> block_array;
+    //init chunk here
+    for (int x=0; x<Chunk::WIDTH; x++)
     {
-        for (int z=0; z<2+Chunk::BREADTH; z++)
+        for (int z=0; z<Chunk::BREADTH; z++)
         {
-            float perlin = (int) totalPerlinValue((x-1)+chunk_pos.x*Chunk::WIDTH, (z-1)+chunk_pos.y*Chunk::BREADTH);
+            float perlin = (int) totalPerlinValue(x+chunk_pos.x*Chunk::WIDTH, z+chunk_pos.y*Chunk::BREADTH);
             for (int y=0; y<Chunk::HEIGHT; y++)
             {
                 unsigned int blockID = 0;
@@ -40,9 +43,7 @@ Chunk WorldGenerator::generateChunk(glm::vec2 chunk_pos)
     }
     //addPlayerPlacedBlocks();
 
-    Array3D<Chunk::WIDTH, Chunk::HEIGHT, Chunk::BREADTH> final_block_array;
-    visibiltyChecking(block_array, final_block_array);
-    return Chunk(chunk_pos, final_block_array);
+    return Chunk(chunk_pos, block_array);
 }
 
 
@@ -112,44 +113,4 @@ int WorldGenerator::random(glm::vec2 pos) //TODO integrate seed
 {
     srand((((((pos.x-0)*29 + 11)*13)+17 + 27*(pos.y-0))*23));
     return rand() % 4;
-}
-
-
-void WorldGenerator::visibiltyChecking(Array3D<2+Chunk::WIDTH, Chunk::HEIGHT, 2+Chunk::BREADTH>& block_array, Array3D<Chunk::WIDTH, Chunk::HEIGHT, Chunk::BREADTH>& final_block_array)
-{
-    //visibility: highest y always seen, lowest y check 5 blocks, rest check 6 blocks
-    for (int x=0; x<Chunk::WIDTH; x++)
-        for (int y=0; y<Chunk::HEIGHT; y++)
-            for (int z=0; z<Chunk::BREADTH; z++)
-            {
-                BlockInfo& block_info = block_array.at(x+1, y, z+1);
-                if (block_info.blockID != 0)
-                {
-                    //check all 4 allowed spots
-                    bool north = (bool) block_array.at(x+2, y, z+1).blockID;
-                    bool south = (bool) block_array.at(x, y, z+1).blockID;
-                    bool east = (bool) block_array.at(x+1, y, z+2).blockID;
-                    bool west = (bool) block_array.at(x+1, y, z).blockID;
-
-                    block_info.visible = true;
-                    if (y == Chunk::HEIGHT-1)
-                        block_info.visible = true;
-                    else // top now allowed
-                    {
-                        bool top = (bool) block_array.at(x+1, y+1, z+1).blockID;
-                        if (y==0)
-                        {
-                            if (north && south && east && west && top) 
-                                block_info.visible = false;
-                        }
-                        else //and finally if y is in the middle, 6 allowed
-                        {
-                            bool bottom = (bool) block_array.at(x+1, y-1, z+1).blockID;
-                            if (north && south && east && west && top && bottom)
-                                block_info.visible = false;
-                        }
-                    }
-                }
-                final_block_array.at(x, y, z) = block_array.at(x+1,y,z+1);
-            }
 }

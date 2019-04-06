@@ -4,6 +4,7 @@
 #include "block.h"
 #include "worldGenerator.h"
 #include "player.h"
+#include "chunk.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
@@ -28,11 +29,13 @@ public:
     BlockInfo& getBlockInfo(float x, float y, float z);
     bool isInBounds(int x, int y, int z);
     bool isInBounds(float x, float y, float z);
-    void updateVisible(int x, int y, int z);
-    void updateVisible(float x, float y, float z);
+    void updateVisible(int x, int y, int z, int offset);
+    void updateVisible(float x, float y, float z, int offset);
     glm::mat4 getViewMatrix();
     void updateTarget();
     void targetBlockRay(float x, float y, float z, glm::vec3 previous_block_pos);
+
+    void addChunk(glm::ivec2 chunk_pos, Chunk chunk);
 private:
     WorldGenerator* p_world_gen;
 };

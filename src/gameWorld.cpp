@@ -1,21 +1,23 @@
 #include "../include/gameWorld.h"
 #include "../include/worldGenerator.h"
+#include "../include/misc.h"
 
 #include <iostream>
 #include <cmath>
 
 GameWorld::GameWorld(WorldGenerator* p_world_gen) : player(Player())
 {
-    this->sun_direction = glm::vec3(0.2f, -1.0f, 0.5f);
+    this->sun_direction = glm::vec3(1, -4, 2);
     this->p_world_gen = p_world_gen;
     this->block_is_targeted = false;
 
     //code for chunk creaton here
-    for(int x=-1; x<1; x++)
+    for(int x=-0; x<10; x++)
     {
-        for (int z=-1; z<1; z++)
+        for (int z=-0; z<10; z++)
         {
-            chunks[glm::ivec2(x, z)] = p_world_gen->generateChunk(glm::ivec2(x, z));
+            glm::ivec2 chunk_pos = glm::ivec2(x, z);
+            addChunk(chunk_pos, p_world_gen->generateChunk(chunk_pos));
         }
     }
 }
@@ -42,54 +44,54 @@ bool GameWorld::isInBounds(int x, int y, int z)
 }
 
 
-void GameWorld::updateVisible(float x, float y, float z)
+void GameWorld::updateVisible(float x, float y, float z, int offset)
 {
     int x_int = std::floor(x);
     int y_int = std::floor(y);
     int z_int = std::floor(z);
-    updateVisible(x_int, y_int, z_int);
+    updateVisible(x_int, y_int, z_int, offset);
 }
 
 
-void GameWorld::updateVisible(int x, int y, int z)
+void GameWorld::updateVisible(int x, int y, int z, int offset)
 {
-    //TODO : WARNING : doesnt work properly on the corner of a chunk when the nearby chunk is unloaded
+    //TODO : WARNING : (maybe -- probably) doesnt work properly on the corner of a chunk when the nearby chunk is unloaded
     if(isInBounds(x, y, z))
     {
-        int positions[6][3] = {{x+1,y,  z  },
-                            {x,  y+1,z  },
-                            {x,  y,  z+1},
-                            {x-1,y,  z  },
-                            {x,  y-1,z  },
-                            {x,  y,  z-1}};
+        //first block lighting here for render_info
+        BlockInfo first_block_info = getBlockInfo(x,y,z);
 
-        //check visible status on all sides. top block of the world always visible
-        bool visible = false;
-        for(auto& pos : positions)
+        //loop over 6 sides
+        int positions[6][3] = {{x+offset, y,        z       },
+                               {x-offset, y,        z       },
+                               {x,        y+offset, z       },
+                               {x,        y-offset, z       },
+                               {x,        y,        z+offset},
+                               {x,        y,        z-offset}};
+        int faces[6] = {BlockModel::EAST, BlockModel::WEST, BlockModel::TOP, BlockModel::BOTTOM, BlockModel::NORTH, BlockModel::SOUTH};
+        int ch_x = std::floor(x / (float)Chunk::WIDTH);
+        int ch_z = std::floor(z / (float)Chunk::BREADTH);
+        for(int& face : faces)
         {
-            if(isInBounds(pos[0], pos[1], pos[2]))
+            glm::vec3 p = glm::vec3(positions[face][0], positions[face][1], positions[face][2]);
+            if(isInBounds(p.x, p.y, p.z))
             {
-                BlockInfo& info = getBlockInfo(pos[0], pos[1], pos[2]);
-                if (pos[1] == Chunk::HEIGHT-1 || info.blockID == 0)
+                //remove current face
+                Chunk& chunk = chunks[glm::ivec2(ch_x, ch_z)];
+                chunk.removeFromRenderMap(face, p);
+                chunk.re_init_vaos = true;
+
+                BlockInfo& block_info = getBlockInfo(p.x, p.y, p.z);
+                if(block_info.blockID != 0 && first_block_info.blockID == 0)  //change to visible/nonvisible blocks?? (fence)
                 {
-                    visible = true;
-                    break;
+                    //add face if checked block isnt air
+                    chunk.addToRenderMap(block_info.blockID, face, first_block_info.lighting, p);
                 }
             }
         }
-
-        //update visibility lists
-        BlockInfo& info = getBlockInfo(x, y, z);
-        int ch_x = std::floor(x / (float)Chunk::WIDTH);
-        int ch_z = std::floor(z / (float)Chunk::BREADTH);
-        int local_x = x - ch_x*Chunk::WIDTH;
-        int local_y = y;
-        int local_z = z - ch_z*Chunk::BREADTH;
-        chunks[glm::ivec2(ch_x, ch_z)].block_locations[info.blockID].erase(glm::vec3(local_x, local_y, local_z));
-        if (visible)
-            chunks[glm::ivec2(ch_x, ch_z)].block_locations[info.blockID].insert(glm::vec3(local_x, local_y, local_z));
     }
 }
+
 
 void GameWorld::changeBlock(float x, float y, float z, int blockID)
 {
@@ -107,18 +109,21 @@ void GameWorld::changeBlock(int x, int y, int z, int blockID)
         BlockInfo& info = getBlockInfo(x, y, z);
         int ch_x = std::floor(x / (float)Chunk::WIDTH);
         int ch_z = std::floor(z / (float)Chunk::BREADTH);
-        int local_x = x - ch_x*Chunk::WIDTH;
-        int local_y = y;
-        int local_z = z - ch_z*Chunk::BREADTH;
-        chunks[glm::ivec2(ch_x, ch_z)].block_locations[info.blockID].erase(glm::vec3(local_x, local_y, local_z));
+
+        //REMOVE BLOCK
         info.blockID=blockID;
-        updateVisible(x, y, z);
-        updateVisible(x+1, y, z);
-        updateVisible(x-1, y, z);
-        updateVisible(x, y+1, z);
-        updateVisible(x, y-1, z);
-        updateVisible(x, y, z+1);
-        updateVisible(x, y, z-1);
+
+        //UPDATE LIGHTING
+        //updateLightingHereSomethingVeryLongFunction();
+
+        //last param is that you have to check the reverse sides for the block surrounding the changed block
+        updateVisible(x, y, z, -1);
+        updateVisible(x+1, y, z, -1);
+        updateVisible(x-1, y, z, -1);
+        updateVisible(x, y+1, z, -1);
+        updateVisible(x, y-1, z, -1);
+        updateVisible(x, y, z+1, -1);
+        updateVisible(x, y, z-1, -1);
     }
 }
 
@@ -198,4 +203,10 @@ void GameWorld::targetBlockRay(float x, float y, float z, glm::vec3 previous_blo
 
         targetBlockRay(x+t*dir_x, y+t*dir_y, z+t*dir_z, current_pos);
     }
+}
+
+
+void GameWorld::addChunk(glm::ivec2 chunk_pos, Chunk chunk)
+{
+    chunks[chunk_pos] = chunk;
 }

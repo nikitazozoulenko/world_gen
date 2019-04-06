@@ -6,6 +6,7 @@
 
 #include "shaderprogram.h"
 #include "gameWorld.h"
+#include "block.h"
 
 class BlockRenderer
 {
@@ -20,8 +21,10 @@ public:
 private:
     GameWorld* p_game_world;
 
+    unsigned int block_texture;
+
     void createModelMap();
     void createShaders();
-    std::unordered_map <unsigned int, BlockModel> model_map;
+    void setup_block_texture();
 };
 #endif // BLOCKRENDERER_H

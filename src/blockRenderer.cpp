@@ -1,25 +1,16 @@
 #include "../include/blockRenderer.h"
 
 #include <iostream>
+#include "../include/camera.h"
+#include "../include/misc.h"
 
 BlockRenderer::BlockRenderer(GameWorld* p_game_world)
 {
     this->p_game_world = p_game_world;
-    createModelMap();
+
     createShaders();
     setProjectionMatrix();
-}
-
-
-void BlockRenderer::createModelMap()
-{
-    std::cout << "creating model map" << std::endl;
-    BlockModel grass = BlockModel("grass");
-    BlockModel dirt = BlockModel("dirt");
-    BlockModel stone = BlockModel("stone");
-    model_map[1] = dirt;
-    model_map[2] = grass; 
-    model_map[3] = stone;
+    setup_block_texture();
 }
 
 
@@ -33,9 +24,10 @@ void BlockRenderer::render()
     setViewMatrix();
 
     //render cubes
+    glBindTexture(GL_TEXTURE_2D_ARRAY, block_texture);
     for (auto& pair : p_game_world->chunks)
     {
-        pair.second.draw(block_shaderprogram, model_map);
+        pair.second.draw(block_shaderprogram, p_game_world->player.camera.front);
     }
 }
 
@@ -59,14 +51,17 @@ void BlockRenderer::createShaders()
     block_shaderprogram = Shaderprogram("/home/nikita/Code/world_gen/src/shaders/block.vs", "/home/nikita/Code/world_gen/src/shaders/block.fs");
 
     // shader configuration
-    block_shaderprogram.use(); //important to bind first
-    block_shaderprogram.setUniformInt("material.diffuse", 0);
-    block_shaderprogram.setUniformInt("material.specular", 1);
-    block_shaderprogram.setUniformFloat("material.shininess", 32.0f);
+    //removed atm
+    //sunlight pos maybe for lighting
+    block_shaderprogram.use();
+    block_shaderprogram.setUniformVec3("sun_dir", p_game_world->sun_direction);
+}
 
-    // directional light, (sun)
-    block_shaderprogram.setUniformVec3("dirLight.direction", p_game_world->sun_direction);
-    block_shaderprogram.setUniformVec3("dirLight.ambient", 0.5f, 0.5f, 0.5f);
-    block_shaderprogram.setUniformVec3("dirLight.diffuse", 0.8f, 0.8f, 0.8f);
-    block_shaderprogram.setUniformVec3("dirLight.specular", 0.5f, 0.5f, 0.5f);
+
+void BlockRenderer::setup_block_texture()
+{
+    int block_width = 512;
+    int n_blocks = 8;
+    std::string path = "/home/nikita/Code/world_gen/resources/blocks/wholeblocktextures.png";
+    block_texture = loadTextureArray(path.c_str(), block_width, n_blocks);
 }

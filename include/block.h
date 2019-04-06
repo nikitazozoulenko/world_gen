@@ -13,20 +13,23 @@
 class BlockModel
 {
 public:
-    BlockModel(); //this is required for unordered_map
-    BlockModel(std::string folder);
-    BlockModel(const BlockModel &obj);
-    void setup_side_cube(std::string folder);
-    void setup_normal_cube(std::string folder);
-    unsigned int VAO;
-    unsigned int VBO;
-    unsigned int EBO;
-
-    int num_indices;
-
-    unsigned int diffuse_map;
-    unsigned int specular_map;
+    BlockModel();
+    enum{
+        EAST,
+        WEST,
+        TOP,
+        BOTTOM,
+        NORTH,
+        SOUTH,
+    };
+    std::array<unsigned int, 6> VAOs; 
+    std::array<unsigned int, 6> VBOs;
+    std::array<unsigned int, 6> mat_VBOs;
+    std::array<unsigned int, 6> blockID_VBOs;
+    std::array<unsigned int, 6> light_VBOs;
 private:
+    void setup_VAO_VBO();
+    void setup_face(std::vector<float> vertices, int side);
 };
 
 
@@ -34,9 +37,8 @@ private:
 struct BlockInfo
 {
 public:
-    unsigned int blockID = 0; //0 is air
-    bool visible = false;
-    //lightning, other things needed to be block-specific
+    int blockID = 0; //0 is air
+    float lighting = 1.0f; //0 to 15
 };
 
 #endif // BLOCK_BLOCK_H
