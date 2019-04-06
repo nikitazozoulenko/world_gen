@@ -36,6 +36,7 @@ public:
     void targetBlockRay(float x, float y, float z, glm::vec3 previous_block_pos);
 
     void addChunk(glm::ivec2 chunk_pos, Chunk chunk);
+    void updateVisChunkEdge(Chunk& chunk1, int face1, Chunk& chunk2, int face2);
 private:
     WorldGenerator* p_world_gen;
 };

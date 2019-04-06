@@ -71,9 +71,6 @@ void Chunk::visibilityCheckingAtPos(int face, int x, int y, int z, unsigned int 
 }
 
 
-void visCheckChunkEdges(); //todo
-
-
 bool Chunk::blockIsInChunk(int x, int y, int z) //local
 {
     if(x < WIDTH  && x >= 0)
@@ -131,6 +128,7 @@ void Chunk::rebuildVBOs() //every time it is needed when a chunk is to be drawn
             model_matrices[counter] = model;
 
             blockIDs[counter] = render_info.blockID;
+            //std::cout << blockIDs[counter] << std::endl;
             lightings[counter] = render_info.face_lighting;
             counter++;
         }
@@ -141,7 +139,6 @@ void Chunk::rebuildVBOs() //every time it is needed when a chunk is to be drawn
         glGenBuffers(1, &block_model.mat_VBOs[face]);
         glBindBuffer(GL_ARRAY_BUFFER, block_model.mat_VBOs[face]);
         glBufferData(GL_ARRAY_BUFFER, size * sizeof(glm::mat4), &model_matrices[0], GL_STATIC_DRAW);
-
         // set attribute pointers (matrix 4 times vec4)
         glEnableVertexAttribArray(3);
         glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)0);
@@ -156,7 +153,7 @@ void Chunk::rebuildVBOs() //every time it is needed when a chunk is to be drawn
         glBindBuffer(GL_ARRAY_BUFFER, block_model.blockID_VBOs[face]);
         glBufferData(GL_ARRAY_BUFFER, size * sizeof(int), &blockIDs[0], GL_STATIC_DRAW);
         glEnableVertexAttribArray(7);
-        glVertexAttribPointer(7, 1, GL_INT, GL_FALSE, sizeof(int), (void*)0);
+        glVertexAttribIPointer(7, 1, GL_INT, sizeof(int), (void*)0);
 
         glGenBuffers(1, &block_model.light_VBOs[face]);
         glBindBuffer(GL_ARRAY_BUFFER, block_model.light_VBOs[face]);

@@ -3,9 +3,9 @@ out vec4 FragColor;
 
 in vec3 FragPos;
 in vec2 TexCoords;
-flat in int blockTexID;
-in float face_lighting;
 in vec3 Normal;
+flat in int BlockTexID;
+in float FaceLighting;
 
 uniform sampler2DArray ourTexture;
 uniform vec3 sun_dir;
@@ -20,5 +20,5 @@ void main()
     vec3 lightDir = normalize(-sun_dir);
     float diff = max(dot(norm, lightDir), 0.0);
     
-    FragColor = min(ambient + diff, 1) * texture(ourTexture, vec3(TexCoords.x, TexCoords.y, blockTexID));
+    FragColor = min(ambient + diff, 1) * texture(ourTexture, vec3(TexCoords.x, TexCoords.y, BlockTexID));
 }

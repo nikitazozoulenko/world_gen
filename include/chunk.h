@@ -37,6 +37,8 @@ struct RenderBlockInfo
 class Chunk
 {
 public:
+    glm::vec2 position;
+    
     static const int WIDTH = 16;    // x
     static const int HEIGHT = 128;  // y
     static const int BREADTH = 16;  // z
@@ -53,7 +55,6 @@ public:
     BlockInfo& getBlockInfo(int x, int y, int z);
 
 private:
-    glm::vec2 position;
     Array3D<WIDTH, HEIGHT, BREADTH> block_array;
     BlockModel block_model;
     int num_render_faces[6] = {0,0,0,0,0,0};
