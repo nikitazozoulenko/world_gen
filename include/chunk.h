@@ -51,7 +51,7 @@ public:
 
     Chunk() = default;  //for std map
     Chunk(glm::vec2 position, Array3D<WIDTH, HEIGHT, BREADTH>& blocks_array);
-    void draw(Shaderprogram& shaderprogram, glm::vec3& view_dir);
+    void draw(Shaderprogram& shaderprogram, glm::vec3& view_dir, std::array<std::unordered_map<int, int>,6>& texArrayIDLookup);
     BlockInfo& getBlockInfo(int x, int y, int z);
 
 private:
@@ -63,7 +63,7 @@ private:
     void visibiltyChecking();
     bool blockIsInChunk(int local_x, int local_y, int local_z);
     void visibilityCheckingAtPos(int face, int x, int y, int z, unsigned int blockID);
-    void rebuildVBOs();
+    void rebuildVBOs(std::array<std::unordered_map<int, int>,6>&);
 };
 
 #endif // BLOCK_CHUNK_H

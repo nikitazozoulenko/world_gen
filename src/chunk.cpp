@@ -96,7 +96,7 @@ void Chunk::removeFromRenderMap(int face, glm::vec3 pos)
 }
 
 
-void Chunk::rebuildVBOs() //every time it is needed when a chunk is to be drawn
+void Chunk::rebuildVBOs(std::array<std::unordered_map<int, int>,6>& texArrayIDLookup) //every time it is needed when a chunk is to be drawn
 {
     int faces[6] = {BlockModel::EAST, BlockModel::WEST, BlockModel::TOP, BlockModel::BOTTOM, BlockModel::NORTH, BlockModel::SOUTH};
     for(int& face : faces)
@@ -107,7 +107,7 @@ void Chunk::rebuildVBOs() //every time it is needed when a chunk is to be drawn
         {
             first_vbo_init = false;
             glDeleteBuffers(1, &block_model.mat_VBOs[face]);
-            glDeleteBuffers(1, &block_model.blockID_VBOs[face]);
+            glDeleteBuffers(1, &block_model.texArrayID_VBOs[face]);
             glDeleteBuffers(1, &block_model.light_VBOs[face]);
         }
 
@@ -115,7 +115,7 @@ void Chunk::rebuildVBOs() //every time it is needed when a chunk is to be drawn
         int size = render_faces_map[face].size();
         num_render_faces[face] = size;
         glm::mat4 model_matrices[size];
-        int blockIDs[size];
+        int texArrayIDs[size];
         float lightings[size];
         int counter = 0;
         for (auto& pair : render_faces_map[face])
@@ -127,8 +127,7 @@ void Chunk::rebuildVBOs() //every time it is needed when a chunk is to be drawn
             model = glm::translate(model,pos);
             model_matrices[counter] = model;
 
-            blockIDs[counter] = render_info.blockID;
-            //std::cout << blockIDs[counter] << std::endl;
+            texArrayIDs[counter] = texArrayIDLookup[face][render_info.blockID];
             lightings[counter] = render_info.face_lighting;
             counter++;
         }
@@ -149,9 +148,9 @@ void Chunk::rebuildVBOs() //every time it is needed when a chunk is to be drawn
         glEnableVertexAttribArray(6);
         glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(3 * sizeof(glm::vec4)));
 
-        glGenBuffers(1, &block_model.blockID_VBOs[face]);
-        glBindBuffer(GL_ARRAY_BUFFER, block_model.blockID_VBOs[face]);
-        glBufferData(GL_ARRAY_BUFFER, size * sizeof(int), &blockIDs[0], GL_STATIC_DRAW);
+        glGenBuffers(1, &block_model.texArrayID_VBOs[face]);
+        glBindBuffer(GL_ARRAY_BUFFER, block_model.texArrayID_VBOs[face]);
+        glBufferData(GL_ARRAY_BUFFER, size * sizeof(int), &texArrayIDs[0], GL_STATIC_DRAW);
         glEnableVertexAttribArray(7);
         glVertexAttribIPointer(7, 1, GL_INT, sizeof(int), (void*)0);
 
@@ -171,11 +170,11 @@ void Chunk::rebuildVBOs() //every time it is needed when a chunk is to be drawn
 }
 
 
-void Chunk::draw(Shaderprogram& shaderprogram, glm::vec3& view_dir)
+void Chunk::draw(Shaderprogram& shaderprogram, glm::vec3& view_dir, std::array<std::unordered_map<int, int>,6>& texArrayIDLookup)
 {
     if (re_init_vaos)
     {
-        rebuildVBOs();
+        rebuildVBOs(texArrayIDLookup);
         re_init_vaos = false;
     }
 

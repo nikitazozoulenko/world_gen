@@ -4,6 +4,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include <unordered_map>
+
 #include "shaderprogram.h"
 #include "gameWorld.h"
 #include "block.h"
@@ -22,9 +24,11 @@ private:
     GameWorld* p_game_world;
 
     unsigned int block_texture;
+    std::array<std::unordered_map<int, int>,6> texArrayIDLookup;
 
     void createModelMap();
     void createShaders();
     void setup_block_texture();
+    void setupTexArrayIDLookup(int n_blocks);
 };
 #endif // BLOCKRENDERER_H

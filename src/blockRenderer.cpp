@@ -27,7 +27,7 @@ void BlockRenderer::render()
     glBindTexture(GL_TEXTURE_2D_ARRAY, block_texture);
     for (auto& pair : p_game_world->chunks)
     {
-        pair.second.draw(block_shaderprogram, p_game_world->player.camera.front);
+        pair.second.draw(block_shaderprogram, p_game_world->player.camera.front, texArrayIDLookup);
     }
 }
 
@@ -61,7 +61,35 @@ void BlockRenderer::createShaders()
 void BlockRenderer::setup_block_texture()
 {
     int block_width = 512;
-    int n_blocks = 8;
+    int n_tex = 8;
+    int n_blocks=7;
     std::string path = "/home/nikita/Code/world_gen/resources/blocks/wholeblocktextures.png";
-    block_texture = loadTextureArray(path.c_str(), block_width, n_blocks);
+    block_texture = loadTextureArray(path.c_str(), block_width, n_tex);
+
+    setupTexArrayIDLookup(n_blocks);
+}
+
+void BlockRenderer::setupTexArrayIDLookup(int n_blocks)
+{
+    int faces[6] = {BlockModel::EAST, BlockModel::WEST, BlockModel::TOP, BlockModel::BOTTOM, BlockModel::NORTH, BlockModel::SOUTH};
+    for(int& face : faces)
+    {   
+        int i = 0;
+        for(int blockID=1; blockID<=n_blocks; blockID++)
+        {   
+            int temp_i = i;
+            if(blockID == 2) //TODO change to hashtable for strings
+            {
+                if(face == BlockModel::TOP)
+                    temp_i=2;
+                else if(face == BlockModel::BOTTOM)
+                    temp_i=0;
+                else
+                    temp_i=1;
+                i++;
+            }
+            texArrayIDLookup[face][blockID] = temp_i;
+            i++;
+        }
+    }
 }

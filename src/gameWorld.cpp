@@ -12,9 +12,9 @@ GameWorld::GameWorld(WorldGenerator* p_world_gen) : player(Player())
     this->block_is_targeted = false;
 
     //code for chunk creaton here
-    for(int x=-0; x<6; x++)
+    for(int x=-1; x<50; x++)
     {
-        for (int z=-0; z<6; z++)
+        for (int z=-0; z<50; z++)
         {
             glm::ivec2 chunk_pos = glm::ivec2(x, z);
             addChunk(chunk_pos, p_world_gen->generateChunk(chunk_pos));
@@ -215,49 +215,47 @@ void GameWorld::addChunk(glm::ivec2 pos, Chunk chunk)
     //updateLighting(all the chunks);
 
     //update visibility on edge
-    if(chunks.find(glm::ivec2(pos.x+1, pos.y))!=chunks.end())
-        updateVisChunkEdge(chunk, BlockModel::WEST, chunks[glm::ivec2(pos.x+1, pos.y)], BlockModel::EAST);
     if(chunks.find(glm::ivec2(pos.x-1, pos.y))!=chunks.end())
-        updateVisChunkEdge(chunks[glm::ivec2(pos.x-1, pos.y)], BlockModel::WEST, chunk, BlockModel::EAST);
-    if(chunks.find(glm::ivec2(pos.x, pos.y+1))!=chunks.end())
-        updateVisChunkEdge(chunk, BlockModel::SOUTH, chunks[glm::ivec2(pos.x, pos.y+1)], BlockModel::NORTH);
+        updateVisChunkEdge(chunks[glm::ivec2(pos.x-1, pos.y)], BlockModel::WEST, chunks[pos], BlockModel::EAST);
     if(chunks.find(glm::ivec2(pos.x, pos.y-1))!=chunks.end())
-        updateVisChunkEdge(chunks[glm::ivec2(pos.x, pos.y-1)], BlockModel::SOUTH, chunk, BlockModel::NORTH);
+        updateVisChunkEdge(chunks[glm::ivec2(pos.x, pos.y-1)], BlockModel::SOUTH, chunks[pos], BlockModel::NORTH);
 }
 
 
 void GameWorld::updateVisChunkEdge(Chunk& chunk1, int face1, Chunk& chunk2, int face2)
 {   
-    glm::ivec3 side;
-    glm::ivec3 k;
-    if(face1 == BlockModel::EAST or face2==BlockModel::EAST)
+    glm::vec3 side;
+    glm::vec3 k;
+    if(face2==BlockModel::EAST)
     {
-        side = glm::ivec3(1,0,0);
-        k = glm::ivec3(0,0,1);
+        side = glm::vec3(0,0,1);
+        k = glm::vec3(1,0,0);
     }
     else
     {
-        side = glm::ivec3(0,0,1);
-        k = glm::ivec3(1,0,0);
+        side = glm::vec3(1,0,0);
+        k = glm::vec3(0,0,1);
     }
     
-    glm::ivec3 corner = glm::vec3(chunk1.position.x*Chunk::HEIGHT, 0, chunk1.position.y*Chunk::BREADTH);
+    glm::vec3 corner = glm::vec3(chunk2.position.x*Chunk::WIDTH, 0, chunk2.position.y*Chunk::BREADTH);
     for(int y=0; y<Chunk::HEIGHT; y++)
         for(int i=0; i<Chunk::WIDTH; i++)
         {
-            glm::ivec3 pos1 = glm::ivec3(corner + glm::ivec3(0,y,0) + glm::ivec3(side.x*i, 0, side.z*i));
-            glm::ivec3 pos2 = pos1+k;
+            glm::vec3 pos1 = glm::vec3(corner + glm::vec3(0,y,0) + glm::vec3(side.x*i, 0, side.z*i));
+            glm::vec3 pos2 = pos1-k;
             BlockInfo info1 = getBlockInfo(pos1.x, pos1.y, pos1.z);
             BlockInfo info2 = getBlockInfo(pos2.x, pos2.y, pos2.z);
 
             if(info1.blockID==0 && info2.blockID!=0)
             {
-                chunk2.addToRenderMap(info2.blockID, face2, info1.lighting, glm::vec3(pos2.x%Chunk::WIDTH, pos2.y, pos2.z%Chunk::BREADTH));
+                chunk2.addToRenderMap(info2.blockID, face2, info1.lighting, pos2);
                 chunk2.re_init_vaos = true;
             }
+
+            //is working
             if(info1.blockID!=0 && info2.blockID==0)
             {
-                chunk1.addToRenderMap(info1.blockID, face1, info2.lighting, glm::vec3(pos1.x%Chunk::WIDTH, pos1.y, pos1.z%Chunk::BREADTH));
+                chunk1.addToRenderMap(info1.blockID, face1, info2.lighting, pos1);
                 chunk1.re_init_vaos = true;
             }
         }

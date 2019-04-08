@@ -25,7 +25,7 @@ public:
     std::array<unsigned int, 6> VAOs; 
     std::array<unsigned int, 6> VBOs;
     std::array<unsigned int, 6> mat_VBOs;
-    std::array<unsigned int, 6> blockID_VBOs;
+    std::array<unsigned int, 6> texArrayID_VBOs;
     std::array<unsigned int, 6> light_VBOs;
 private:
     void setup_VAO_VBO();
