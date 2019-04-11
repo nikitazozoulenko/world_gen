@@ -25,7 +25,7 @@ void BlockRenderer::render()
 
     //render cubes
     glBindTexture(GL_TEXTURE_2D_ARRAY, block_texture);
-    for (auto& pair : p_game_world->chunks)
+    for (auto& pair : p_game_world->chunk_manager.getChunkMap())
     {
         pair.second.draw(block_shaderprogram, p_game_world->player.camera.front, texArrayIDLookup);
     }

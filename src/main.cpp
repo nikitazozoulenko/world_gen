@@ -24,10 +24,9 @@
 int main()
 {
     Displaywindow displaywindow = Displaywindow(1600, 900, "My Window"); //note, have to change SCRWIDTH SCRHEIGHT in multiple places (masterrenderer proj matrix)
-    std::cout << "test" << std::endl;
-    WorldGenerator world_gen = WorldGenerator(123456);
     std::cout << "test1" << std::endl;
-    GameWorld game_world = GameWorld(&world_gen);
+
+    GameWorld game_world;
     std::cout << "test2" << std::endl;
 
     InputHandler input_handler = InputHandler(&displaywindow, &game_world);
