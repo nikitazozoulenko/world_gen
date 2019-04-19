@@ -50,8 +50,10 @@ float WorldGenerator::totalPerlinValue(int world_x, int world_z)
 {
     float total_perlin = 0;
 
-    std::vector<float> sizes = {100.0f, 50.0f, 10.0f};
-    std::vector<float> amplitudes = {40.0f, 15.0f, 2.0f};
+    // std::vector<float> sizes = {100.0f, 50.0f, 10.0f};
+    // std::vector<float> amplitudes = {40.0f, 15.0f, 2.0f};
+    std::vector<float> sizes = {100.0f, 50.0f};
+    std::vector<float> amplitudes = {80.0f, 40.0f};
     for (int i=0; i<sizes.size(); i++)
     {
         float width = sizes[i];

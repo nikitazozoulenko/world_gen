@@ -26,7 +26,7 @@ bool dist_from_origin(const glm::ivec2& lhs, const glm::ivec2& rhs)
 
 void chunkMainThreadFunction(ChunkManager* p_chunk_manager)
 {   
-    int R = 7;
+    int R = 10;
     while(p_chunk_manager->stay_alive)
     {
         // given R, make a square with sidelength 2R. then filter out dist. then sort dist
@@ -76,7 +76,7 @@ void chunkMainThreadFunction(ChunkManager* p_chunk_manager)
 ChunkManager::ChunkManager(Player& player) : 
     player(player),
     stay_alive(true),
-    n_workers(1)
+    n_workers(4)
 {
 
 }
@@ -248,14 +248,29 @@ void ChunkManager::addChunk(glm::ivec2 pos)
     //updateLighting(all the chunks affected);
 
     // //update visibility on edge
-    // if(chunk_map.find(glm::ivec2(pos.x-1, pos.y))!=chunk_map.end())
-    //     updateVisChunkEdge(chunk_map[glm::ivec2(pos.x-1, pos.y)], BlockModel::WEST, chunk_map[pos], BlockModel::EAST);
-    // if(chunk_map.find(glm::ivec2(pos.x, pos.y-1))!=chunk_map.end())
-    //     updateVisChunkEdge(chunk_map[glm::ivec2(pos.x, pos.y-1)], BlockModel::SOUTH, chunk_map[pos], BlockModel::NORTH);
+    updateEdges(pos);
 }
 
 
-void ChunkManager::updateVisChunkEdge(Chunk& chunk1, int face1, Chunk& chunk2, int face2)
+void ChunkManager::updateEdges(glm::ivec2& pos)
+{
+    glm::ivec2 pos_east = glm::ivec2(pos.x+1, pos.y);
+    glm::ivec2 pos_west = glm::ivec2(pos.x-1, pos.y);
+    glm::ivec2 pos_north = glm::ivec2(pos.x, pos.y+1);
+    glm::ivec2 pos_south = glm::ivec2(pos.x, pos.y-1);
+
+    if(chunk_map.count(pos_west) != 0)
+        updateBlockVisEdge(chunk_map[pos_west], BlockModel::WEST, chunk_map[pos], BlockModel::EAST);
+    if(chunk_map.count(pos_east) != 0)
+        updateBlockVisEdge(chunk_map[pos], BlockModel::WEST, chunk_map[pos_east], BlockModel::EAST);
+    if(chunk_map.count(pos_south) != 0)
+        updateBlockVisEdge(chunk_map[pos_south], BlockModel::SOUTH, chunk_map[pos], BlockModel::NORTH);
+    if(chunk_map.count(pos_north) != 0)
+        updateBlockVisEdge(chunk_map[pos], BlockModel::SOUTH, chunk_map[pos_north], BlockModel::NORTH);
+}
+
+
+void ChunkManager::updateBlockVisEdge(Chunk& chunk1, int face1, Chunk& chunk2, int face2)
 {   
     glm::vec3 side;
     glm::vec3 k;
