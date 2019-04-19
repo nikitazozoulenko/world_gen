@@ -1,25 +1,92 @@
 #include "../include/chunkManager.h"
 #include "../include/misc.h"
 
-ChunkManager::ChunkManager()
-{
-    this->stay_alive = true;
-    // TEMP TEMP TEMP TEMP
+#include <thread>
+#include <cmath>
+#include <algorithm>
 
-    for(int x=-1; x<4; x++)
+
+void createAndAddChunkThread(glm::ivec2 ch_pos, ChunkManager* p_chunk_manager)
+{
+    //code here
+    print_vec2("creating chunk at pos", ch_pos);
+    p_chunk_manager->addChunk(ch_pos);
+
+    //at the end
+    std::lock_guard<std::mutex> lock(p_chunk_manager->ch_being_generated_set_mutex);
+    p_chunk_manager->ch_being_generated_set.erase(ch_pos);
+}
+
+
+bool dist_from_origin(const glm::ivec2& lhs, const glm::ivec2& rhs)
+{
+    return glm::length(glm::vec2(lhs)) < glm::length(glm::vec2(rhs));
+}
+
+
+void chunkMainThreadFunction(ChunkManager* p_chunk_manager)
+{   
+    int R = 7;
+    while(p_chunk_manager->stay_alive)
     {
-        for (int z=-0; z<4; z++)
+        // given R, make a square with sidelength 2R. then filter out dist. then sort dist
+        int player_ch_x = std::floor(p_chunk_manager->player.pos.x / CH_WIDTH);
+        int player_ch_z = std::floor(p_chunk_manager->player.pos.z / CH_WIDTH);
+        glm::ivec2 player_ch_pos = glm::ivec2(player_ch_x, player_ch_z);
+        std::vector<glm::ivec2> chunk_positions; // player is origin
+        for(int ch_x=-R; ch_x<=R; ch_x++)
         {
-            glm::ivec2 chunk_pos = glm::ivec2(x, z);
-            addChunk(chunk_pos, world_gen.generateChunk(chunk_pos));
+            for(int ch_z=-R; ch_z<=R; ch_z++)
+            {
+                glm::ivec2 coord = glm::ivec2(ch_x, ch_z);
+                if (R > glm::length(glm::vec2(coord)))
+                {
+                    chunk_positions.push_back(coord);
+                }
+            }
+        }
+
+        //now sort the coordinates
+        std::sort(chunk_positions.begin(), chunk_positions.end(), dist_from_origin);
+
+        //and use the closest chunks
+        std::lock_guard<std::mutex> lock(p_chunk_manager->ch_being_generated_set_mutex);
+        auto& set = p_chunk_manager->ch_being_generated_set;
+        for(glm::ivec2& coord : chunk_positions)
+        {
+            glm::ivec2 ch_pos = coord+player_ch_pos;
+            if(set.size() < p_chunk_manager->n_workers)
+            {
+                if(set.count(ch_pos) == 0)
+                {
+                    std::lock_guard<std::mutex> lock(p_chunk_manager->ch_map_mutex);
+                    if(p_chunk_manager->chunk_map.count(ch_pos)==0)
+                    {
+                        set.insert(ch_pos);
+                        std::thread t(createAndAddChunkThread, ch_pos, p_chunk_manager);
+                        t.detach();
+                    }
+                }
+            }
         }
     }
 }
 
 
+ChunkManager::ChunkManager(Player& player) : 
+    player(player),
+    stay_alive(true),
+    n_workers(1)
+{
+
+}
+
+
 void ChunkManager::startMainThread()
 {
-    //TODO
+    stay_alive = true;
+    std::thread t(chunkMainThreadFunction, this);
+    t.detach();
 }
 
 
@@ -40,6 +107,7 @@ void ChunkManager::endMainThread()
     //TODO
 }
 
+
 bool ChunkManager::isInBounds(float x, float y, float z)
 {
     int x_int = std::floor(x);
@@ -51,10 +119,10 @@ bool ChunkManager::isInBounds(float x, float y, float z)
 
 bool ChunkManager::isInBounds(int x, int y, int z)
 {
-    int chunk_x = std::floor(x / (float)Chunk::WIDTH);
-    int chunk_z = std::floor(z / (float) Chunk::BREADTH);
+    int chunk_x = std::floor(x / (float)CH_WIDTH);
+    int chunk_z = std::floor(z / (float) CH_WIDTH);
     glm::ivec2 pos = glm::ivec2(chunk_x, chunk_z);
-    if (y>=0 && y<Chunk::HEIGHT)
+    if (y>=0 && y<CH_HEIGHT)
         if(chunk_map.find(pos)!=chunk_map.end())
             return true;
     return false;
@@ -86,8 +154,8 @@ void ChunkManager::updateVisible(int x, int y, int z, int offset)
                                {x,        y,        z+offset},
                                {x,        y,        z-offset}};
         int faces[6] = {BlockModel::EAST, BlockModel::WEST, BlockModel::TOP, BlockModel::BOTTOM, BlockModel::NORTH, BlockModel::SOUTH};
-        int ch_x = std::floor(x / (float)Chunk::WIDTH);
-        int ch_z = std::floor(z / (float)Chunk::BREADTH);
+        int ch_x = std::floor(x / (float)CH_WIDTH);
+        int ch_z = std::floor(z / (float)CH_WIDTH);
         for(int& face : faces)
         {
             glm::vec3 p = glm::vec3(positions[face][0], positions[face][1], positions[face][2]);
@@ -124,8 +192,8 @@ void ChunkManager::changeBlock(int x, int y, int z, int blockID)
     if (isInBounds(x, y, z))
     {
         BlockInfo& info = getBlockInfo(x, y, z);
-        int ch_x = std::floor(x / (float)Chunk::WIDTH);
-        int ch_z = std::floor(z / (float)Chunk::BREADTH);
+        int ch_x = std::floor(x / (float)CH_WIDTH);
+        int ch_z = std::floor(z / (float)CH_WIDTH);
 
         //REMOVE BLOCK
         info.blockID=blockID;
@@ -158,29 +226,32 @@ BlockInfo& ChunkManager::getBlockInfo(float x, float y, float z)
 BlockInfo& ChunkManager::getBlockInfo(int x, int y, int z)
 {
     //WARNING check if in bounds outside of this function
-    int chunk_x = std::floor(x / (float)Chunk::WIDTH);
-    int chunk_z = std::floor(z / (float)Chunk::BREADTH);
-    int local_x = x - chunk_x*Chunk::WIDTH;
+    int chunk_x = std::floor(x / (float)CH_WIDTH);
+    int chunk_z = std::floor(z / (float)CH_WIDTH);
+    int local_x = x - chunk_x*CH_WIDTH;
     int local_y = y;
-    int local_z = z - chunk_z*Chunk::BREADTH;
+    int local_z = z - chunk_z*CH_WIDTH;
     BlockInfo& info = chunk_map[glm::ivec2(chunk_x, chunk_z)].getBlockInfo(local_x, local_y, local_z);
     return info;
 }
 
 
-void ChunkManager::addChunk(glm::ivec2 pos, Chunk chunk)
+void ChunkManager::addChunk(glm::ivec2 pos)
 {   
     //add chunk
+    Chunk chunk = world_gen.generateChunk(pos);
+
+    std::lock_guard<std::mutex> lock(ch_map_mutex);
     chunk_map[pos] = chunk;
 
-    //update lighting
+    //update lighting (does this need to be locked?)
     //updateLighting(all the chunks affected);
 
-    //update visibility on edge
-    if(chunk_map.find(glm::ivec2(pos.x-1, pos.y))!=chunk_map.end())
-        updateVisChunkEdge(chunk_map[glm::ivec2(pos.x-1, pos.y)], BlockModel::WEST, chunk_map[pos], BlockModel::EAST);
-    if(chunk_map.find(glm::ivec2(pos.x, pos.y-1))!=chunk_map.end())
-        updateVisChunkEdge(chunk_map[glm::ivec2(pos.x, pos.y-1)], BlockModel::SOUTH, chunk_map[pos], BlockModel::NORTH);
+    // //update visibility on edge
+    // if(chunk_map.find(glm::ivec2(pos.x-1, pos.y))!=chunk_map.end())
+    //     updateVisChunkEdge(chunk_map[glm::ivec2(pos.x-1, pos.y)], BlockModel::WEST, chunk_map[pos], BlockModel::EAST);
+    // if(chunk_map.find(glm::ivec2(pos.x, pos.y-1))!=chunk_map.end())
+    //     updateVisChunkEdge(chunk_map[glm::ivec2(pos.x, pos.y-1)], BlockModel::SOUTH, chunk_map[pos], BlockModel::NORTH);
 }
 
 
@@ -199,9 +270,9 @@ void ChunkManager::updateVisChunkEdge(Chunk& chunk1, int face1, Chunk& chunk2, i
         k = glm::vec3(0,0,1);
     }
     
-    glm::vec3 corner = glm::vec3(chunk2.position.x*Chunk::WIDTH, 0, chunk2.position.y*Chunk::BREADTH);
-    for(int y=0; y<Chunk::HEIGHT; y++)
-        for(int i=0; i<Chunk::WIDTH; i++)
+    glm::vec3 corner = glm::vec3(chunk2.position.x*CH_WIDTH, 0, chunk2.position.y*CH_WIDTH);
+    for(int y=0; y<CH_HEIGHT; y++)
+        for(int i=0; i<CH_WIDTH; i++)
         {
             glm::vec3 pos1 = glm::vec3(corner + glm::vec3(0,y,0) + glm::vec3(side.x*i, 0, side.z*i));
             glm::vec3 pos2 = pos1-k;

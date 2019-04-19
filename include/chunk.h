@@ -5,23 +5,26 @@
 #include <string>
 #include <array>
 #include <unordered_set>
+#include <iostream>
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
 #include <glm/gtx/hash.hpp>
 
-
 #include "shaderprogram.h"
 #include "block.h"
 
-template <int x, int y, int z>
+#define CH_WIDTH 16
+#define CH_HEIGHT 128
+
+
 class Array3D
 {
 public:
-    Array3D() = default;
-    inline BlockInfo& at(int a, int b, int c){ return data[a+x*b+x*y*c]; }
+    Array3D() {}
+    inline BlockInfo& at(int x, int y, int z) { return data[x+CH_WIDTH*y+CH_WIDTH*CH_HEIGHT*z]; }
 private:
-    std::array<BlockInfo, x*y*z> data;
+    std::array<BlockInfo, CH_WIDTH*CH_WIDTH*CH_HEIGHT> data;
 };
 
 
@@ -38,10 +41,6 @@ class Chunk
 {
 public:
     glm::vec2 position;
-    
-    static const int WIDTH = 16;    // x
-    static const int HEIGHT = 128;  // y
-    static const int BREADTH = 16;  // z
 
     bool re_init_vaos = true;
     bool first_vbo_init = true;
@@ -50,20 +49,20 @@ public:
     void removeFromRenderMap(int face, glm::vec3 pos);
 
     Chunk() = default;  //for std map
-    Chunk(glm::vec2 position, Array3D<WIDTH, HEIGHT, BREADTH>& blocks_array);
+    Chunk(glm::vec2 position, const Array3D& blocks_array);
     void draw(Shaderprogram& shaderprogram, glm::vec3& view_dir, std::array<std::unordered_map<int, int>,6>& texArrayIDLookup);
     BlockInfo& getBlockInfo(int x, int y, int z);
 
 private:
-    Array3D<WIDTH, HEIGHT, BREADTH> block_array;
-    BlockModel block_model;
+    Array3D block_array;
+    BlockModel* p_block_model;
     int num_render_faces[6] = {0,0,0,0,0,0};
     std::unordered_map<glm::vec3, RenderBlockInfo, std::hash<glm::vec3>> render_faces_map[6];
 
     void visibiltyChecking();
     bool blockIsInChunk(int local_x, int local_y, int local_z);
     void visibilityCheckingAtPos(int face, int x, int y, int z, unsigned int blockID);
-    void rebuildVBOs(std::array<std::unordered_map<int, int>,6>&);
+    void rebuildVBOs(std::array<std::unordered_map<int, int>,6>& );
 };
 
 #endif // BLOCK_CHUNK_H

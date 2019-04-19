@@ -43,7 +43,6 @@ int main()
         game_world.updateTarget();
         input_handler.processKeyboardInput();
 
-        //std::cout << game_world.player.pos.x << " " << game_world.player.pos.y <<" "<< game_world.player.pos.z << std::endl;
         print_vec3("pos", game_world.player.pos);
         
         //render

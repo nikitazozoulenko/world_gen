@@ -1,68 +1,28 @@
-#include <unordered_map>
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
+// Include standard headers
 #include <iostream>
+#include <unordered_map>
 
-#include <stdlib.h>     /* srand, rand */
-#include <time.h>       /* time */
-
-#include <thread>
-#include <mutex>
-
-void doStuffToMap(std::unordered_map<int, int>& map, std::mutex& mutex)
-{
-    for(int i=0; i<1000000000000; i++)
-    {
-        int key = ((int)(rand())) % 1000;
-        if (map.find(key) != map.end())
-        {
-            std::lock_guard<std::mutex> guard(mutex);
-            std::cout << "test" << std::endl;
-            map.erase(key);
-        }
-        map[key+1] = 40;
-    }
-}
-
-
-class MapHandler
-{
-public:
-    std::unordered_map<int, int>& map;
-    std::mutex& mutex;
-
-    MapHandler(std::unordered_map<int, int>& map, std::mutex& mutex) : map(map), mutex(mutex)
-    {
-    };
-
-    void startComputeThread() 
-    {
-        std::thread t1(doStuffToMap, std::ref(map), std::ref(mutex));
-        t1.detach();
-    }
-
-};
+#include "../include/worldGenerator.h"
+#include "../include/block.h"
+#include "../include/displaywindow.h"
 
 
 int main()
 {
-    std::unordered_map<int, int> map;
-    for (int i=0; i<1000; i++)
-        map[i] = i;
-
-    std::mutex mutex;
-    MapHandler handler(map, mutex);
-    handler.startComputeThread();
-
-    while(true)
-    {
-        for(int i=0; i<1000; i++)
-        {
-            std::lock_guard<std::mutex> guard(mutex);
-            if(map.find(i) != map.end())
-            {
-                map[i] = map[i]+1;
-                std::cout << map[i] << " " << i << std::endl;
-            }
-        }
-    }
+    Displaywindow displaywindow = Displaywindow(1600, 900, "My Window"); //note, have to change SCRWIDTH SCRHEIGHT in multiple places (masterrenderer proj matrix)
+    BlockModel bm;
     return 0;
 }
+
+
+
+
+
+
+

@@ -4,6 +4,7 @@
 #include "block.h"
 #include "chunk.h"
 #include "worldGenerator.h"
+#include "player.h"
 
 #include <mutex>
 
@@ -15,7 +16,8 @@
 class ChunkManager
 {
 public:
-    ChunkManager();
+    ChunkManager(); //dont use
+    ChunkManager(Player& player);
     void startMainThread();
     void endMainThread();
     std::unordered_map<glm::ivec2, Chunk, std::hash<glm::ivec2>>& getChunkMap();
@@ -27,16 +29,21 @@ public:
     bool isInBounds(int x, int y, int z);
     bool isInBounds(float x, float y, float z);
 
-private:
-    WorldGenerator world_gen;
+    Player& player;
     bool stay_alive;
     std::mutex ch_map_mutex;
+    std::mutex ch_being_generated_set_mutex;
+    std::unordered_set<glm::ivec2, std::hash<glm::ivec2>> ch_being_generated_set;
     std::unordered_map<glm::ivec2, Chunk, std::hash<glm::ivec2>> chunk_map;
+    int n_workers;
+    WorldGenerator world_gen;
 
     void updateVisible(int x, int y, int z, int offset);
     void updateVisible(float x, float y, float z, int offset);
-    void addChunk(glm::ivec2 chunk_pos, Chunk chunk);
+    void addChunk(glm::ivec2 chunk_pos);
     void updateVisChunkEdge(Chunk& chunk1, int face1, Chunk& chunk2, int face2);
+private:
+
 };
 
 #endif // CHUNKMANAGER_H

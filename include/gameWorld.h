@@ -35,6 +35,7 @@ public:
 
     ChunkManager chunk_manager;
 private:
+    int seed;  //TODO do things with this
 };
 
 #endif // GAMEWORLD_H

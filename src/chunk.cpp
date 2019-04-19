@@ -8,24 +8,22 @@
 #include <iostream>
 
 
-Chunk::Chunk(glm::vec2 position, Array3D<WIDTH, HEIGHT, BREADTH>& block_array)
+Chunk::Chunk(glm::vec2 position, const Array3D& block_array) : 
+    position(position), 
+    block_array(block_array),
+    p_block_model(nullptr)
 {
-    this->position = position;
-    this->block_array = block_array;
-    //addSunLight();
-    //addBlockLight();
     visibiltyChecking();
 }
 
 
-
 void Chunk::visibiltyChecking()
 {
-    for(int x=0; x<WIDTH; x++)
+    for(int x=0; x<CH_WIDTH; x++)
     {
-        for(int y=0; y<HEIGHT; y++)
+        for(int y=0; y<CH_HEIGHT; y++)
         {
-            for(int z=0; z<BREADTH; z++)
+            for(int z=0; z<CH_WIDTH; z++)
             {   
                 BlockInfo& block_info = block_array.at(x, y, z);
                 if(block_info.blockID!=0) //not air
@@ -63,19 +61,19 @@ void Chunk::visibilityCheckingAtPos(int face, int x, int y, int z, unsigned int 
     {   
         BlockInfo info = getBlockInfo(p.x, p.y, p.z);
         if(info.blockID == 0) //TODO TODO change to visible/transparant block
-            addToRenderMap(blockID, face, info.lighting, glm::vec3(position.x*WIDTH+x, y, position.y*BREADTH+z));
+            addToRenderMap(blockID, face, info.lighting, glm::vec3(position.x*CH_WIDTH+x, y, position.y*CH_WIDTH+z));
     }
-    else if(face == BlockModel::TOP && y == HEIGHT-1)
+    else if(face == BlockModel::TOP && y == CH_HEIGHT-1)
         //max sunlight TODO TODO TODO TODO TODO TODO
-        addToRenderMap(blockID, BlockModel::TOP, 1.0f, glm::vec3(position.x*WIDTH+x, y, position.y*BREADTH+z));
+        addToRenderMap(blockID, BlockModel::TOP, 1.0f, glm::vec3(position.x*CH_WIDTH+x, y, position.y*CH_WIDTH+z));
 }
 
 
 bool Chunk::blockIsInChunk(int x, int y, int z) //local
 {
-    if(x < WIDTH  && x >= 0)
-        if(y < HEIGHT && y >= 0)
-            if(z < BREADTH && z >= 0)
+    if(x < CH_WIDTH  && x >= 0)
+        if(y < CH_HEIGHT && y >= 0)
+            if(z < CH_WIDTH && z >= 0)
                 return true;
     return false;
 }
@@ -98,18 +96,21 @@ void Chunk::removeFromRenderMap(int face, glm::vec3 pos)
 
 void Chunk::rebuildVBOs(std::array<std::unordered_map<int, int>,6>& texArrayIDLookup) //every time it is needed when a chunk is to be drawn
 {
+    if(first_vbo_init)
+        p_block_model = new BlockModel();
+
     int faces[6] = {BlockModel::EAST, BlockModel::WEST, BlockModel::TOP, BlockModel::BOTTOM, BlockModel::NORTH, BlockModel::SOUTH};
     for(int& face : faces)
     {   
-        //WARNING: removing here might cause problems first time?
+        //WARNING: removing might cause problems first time
         //remove old vbos
-        if(!first_vbo_init)
-        {
-            first_vbo_init = false;
-            glDeleteBuffers(1, &block_model.mat_VBOs[face]);
-            glDeleteBuffers(1, &block_model.texArrayID_VBOs[face]);
-            glDeleteBuffers(1, &block_model.light_VBOs[face]);
-        }
+        // if(!first_vbo_init)
+        // {
+        //     glDeleteBuffers(1, &p_block_model->mat_VBOs[face]);
+        //     glDeleteBuffers(1, &p_block_model->texArrayID_VBOs[face]);
+        //     glDeleteBuffers(1, &p_block_model->light_VBOs[face]);
+        // }
+        // first_vbo_init = false;
 
         //gather data for new vbos
         int size = render_faces_map[face].size();
@@ -133,10 +134,10 @@ void Chunk::rebuildVBOs(std::array<std::unordered_map<int, int>,6>& texArrayIDLo
         }
 
         //bind the data to vbos
-        glBindVertexArray(block_model.VAOs[face]);
+        glBindVertexArray(p_block_model->VAOs[face]);
 
-        glGenBuffers(1, &block_model.mat_VBOs[face]);
-        glBindBuffer(GL_ARRAY_BUFFER, block_model.mat_VBOs[face]);
+        glGenBuffers(1, &(p_block_model->mat_VBOs[face]));
+        glBindBuffer(GL_ARRAY_BUFFER, p_block_model->mat_VBOs[face]);
         glBufferData(GL_ARRAY_BUFFER, size * sizeof(glm::mat4), &model_matrices[0], GL_STATIC_DRAW);
         // set attribute pointers (matrix 4 times vec4)
         glEnableVertexAttribArray(3);
@@ -148,14 +149,14 @@ void Chunk::rebuildVBOs(std::array<std::unordered_map<int, int>,6>& texArrayIDLo
         glEnableVertexAttribArray(6);
         glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(3 * sizeof(glm::vec4)));
 
-        glGenBuffers(1, &block_model.texArrayID_VBOs[face]);
-        glBindBuffer(GL_ARRAY_BUFFER, block_model.texArrayID_VBOs[face]);
+        glGenBuffers(1, &(p_block_model->texArrayID_VBOs[face]));
+        glBindBuffer(GL_ARRAY_BUFFER, p_block_model->texArrayID_VBOs[face]);
         glBufferData(GL_ARRAY_BUFFER, size * sizeof(int), &texArrayIDs[0], GL_STATIC_DRAW);
         glEnableVertexAttribArray(7);
         glVertexAttribIPointer(7, 1, GL_INT, sizeof(int), (void*)0);
 
-        glGenBuffers(1, &block_model.light_VBOs[face]);
-        glBindBuffer(GL_ARRAY_BUFFER, block_model.light_VBOs[face]);
+        glGenBuffers(1, &(p_block_model->light_VBOs[face]));
+        glBindBuffer(GL_ARRAY_BUFFER, p_block_model->light_VBOs[face]);
         glBufferData(GL_ARRAY_BUFFER, size * sizeof(float), &lightings[0], GL_STATIC_DRAW);
         glEnableVertexAttribArray(8);
         glVertexAttribPointer(8, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)0);
@@ -181,7 +182,7 @@ void Chunk::draw(Shaderprogram& shaderprogram, glm::vec3& view_dir, std::array<s
     int faces[6] = {BlockModel::EAST, BlockModel::WEST, BlockModel::TOP, BlockModel::BOTTOM, BlockModel::NORTH, BlockModel::SOUTH};
     for(int& face : faces)
     {
-        glBindVertexArray(block_model.VAOs[face]);
+        glBindVertexArray(p_block_model->VAOs[face]);
         glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, num_render_faces[face]);
     }
 }

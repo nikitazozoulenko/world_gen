@@ -7,28 +7,27 @@
 #include <cmath>
 
 
-WorldGenerator::WorldGenerator(int seed) //TODO seed
+WorldGenerator::WorldGenerator(int seed) ://TODO seed
+    seed(seed)
 {
-    this->seed = seed;
     gradients[0] = glm::vec2(-1.0, 1.0);
     gradients[1] = glm::vec2(1.0, 1.0);
     gradients[2] = glm::vec2(-1.0, 1.0);
     gradients[3] = glm::vec2(-1.0, -1.0);
 }
 
-
 Chunk WorldGenerator::generateChunk(glm::vec2 chunk_pos) 
 {   
-    //generates block_array then passes it to chunk constructor for lighting
+    //? generates block_array then passes it to chunk constructor for lighting
 
-    Array3D<Chunk::WIDTH, Chunk::HEIGHT, Chunk::BREADTH> block_array;
+    Array3D block_array;
     //init chunk here
-    for (int x=0; x<Chunk::WIDTH; x++)
+    for (int x=0; x<CH_WIDTH; x++)
     {
-        for (int z=0; z<Chunk::BREADTH; z++)
+        for (int z=0; z<CH_WIDTH; z++)
         {
-            float perlin = (int) totalPerlinValue(x+chunk_pos.x*Chunk::WIDTH, z+chunk_pos.y*Chunk::BREADTH);
-            for (int y=0; y<Chunk::HEIGHT; y++)
+            float perlin = (int) totalPerlinValue(x+chunk_pos.x*CH_WIDTH, z+chunk_pos.y*CH_WIDTH);
+            for (int y=0; y<CH_HEIGHT; y++)
             {
                 unsigned int blockID = 0;
                 if(y==perlin)
@@ -41,9 +40,9 @@ Chunk WorldGenerator::generateChunk(glm::vec2 chunk_pos)
             }
         }
     }
-    //addPlayerPlacedBlocks();
 
-    return Chunk(chunk_pos, block_array);
+    Chunk chunk = Chunk(chunk_pos, block_array);
+    return chunk;
 }
 
 
@@ -70,8 +69,8 @@ float WorldGenerator::totalPerlinValue(int world_x, int world_z)
     }
 
     //bounds checking
-    if (total_perlin > Chunk::HEIGHT-1)
-        total_perlin = Chunk::HEIGHT-1;
+    if (total_perlin > CH_HEIGHT-1)
+        total_perlin = CH_HEIGHT-1;
     else if (total_perlin < 0)
         total_perlin = 0;
     return total_perlin;
@@ -111,6 +110,7 @@ float WorldGenerator::getPerlinValue(float x, float y, glm::vec2 corner_pos, flo
 
 int WorldGenerator::random(glm::vec2 pos) //TODO integrate seed
 {
+    std::lock_guard<std::mutex> lock(rand_mutex);
     srand((((((pos.x-0)*29 + 11)*13)+17 + 27*(pos.y-0))*23));
     return rand() % 4;
 }

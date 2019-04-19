@@ -5,10 +5,13 @@
 #include <iostream>
 #include <cmath>
 
-GameWorld::GameWorld() : player(Player())
+GameWorld::GameWorld() : player(Player()), chunk_manager(this->player)
 {
     this->sun_direction = glm::vec3(1, -4, 2);
     this->block_is_targeted = false;
+
+    //chunk_manager.addChunk(glm::ivec2(0,0));
+    chunk_manager.startMainThread();
 }
 
 

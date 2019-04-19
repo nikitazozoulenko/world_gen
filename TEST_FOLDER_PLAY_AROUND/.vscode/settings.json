@@ -47,6 +47,7 @@
         "thread": "cpp",
         "condition_variable": "cpp",
         "memory": "cpp",
-        "mutex": "cpp"
+        "mutex": "cpp",
+        "functional": "cpp"
     }
 }

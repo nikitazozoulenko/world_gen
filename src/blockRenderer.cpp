@@ -25,6 +25,7 @@ void BlockRenderer::render()
 
     //render cubes
     glBindTexture(GL_TEXTURE_2D_ARRAY, block_texture);
+    std::lock_guard<std::mutex> lock(p_game_world->chunk_manager.ch_map_mutex);
     for (auto& pair : p_game_world->chunk_manager.getChunkMap())
     {
         pair.second.draw(block_shaderprogram, p_game_world->player.camera.front, texArrayIDLookup);
