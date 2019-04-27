@@ -15,9 +15,10 @@ GameWorld::GameWorld() : player(Player()), chunk_manager(this->player)
 }
 
 
-void GameWorld::updateTarget()
+void GameWorld::update()
 {
     targetBlockRay(player.pos.x, player.pos.y, player.pos.z, glm::vec3(0,0,0));
+    chunk_manager.removeChunksOutOfRange();
 }
 
 

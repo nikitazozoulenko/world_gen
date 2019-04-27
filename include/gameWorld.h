@@ -30,7 +30,7 @@ public:
     bool isInBounds(int x, int y, int z);
     bool isInBounds(float x, float y, float z);
     glm::mat4 getViewMatrix();
-    void updateTarget();
+    void update();
     void targetBlockRay(float x, float y, float z, glm::vec3 previous_block_pos);
 
     ChunkManager chunk_manager;

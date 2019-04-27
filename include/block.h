@@ -14,6 +14,7 @@ class BlockModel
 {
 public:
     BlockModel();
+    ~BlockModel();
     enum{
         EAST,
         WEST,

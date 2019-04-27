@@ -23,11 +23,10 @@ bool dist_from_origin(const glm::ivec2& lhs, const glm::ivec2& rhs)
 }
 
 
-void removeChunksOutOfRange(ChunkManager* p_chunk_manager, int R, glm::ivec2 player_ch_pos)
+void updateChunksOutOfRange(ChunkManager* p_chunk_manager, int R, glm::ivec2 player_ch_pos)
 {
     std::lock_guard<std::mutex> lock(p_chunk_manager->ch_map_mutex);
     auto& chunk_map = p_chunk_manager->chunk_map;
-    std::vector<glm::ivec2> remove_pos;
     for (auto& pair : chunk_map)
     {
         glm::ivec2 pos = pair.first;
@@ -35,12 +34,10 @@ void removeChunksOutOfRange(ChunkManager* p_chunk_manager, int R, glm::ivec2 pla
         {
             if(chunk_map.count(pos) != 0)
             {
-                remove_pos.push_back(pos);
+                p_chunk_manager->ch_del_pos_set.insert(pos);
             }
         }
     }
-    for (auto& pos : remove_pos)
-        chunk_map.erase(pos);
 }
 
 
@@ -90,7 +87,7 @@ void chunkMainThreadFunction(ChunkManager* p_chunk_manager)
             }
         }
 
-        removeChunksOutOfRange(p_chunk_manager, R, player_ch_pos);
+        updateChunksOutOfRange(p_chunk_manager, R, player_ch_pos);
     }
 }
 
@@ -109,6 +106,17 @@ void ChunkManager::startMainThread()
     stay_alive = true;
     std::thread t(chunkMainThreadFunction, this);
     t.detach();
+}
+
+
+void ChunkManager::removeChunksOutOfRange()
+{
+    std::lock_guard<std::mutex> lock2(ch_map_mutex);
+    for (auto& pos : ch_del_pos_set)
+    {
+        chunk_map.erase(pos);
+    }
+    ch_del_pos_set.clear();
 }
 
 

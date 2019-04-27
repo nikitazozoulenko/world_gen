@@ -40,7 +40,7 @@ int main()
     {
         // per-frame time logic
         input_handler.updateDeltaTime();
-        game_world.updateTarget();
+        game_world.update();
         input_handler.processKeyboardInput();
 
         //print_vec3("pos", game_world.player.pos);

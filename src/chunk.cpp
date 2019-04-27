@@ -11,9 +11,20 @@
 Chunk::Chunk(glm::vec2 position, const Array3D& block_array) : 
     position(position), 
     block_array(block_array),
-    p_block_model(nullptr)
+    p_block_model(nullptr),
+    first_vbo_init(true),
+    re_init_vaos(true)
 {
     visibiltyChecking();
+}
+
+
+Chunk::~Chunk() //only do on main thread
+{
+    if(p_block_model)
+    {
+        delete p_block_model;
+    }
 }
 
 
@@ -102,15 +113,13 @@ void Chunk::rebuildVBOs(std::array<std::unordered_map<int, int>,6>& texArrayIDLo
     int faces[6] = {BlockModel::EAST, BlockModel::WEST, BlockModel::TOP, BlockModel::BOTTOM, BlockModel::NORTH, BlockModel::SOUTH};
     for(int& face : faces)
     {   
-        //WARNING: removing might cause problems first time
         //remove old vbos
-        // if(!first_vbo_init)
-        // {
-        //     glDeleteBuffers(1, &p_block_model->mat_VBOs[face]);
-        //     glDeleteBuffers(1, &p_block_model->texArrayID_VBOs[face]);
-        //     glDeleteBuffers(1, &p_block_model->light_VBOs[face]);
-        // }
-        // first_vbo_init = false;
+        if(!first_vbo_init)
+        {
+            glDeleteBuffers(1, &p_block_model->mat_VBOs[face]);
+            glDeleteBuffers(1, &p_block_model->texArrayID_VBOs[face]);
+            glDeleteBuffers(1, &p_block_model->light_VBOs[face]);
+        }
 
         //gather data for new vbos
         int size = render_faces_map[face].size();
@@ -119,6 +128,7 @@ void Chunk::rebuildVBOs(std::array<std::unordered_map<int, int>,6>& texArrayIDLo
         int texArrayIDs[size];
         float lightings[size];
         int counter = 0;
+        std::cout << "six" << std::endl;
         for (auto& pair : render_faces_map[face])
         {
             glm::vec3 pos = pair.first;
@@ -168,6 +178,7 @@ void Chunk::rebuildVBOs(std::array<std::unordered_map<int, int>,6>& texArrayIDLo
         glVertexAttribDivisor(7, 1);
         glVertexAttribDivisor(8, 1);
     }
+    first_vbo_init = false;
 }
 
 

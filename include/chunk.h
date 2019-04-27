@@ -41,15 +41,17 @@ class Chunk
 {
 public:
     glm::vec2 position;
+    bool re_init_vaos;
+    bool first_vbo_init;
 
-    bool re_init_vaos = true;
-    bool first_vbo_init = true;
 
     void addToRenderMap(int blockID, int face, float lighting, glm::vec3 pos);
     void removeFromRenderMap(int face, glm::vec3 pos);
 
     Chunk() = default;  //for std map
     Chunk(glm::vec2 position, const Array3D& blocks_array);
+    ~Chunk();
+
     void draw(Shaderprogram& shaderprogram, glm::vec3& view_dir, std::array<std::unordered_map<int, int>,6>& texArrayIDLookup);
     BlockInfo& getBlockInfo(int x, int y, int z);
 

@@ -34,6 +34,7 @@ public:
     std::mutex ch_map_mutex;
     std::mutex ch_being_generated_set_mutex;
     std::unordered_set<glm::ivec2, std::hash<glm::ivec2>> ch_being_generated_set;
+    std::unordered_set<glm::ivec2, std::hash<glm::ivec2>> ch_del_pos_set;
     std::unordered_map<glm::ivec2, Chunk, std::hash<glm::ivec2>> chunk_map;
     int n_workers;
     WorldGenerator world_gen;
@@ -43,6 +44,7 @@ public:
     void addChunk(glm::ivec2 chunk_pos);
     void updateBlockVisEdge(Chunk& chunk1, int face1, Chunk& chunk2, int face2);
     void updateEdges(glm::ivec2& pos);
+    void removeChunksOutOfRange();
 private:
 
 };
