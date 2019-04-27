@@ -23,7 +23,7 @@ void InputHandler::updateDeltaTime()
     float currentFrame = glfwGetTime();
     delta_time = currentFrame - last_frame_time;
     last_frame_time = currentFrame;
-    std::cout << 1/delta_time << std::endl;
+    //std::cout << 1/delta_time << std::endl;
 }
 
 

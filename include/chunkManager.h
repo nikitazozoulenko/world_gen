@@ -38,8 +38,8 @@ public:
     int n_workers;
     WorldGenerator world_gen;
 
-    void updateVisible(int x, int y, int z, int offset);
-    void updateVisible(float x, float y, float z, int offset);
+    void updateVisible(int x, int y, int z);
+    void updateVisible(float x, float y, float z);
     void addChunk(glm::ivec2 chunk_pos);
     void updateBlockVisEdge(Chunk& chunk1, int face1, Chunk& chunk2, int face2);
     void updateEdges(glm::ivec2& pos);

@@ -43,7 +43,7 @@ int main()
         game_world.updateTarget();
         input_handler.processKeyboardInput();
 
-        print_vec3("pos", game_world.player.pos);
+        //print_vec3("pos", game_world.player.pos);
         
         //render
         renderer.render();

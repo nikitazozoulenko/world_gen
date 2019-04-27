@@ -9,7 +9,6 @@
 void createAndAddChunkThread(glm::ivec2 ch_pos, ChunkManager* p_chunk_manager)
 {
     //code here
-    print_vec2("creating chunk at pos", ch_pos);
     p_chunk_manager->addChunk(ch_pos);
 
     //at the end
@@ -47,7 +46,7 @@ void removeChunksOutOfRange(ChunkManager* p_chunk_manager, int R, glm::ivec2 pla
 
 void chunkMainThreadFunction(ChunkManager* p_chunk_manager)
 {   
-    int R = 6;
+    int R = 5;
     while(p_chunk_manager->stay_alive)
     {
         // given R, make a square with sidelength 2R. then filter out dist. then sort dist
@@ -152,49 +151,52 @@ bool ChunkManager::isInBounds(int x, int y, int z)
 }
 
 
-void ChunkManager::updateVisible(float x, float y, float z, int offset)
+void ChunkManager::updateVisible(float x, float y, float z)
 {
     int x_int = std::floor(x);
     int y_int = std::floor(y);
     int z_int = std::floor(z);
-    updateVisible(x_int, y_int, z_int, offset);
+    updateVisible(x_int, y_int, z_int);
 }
 
 
-void ChunkManager::updateVisible(int x, int y, int z, int offset)
+void ChunkManager::updateVisible(int x, int y, int z)
 {
-    //TODO : WARNING : (maybe -- probably) doesnt work properly on the corner of a chunk when the nearby chunk is unloaded
+    //adds sides of block at positions x y z if needed. first removes all faces then adds if needed. do this for all 7 blocks.
     if(isInBounds(x, y, z))
     {
-        //first block lighting here for render_info
         BlockInfo first_block_info = getBlockInfo(x,y,z);
-
+        glm::vec3 first_block_pos = glm::vec3(x,y,z);
         //loop over 6 sides
-        int positions[6][3] = {{x+offset, y,        z       },
-                               {x-offset, y,        z       },
-                               {x,        y+offset, z       },
-                               {x,        y-offset, z       },
-                               {x,        y,        z+offset},
-                               {x,        y,        z-offset}};
+        std::unordered_map<int, std::vector<int>> positions = { {BlockModel::EAST,  {x+1, y,   z  }},
+                                                                {BlockModel::WEST,  {x-1, y,   z  }},
+                                                                {BlockModel::TOP,   {x  , y+1, z  }},
+                                                                {BlockModel::BOTTOM,{x  , y-1, z  }},
+                                                                {BlockModel::NORTH, {x  , y,   z+1}},
+                                                                {BlockModel::SOUTH, {x  , y,   z-1}} };
         int faces[6] = {BlockModel::EAST, BlockModel::WEST, BlockModel::TOP, BlockModel::BOTTOM, BlockModel::NORTH, BlockModel::SOUTH};
         int ch_x = std::floor(x / (float)CH_WIDTH);
         int ch_z = std::floor(z / (float)CH_WIDTH);
         for(int& face : faces)
         {
+            //remove current face
+            Chunk& chunk = chunk_map[glm::ivec2(ch_x, ch_z)];
+            chunk.removeFromRenderMap(face, first_block_pos);
+            chunk.re_init_vaos = true;
+
             glm::vec3 p = glm::vec3(positions[face][0], positions[face][1], positions[face][2]);
             if(isInBounds(p.x, p.y, p.z))
             {
-                //remove current face
-                Chunk& chunk = chunk_map[glm::ivec2(ch_x, ch_z)];
-                chunk.removeFromRenderMap(face, p);
-                chunk.re_init_vaos = true;
-
                 BlockInfo& block_info = getBlockInfo(p.x, p.y, p.z);
-                if(block_info.blockID != 0 && first_block_info.blockID == 0)  //change to visible/nonvisible blocks?? (fence)
+                if(block_info.blockID == 0 && first_block_info.blockID != 0)  //TODO change to visible/nonvisible blocks?? (fence)
                 {
                     //add face if checked block isnt air
-                    chunk.addToRenderMap(block_info.blockID, face, first_block_info.lighting, p);
+                    chunk.addToRenderMap(first_block_info.blockID, face, block_info.lighting, first_block_pos);
                 }
+            }
+            else if(p.y == CH_HEIGHT && first_block_info.blockID != 0)
+            {
+                chunk.addToRenderMap(first_block_info.blockID, face, 1.0f, first_block_pos);  //TODO change lighting
             }
         }
     }
@@ -225,13 +227,13 @@ void ChunkManager::changeBlock(int x, int y, int z, int blockID)
         //updateLightingHereSomethingVeryLongFunction();
 
         //last param is that you have to check the reverse sides for the block surrounding the changed block
-        updateVisible(x, y, z, -1);
-        updateVisible(x+1, y, z, -1);
-        updateVisible(x-1, y, z, -1);
-        updateVisible(x, y+1, z, -1);
-        updateVisible(x, y-1, z, -1);
-        updateVisible(x, y, z+1, -1);
-        updateVisible(x, y, z-1, -1);
+        updateVisible(x, y, z);
+        updateVisible(x+1, y, z);
+        updateVisible(x-1, y, z);
+        updateVisible(x, y+1, z);
+        updateVisible(x, y-1, z);
+        updateVisible(x, y, z+1);
+        updateVisible(x, y, z-1);
     }
 }
 
