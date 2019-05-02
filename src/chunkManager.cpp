@@ -43,7 +43,7 @@ void updateChunksOutOfRange(ChunkManager* p_chunk_manager, int R, glm::ivec2 pla
 
 void chunkMainThreadFunction(ChunkManager* p_chunk_manager)
 {   
-    int R = 5;
+    int& R = p_chunk_manager->chunk_view_distance;
     while(p_chunk_manager->stay_alive)
     {
         // given R, make a square with sidelength 2R. then filter out dist. then sort dist
@@ -95,7 +95,8 @@ void chunkMainThreadFunction(ChunkManager* p_chunk_manager)
 ChunkManager::ChunkManager(Player& player) : 
     player(player),
     stay_alive(true),
-    n_workers(4)
+    n_workers(4),
+    chunk_view_distance(20)
 {
 
 }

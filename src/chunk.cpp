@@ -128,7 +128,6 @@ void Chunk::rebuildVBOs(std::array<std::unordered_map<int, int>,6>& texArrayIDLo
         int texArrayIDs[size];
         float lightings[size];
         int counter = 0;
-        std::cout << "six" << std::endl;
         for (auto& pair : render_faces_map[face])
         {
             glm::vec3 pos = pair.first;

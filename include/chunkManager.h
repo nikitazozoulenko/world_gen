@@ -30,6 +30,7 @@ public:
     bool isInBounds(float x, float y, float z);
 
     Player& player;
+    int chunk_view_distance;
     bool stay_alive;
     std::mutex ch_map_mutex;
     std::mutex ch_being_generated_set_mutex;

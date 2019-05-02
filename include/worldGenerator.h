@@ -16,10 +16,11 @@ public:
 private:
     int seed;
     glm::vec2 gradients[4]; //2dim is 4 vectors
-    float lerp(float val0, float val1, float x);
-    float totalPerlinValue(int world_x, int world_z);
-    float getPerlinValue(float x_norm, float y_norm, glm::vec2 corner_pos, float amplitude);
+
     int random(glm::vec2 pos);
+    float simplexNoise2D(float x, float y, float amplitude);
+    float simplexOctaves2D(int world_x, int world_z, std::vector<float>& sizes, std::vector<float>& amplitudes);
+
 
     std::mutex rand_mutex;
 };
