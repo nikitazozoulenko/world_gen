@@ -15,6 +15,7 @@ Chunk::Chunk(glm::vec2 position, const Array3D& block_array) :
     first_vbo_init(true),
     re_init_vaos(true)
 {
+    sunlightChecking(); //add light before sending render info
     visibiltyChecking();
 }
 
@@ -28,17 +29,119 @@ Chunk::~Chunk() //only do on main thread
 }
 
 
+bool Chunk::helperFunInterestingAdjacantPoint(int x, int y, int z) //returns false if out of bounds
+{
+    if (blockIsInChunk(x,y,z))
+        if (y<sunlight_level[x][z])
+            return true;
+    return false;
+}
+
+
+void Chunk::sunlightChecking()
+{
+    //find sunlight level
+    for (int x=0; x<CH_WIDTH; x++)
+    {
+        for (int z=0; z<CH_WIDTH; z++)
+        {
+            sunlight_level[x][z] = 0;
+            for (int y=CH_HEIGHT-1; y>-1; y--)
+            {
+                BlockInfo& block_info = block_array.at(x, y, z);
+                if(block_info.blockID!=0) //not air
+                {
+                    sunlight_level[x][z] = y+1;
+                    break;
+                }
+            }
+        }
+    }
+
+    //set max sunlight values, and get the wanted BFS points.
+    std::unordered_set<glm::vec3, std::hash<glm::vec3>> points;
+    for (int x=0; x<CH_WIDTH; x++)
+        for(int z=0; z<CH_WIDTH; z++)
+            for (int y=CH_HEIGHT-1; y>-1; y--)
+            {
+                //direct sunlight
+                BlockInfo& block_info = block_array.at(x, y, z);
+                if(y>= sunlight_level[x][z])
+                {
+                    block_info.lighting = MAX_SUNLIGHT_VALUE;
+                }
+                else
+                {
+                    break;
+                }
+
+                //look for interesting BFS points and add to set, (with bounds checking)
+                bool east = helperFunInterestingAdjacantPoint(x+1,y,z);
+                bool west = helperFunInterestingAdjacantPoint(x-1,y,z);
+                bool north = helperFunInterestingAdjacantPoint(x,y,z+1);
+                bool south = helperFunInterestingAdjacantPoint(x,y,z-1);
+                if (east || west || north || south)
+                    points.insert(glm::vec3(x,y,z));
+            }
+    recursive_light_BFS(points);
+}
+
+
+void Chunk::light_BFS_helper_func(int light_value, int x, int y, int z, std::unordered_set<glm::vec3, std::hash<glm::vec3>>& new_points)
+{
+    if(blockIsInChunk(x, y, z))
+    {
+        BlockInfo& new_block_info = block_array.at(x, y, z);
+        if(new_block_info.blockID==0) //air
+        {
+            if (light_value > 1+new_block_info.lighting)
+            {
+                new_block_info.lighting = std::max(0, light_value-1);
+                new_points.insert(glm::vec3(x,y,z));
+            }
+        }
+    }
+}
+
+
+void Chunk::recursive_light_BFS(std::unordered_set<glm::vec3, std::hash<glm::vec3>>& points)
+{
+    //make one iteration at every point
+    std::unordered_set<glm::vec3, std::hash<glm::vec3>> new_points;
+    for(auto& p: points)
+    {
+        BlockInfo& block_info = block_array.at(p.x, p.y, p.z);
+        int light_value = block_info.lighting;
+        light_BFS_helper_func(light_value, p.x+1, p.y,   p.z,   new_points);
+        light_BFS_helper_func(light_value, p.x-1, p.y,   p.z,   new_points);
+        light_BFS_helper_func(light_value, p.x,   p.y+1, p.z,   new_points);
+        light_BFS_helper_func(light_value, p.x,   p.y-1, p.z,   new_points);
+        light_BFS_helper_func(light_value, p.x,   p.y  , p.z+1, new_points);
+        light_BFS_helper_func(light_value, p.x,   p.y  , p.z-1, new_points);
+    }
+
+    //if new_points isnt empty, recurse
+    if (!new_points.empty())
+        recursive_light_BFS(new_points);
+}
+
+
+
+
+
 void Chunk::visibiltyChecking()
 {
     for(int x=0; x<CH_WIDTH; x++)
     {
-        for(int y=0; y<CH_HEIGHT; y++)
-        {
-            for(int z=0; z<CH_WIDTH; z++)
-            {   
+
+        for(int z=0; z<CH_WIDTH; z++)
+        {   
+            for(int y=0; y<CH_HEIGHT; y++)
+            {
                 BlockInfo& block_info = block_array.at(x, y, z);
                 if(block_info.blockID!=0) //not air
                 {
+                    sunlight_level[x][z] = y+1;
                     visibilityCheckingAtPos(BlockModel::TOP,    x, y, z, block_info.blockID);
                     visibilityCheckingAtPos(BlockModel::BOTTOM, x, y, z, block_info.blockID);
                     visibilityCheckingAtPos(BlockModel::NORTH,  x, y, z, block_info.blockID);
@@ -76,7 +179,7 @@ void Chunk::visibilityCheckingAtPos(int face, int x, int y, int z, unsigned int 
     }
     else if(face == BlockModel::TOP && y == CH_HEIGHT-1)
         //max sunlight TODO TODO TODO TODO TODO TODO
-        addToRenderMap(blockID, BlockModel::TOP, 1.0f, glm::vec3(position.x*CH_WIDTH+x, y, position.y*CH_WIDTH+z));
+        addToRenderMap(blockID, BlockModel::TOP, MAX_SUNLIGHT_VALUE, glm::vec3(position.x*CH_WIDTH+x, y, position.y*CH_WIDTH+z));
 }
 
 
@@ -90,7 +193,7 @@ bool Chunk::blockIsInChunk(int x, int y, int z) //local
 }
 
 
-void Chunk::addToRenderMap(int blockID, int face, float face_lighting, glm::vec3 pos)
+void Chunk::addToRenderMap(int blockID, int face, int face_lighting, glm::vec3 pos)
 {
     RenderBlockInfo render_info;
     render_info.blockID = blockID;
@@ -126,7 +229,7 @@ void Chunk::rebuildVBOs(std::array<std::unordered_map<int, int>,6>& texArrayIDLo
         num_render_faces[face] = size;
         glm::mat4 model_matrices[size];
         int texArrayIDs[size];
-        float lightings[size];
+        int lightings[size];
         int counter = 0;
         for (auto& pair : render_faces_map[face])
         {
@@ -166,9 +269,9 @@ void Chunk::rebuildVBOs(std::array<std::unordered_map<int, int>,6>& texArrayIDLo
 
         glGenBuffers(1, &(p_block_model->light_VBOs[face]));
         glBindBuffer(GL_ARRAY_BUFFER, p_block_model->light_VBOs[face]);
-        glBufferData(GL_ARRAY_BUFFER, size * sizeof(float), &lightings[0], GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, size * sizeof(int), &lightings[0], GL_STATIC_DRAW);
         glEnableVertexAttribArray(8);
-        glVertexAttribPointer(8, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)0);
+        glVertexAttribPointer(8, 1, GL_FLOAT, GL_FALSE, sizeof(int), (void*)0);
 
         glVertexAttribDivisor(3, 1);
         glVertexAttribDivisor(4, 1);

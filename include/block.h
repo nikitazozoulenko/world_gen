@@ -10,6 +10,8 @@
 
 #include "shaderprogram.h"
 
+#define MAX_SUNLIGHT_VALUE 15
+
 class BlockModel
 {
 public:
@@ -39,7 +41,7 @@ struct BlockInfo
 {
 public:
     int blockID = 0; //0 is air
-    float lighting = 1.0f; //0 to 15
+    int lighting = 0; //0 to MAX_SUNLIGHT_VALUE
 };
 
 #endif // BLOCK_BLOCK_H

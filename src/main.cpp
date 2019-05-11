@@ -23,7 +23,7 @@
 
 int main()
 {
-    Displaywindow displaywindow = Displaywindow(1600, 900, "My Window"); //note, have to change SCRWIDTH SCRHEIGHT in multiple places (masterrenderer proj matrix)
+    Displaywindow displaywindow = Displaywindow(1280, 720, "My Window"); //note, have to change SCRWIDTH SCRHEIGHT in multiple places (masterrenderer proj matrix)
     std::cout << "test1" << std::endl;
 
     GameWorld game_world;
@@ -43,7 +43,7 @@ int main()
         game_world.update();
         input_handler.processKeyboardInput();
 
-        //print_vec3("pos", game_world.player.pos);
+        print_vec3("pos", game_world.player.pos);
         
         //render
         renderer.render();

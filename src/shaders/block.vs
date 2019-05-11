@@ -4,13 +4,13 @@ layout (location = 1) in vec3 aNormal;
 layout (location = 2) in vec2 aTexCoords;
 layout (location = 3) in mat4 model;
 layout (location = 7) in int aBlockTexID;
-layout (location = 8) in float aFaceLighting;
+layout (location = 8) in int aFaceLighting;
 
 out vec3 FragPos;
 out vec2 TexCoords;
 out vec3 Normal;
 flat out int BlockTexID;
-out float FaceLighting;
+flat out int FaceLighting;
 
 uniform mat4 view;
 uniform mat4 projection;

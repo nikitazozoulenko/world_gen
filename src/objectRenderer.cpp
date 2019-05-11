@@ -29,7 +29,7 @@ void ObjectRenderer::render()
 
 void ObjectRenderer::setProjectionMatrix()
 {
-    glm::mat4 projection = glm::perspective(glm::radians(p_game_world->player.camera.zoom), (float)1600 / (float)900, 0.1f, 1000.0f);
+    glm::mat4 projection = glm::perspective(glm::radians(p_game_world->player.camera.zoom), (float)1280 / (float)720, 0.1f, 1000.0f);
     obj_shaderprogram.setUniformMat4("projection", projection);
 }
 

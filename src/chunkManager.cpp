@@ -95,7 +95,7 @@ void chunkMainThreadFunction(ChunkManager* p_chunk_manager)
 ChunkManager::ChunkManager(Player& player) : 
     player(player),
     stay_alive(true),
-    n_workers(4),
+    n_workers(1),
     chunk_view_distance(20)
 {
 
@@ -169,7 +169,7 @@ void ChunkManager::updateVisible(float x, float y, float z)
 }
 
 
-void ChunkManager::updateVisible(int x, int y, int z)
+void ChunkManager::updateVisible(int x, int y, int z) //TODO TODO TODO MIGHT BE WRONG FOR CHUNK EDGES, IDK WHY
 {
     //adds sides of block at positions x y z if needed. first removes all faces then adds if needed. do this for all 7 blocks.
     if(isInBounds(x, y, z))
@@ -330,15 +330,15 @@ void ChunkManager::updateBlockVisEdge(Chunk& chunk1, int face1, Chunk& chunk2, i
 
             if(info1.blockID==0 && info2.blockID!=0)
             {
-                chunk2.addToRenderMap(info2.blockID, face2, info1.lighting, pos2);
-                chunk2.re_init_vaos = true;
+                chunk1.addToRenderMap(info2.blockID, face2, info1.lighting, pos2);
+                chunk1.re_init_vaos = true;
             }
 
             //is working
             if(info1.blockID!=0 && info2.blockID==0)
             {
-                chunk1.addToRenderMap(info1.blockID, face1, info2.lighting, pos1);
-                chunk1.re_init_vaos = true;
+                chunk2.addToRenderMap(info1.blockID, face1, info2.lighting, pos1);
+                chunk2.re_init_vaos = true;
             }
         }
 }
