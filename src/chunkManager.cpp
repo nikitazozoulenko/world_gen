@@ -169,7 +169,7 @@ void ChunkManager::updateVisible(float x, float y, float z)
 }
 
 
-void ChunkManager::updateVisible(int x, int y, int z) //TODO TODO TODO MIGHT BE WRONG FOR CHUNK EDGES, IDK WHY
+void ChunkManager::updateVisible(int x, int y, int z)
 {
     //adds sides of block at positions x y z if needed. first removes all faces then adds if needed. do this for all 7 blocks.
     if(isInBounds(x, y, z))
@@ -205,7 +205,7 @@ void ChunkManager::updateVisible(int x, int y, int z) //TODO TODO TODO MIGHT BE 
             }
             else if(p.y == CH_HEIGHT && first_block_info.blockID != 0)
             {
-                chunk.addToRenderMap(first_block_info.blockID, face, 1.0f, first_block_pos);  //TODO change lighting
+                chunk.addToRenderMap(first_block_info.blockID, face, MAX_SUNLIGHT_VALUE, first_block_pos);  //TODO change lighting
             }
         }
     }
@@ -229,11 +229,20 @@ void ChunkManager::changeBlock(int x, int y, int z, int blockID)
         int ch_x = std::floor(x / (float)CH_WIDTH);
         int ch_z = std::floor(z / (float)CH_WIDTH);
 
-        //REMOVE BLOCK
+        //CHANGE BLOCK   (and lighting, TODO)
         info.blockID=blockID;
 
         //UPDATE LIGHTING
-        //updateLightingHereSomethingVeryLongFunction();
+        std::unordered_set<glm::vec3, std::hash<glm::vec3>> points;
+        blockChangePropagateDownSunlight(x,y,z, points);
+        points.insert(glm::vec3(x,y,z));
+        points.insert(glm::vec3(x+1,y,z));
+        points.insert(glm::vec3(x-1,y,z));
+        points.insert(glm::vec3(x,y+1,z));
+        points.insert(glm::vec3(x,y-1,z));
+        points.insert(glm::vec3(x,y,z+1));
+        points.insert(glm::vec3(x,y,z-1));
+        globalRecursiveLightBFS(points);
 
         //last param is that you have to check the reverse sides for the block surrounding the changed block
         updateVisible(x, y, z);
@@ -243,6 +252,23 @@ void ChunkManager::changeBlock(int x, int y, int z, int blockID)
         updateVisible(x, y-1, z);
         updateVisible(x, y, z+1);
         updateVisible(x, y, z-1);
+    }
+}
+
+
+void ChunkManager::blockChangePropagateDownSunlight(int x, int yy, int z, std::unordered_set<glm::vec3, std::hash<glm::vec3>>& points)
+{
+    for (int y = CH_HEIGHT-1; y>-1; y--)
+    {
+        BlockInfo& info = getBlockInfo(x, y, z);
+        if (info.blockID != 0) //not air
+        {
+            break;
+        }
+        else
+        {
+            info.lighting = MAX_SUNLIGHT_VALUE;
+        }
     }
 }
 
@@ -279,10 +305,111 @@ void ChunkManager::addChunk(glm::ivec2 pos)
     chunk_map[pos] = chunk;
 
     //update lighting (does this need to be locked?)
-    //updateLighting(all the chunks affected);
+    updateLighting(pos);
 
     // //update visibility on edge
     updateEdges(pos);
+}
+
+
+void ChunkManager::updateLighting(glm::ivec2& pos)
+{
+    glm::ivec2 pos_east = glm::ivec2(pos.x+1, pos.y);
+    glm::ivec2 pos_west = glm::ivec2(pos.x-1, pos.y);
+    glm::ivec2 pos_north = glm::ivec2(pos.x, pos.y+1);
+    glm::ivec2 pos_south = glm::ivec2(pos.x, pos.y-1);
+
+    //get all interesting points at once, then update with "global" version of BFS
+    std::unordered_set<glm::vec3, std::hash<glm::vec3>> points;
+    if(chunk_map.count(pos_west) != 0)
+        updateLightingChunkEdge(chunk_map[pos_west], BlockModel::WEST, chunk_map[pos], BlockModel::EAST, points);
+    if(chunk_map.count(pos_east) != 0)
+        updateLightingChunkEdge(chunk_map[pos], BlockModel::WEST, chunk_map[pos_east], BlockModel::EAST, points);
+    if(chunk_map.count(pos_south) != 0)
+        updateLightingChunkEdge(chunk_map[pos_south], BlockModel::SOUTH, chunk_map[pos], BlockModel::NORTH, points);
+    if(chunk_map.count(pos_north) != 0)
+        updateLightingChunkEdge(chunk_map[pos], BlockModel::SOUTH, chunk_map[pos_north], BlockModel::NORTH, points);
+
+    globalRecursiveLightBFS(points);
+}
+
+
+void ChunkManager::updateLightingChunkEdge(Chunk& chunk1, int face1, Chunk& chunk2, int face2, std::unordered_set<glm::vec3, std::hash<glm::vec3>>& points)
+{
+    glm::vec3 side;
+    glm::vec3 k;
+    if(face2==BlockModel::EAST)
+    {
+        side = glm::vec3(0,0,1);
+        k = glm::vec3(1,0,0);
+    }
+    else
+    {
+        side = glm::vec3(1,0,0);
+        k = glm::vec3(0,0,1);
+    }
+    
+    glm::vec3 corner = glm::vec3(chunk2.position.x*CH_WIDTH, 0, chunk2.position.y*CH_WIDTH);
+    for(int y=0; y<CH_HEIGHT; y++)
+        for(int i=0; i<CH_WIDTH; i++)
+        {
+            glm::vec3 pos1 = glm::vec3(corner + glm::vec3(0,y,0) + glm::vec3(side.x*i, 0, side.z*i));
+            glm::vec3 pos2 = pos1-k;
+            BlockInfo info1 = getBlockInfo(pos1.x, pos1.y, pos1.z);
+            BlockInfo info2 = getBlockInfo(pos2.x, pos2.y, pos2.z);
+
+            if(info1.blockID==0 && info2.blockID==0) // if both air
+            {
+                //TODO can be optimized
+                points.insert(pos1);
+                points.insert(pos2);
+                chunk1.re_init_vaos = true;
+                chunk2.re_init_vaos = true;
+            }
+        }
+}
+
+
+void ChunkManager::globalLightBFSHelperFunc(int light_value, int x, int y, int z, std::unordered_set<glm::vec3, std::hash<glm::vec3>>& new_points)
+{
+    if(isInBounds(x, y, z))
+    {
+        BlockInfo& new_block_info = getBlockInfo(x, y, z);
+        if(new_block_info.blockID==0) //air
+        {
+            if (light_value > 1+new_block_info.lighting)
+            {
+                new_block_info.lighting = std::max(0, light_value-1);
+                new_points.insert(glm::vec3(x,y,z));
+            }
+        }
+        else //if not air
+        {
+            updateVisible(x,y,z);
+        }
+    }
+}
+
+
+void ChunkManager::globalRecursiveLightBFS(std::unordered_set<glm::vec3, std::hash<glm::vec3>>& points)
+{
+    //make one iteration at every point
+    std::unordered_set<glm::vec3, std::hash<glm::vec3>> new_points;
+    for(auto& p: points)
+    {
+        BlockInfo& block_info = getBlockInfo(p.x, p.y, p.z);
+        int light_value = block_info.lighting;
+        globalLightBFSHelperFunc(light_value, p.x+1, p.y,   p.z,   new_points);
+        globalLightBFSHelperFunc(light_value, p.x-1, p.y,   p.z,   new_points);
+        globalLightBFSHelperFunc(light_value, p.x,   p.y+1, p.z,   new_points);
+        globalLightBFSHelperFunc(light_value, p.x,   p.y-1, p.z,   new_points);
+        globalLightBFSHelperFunc(light_value, p.x,   p.y  , p.z+1, new_points);
+        globalLightBFSHelperFunc(light_value, p.x,   p.y  , p.z-1, new_points);
+    }
+
+    //if new_points isnt empty, recurse
+    if (!new_points.empty())
+        globalRecursiveLightBFS(new_points);
 }
 
 
@@ -334,7 +461,6 @@ void ChunkManager::updateBlockVisEdge(Chunk& chunk1, int face1, Chunk& chunk2, i
                 chunk1.re_init_vaos = true;
             }
 
-            //is working
             if(info1.blockID!=0 && info2.blockID==0)
             {
                 chunk2.addToRenderMap(info1.blockID, face1, info2.lighting, pos1);

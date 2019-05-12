@@ -64,10 +64,8 @@ private:
 
     void visibiltyChecking();
     bool helperFunInterestingAdjacantPoint(int x, int y, int z);
-    void light_BFS_helper_func(int light_value, int x, int y, int z, std::unordered_set<glm::vec3, std::hash<glm::vec3>>& new_points);
-    void recursive_light_BFS(std::unordered_set<glm::vec3, std::hash<glm::vec3>>& points);
-
-
+    void lightBFSHelperFunc(int light_value, int x, int y, int z, std::unordered_set<glm::vec3, std::hash<glm::vec3>>& new_points);
+    void recursiveLightBFS(std::unordered_set<glm::vec3, std::hash<glm::vec3>>& points);
     void sunlightChecking();
     bool blockIsInChunk(int local_x, int local_y, int local_z);
     void visibilityCheckingAtPos(int face, int x, int y, int z, unsigned int blockID);

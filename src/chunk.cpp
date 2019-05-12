@@ -83,11 +83,11 @@ void Chunk::sunlightChecking()
                 if (east || west || north || south)
                     points.insert(glm::vec3(x,y,z));
             }
-    recursive_light_BFS(points);
+    recursiveLightBFS(points);
 }
 
 
-void Chunk::light_BFS_helper_func(int light_value, int x, int y, int z, std::unordered_set<glm::vec3, std::hash<glm::vec3>>& new_points)
+void Chunk::lightBFSHelperFunc(int light_value, int x, int y, int z, std::unordered_set<glm::vec3, std::hash<glm::vec3>>& new_points)
 {
     if(blockIsInChunk(x, y, z))
     {
@@ -104,7 +104,7 @@ void Chunk::light_BFS_helper_func(int light_value, int x, int y, int z, std::uno
 }
 
 
-void Chunk::recursive_light_BFS(std::unordered_set<glm::vec3, std::hash<glm::vec3>>& points)
+void Chunk::recursiveLightBFS(std::unordered_set<glm::vec3, std::hash<glm::vec3>>& points)
 {
     //make one iteration at every point
     std::unordered_set<glm::vec3, std::hash<glm::vec3>> new_points;
@@ -112,21 +112,18 @@ void Chunk::recursive_light_BFS(std::unordered_set<glm::vec3, std::hash<glm::vec
     {
         BlockInfo& block_info = block_array.at(p.x, p.y, p.z);
         int light_value = block_info.lighting;
-        light_BFS_helper_func(light_value, p.x+1, p.y,   p.z,   new_points);
-        light_BFS_helper_func(light_value, p.x-1, p.y,   p.z,   new_points);
-        light_BFS_helper_func(light_value, p.x,   p.y+1, p.z,   new_points);
-        light_BFS_helper_func(light_value, p.x,   p.y-1, p.z,   new_points);
-        light_BFS_helper_func(light_value, p.x,   p.y  , p.z+1, new_points);
-        light_BFS_helper_func(light_value, p.x,   p.y  , p.z-1, new_points);
+        lightBFSHelperFunc(light_value, p.x+1, p.y,   p.z,   new_points);
+        lightBFSHelperFunc(light_value, p.x-1, p.y,   p.z,   new_points);
+        lightBFSHelperFunc(light_value, p.x,   p.y+1, p.z,   new_points);
+        lightBFSHelperFunc(light_value, p.x,   p.y-1, p.z,   new_points);
+        lightBFSHelperFunc(light_value, p.x,   p.y  , p.z+1, new_points);
+        lightBFSHelperFunc(light_value, p.x,   p.y  , p.z-1, new_points);
     }
 
     //if new_points isnt empty, recurse
     if (!new_points.empty())
-        recursive_light_BFS(new_points);
+        recursiveLightBFS(new_points);
 }
-
-
-
 
 
 void Chunk::visibiltyChecking()

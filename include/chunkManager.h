@@ -40,12 +40,17 @@ public:
     int n_workers;
     WorldGenerator world_gen;
 
+    void updateLighting(glm::ivec2& pos);
+    void updateLightingChunkEdge(Chunk& chunk1, int face1, Chunk& chunk2, int face2, std::unordered_set<glm::vec3, std::hash<glm::vec3>>& points);
+    void globalLightBFSHelperFunc(int light_value, int x, int y, int z, std::unordered_set<glm::vec3, std::hash<glm::vec3>>& new_points);
+    void globalRecursiveLightBFS(std::unordered_set<glm::vec3, std::hash<glm::vec3>>& points);
     void updateVisible(int x, int y, int z);
     void updateVisible(float x, float y, float z);
     void addChunk(glm::ivec2 chunk_pos);
     void updateBlockVisEdge(Chunk& chunk1, int face1, Chunk& chunk2, int face2);
     void updateEdges(glm::ivec2& pos);
     void removeChunksOutOfRange();
+    void blockChangePropagateDownSunlight(int x, int yy, int z, std::unordered_set<glm::vec3, std::hash<glm::vec3>>& points);
 private:
 
 };
