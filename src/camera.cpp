@@ -5,7 +5,7 @@ Camera::Camera(glm::vec3& pos, glm::vec3 up, float yaw, float pitch, glm::vec3 f
     this->worldUp = up;
     this->yaw = yaw;
     this->pitch = pitch;
-    this->movementSpeed = 10.0f;
+    this->movementSpeed = 50.0f;
     this->mouseSensitivity = 0.1f;
     this->zoom = 70.0f;
     UpdateCameraVectors();

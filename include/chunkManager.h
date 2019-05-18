@@ -28,6 +28,8 @@ public:
     BlockInfo& getBlockInfo(float x, float y, float z);
     bool isInBounds(int x, int y, int z);
     bool isInBounds(float x, float y, float z);
+    Chunk& getChunk(float x, float y, float z);
+    Chunk& getChunk(int x, int y, int z);
 
     Player& player;
     int chunk_view_distance;

@@ -27,7 +27,7 @@ WorldGenerator::WorldGenerator(int seed) ://TODO seed
 }
 
 
-// Chunk WorldGenerator::generateChunk(glm::vec2 chunk_pos) 
+// Chunk WorldGenerator::generateChunk(glm::ivec2 chunk_pos) 
 // {   
 //     // generates block_array then passes it to chunk constructor for lighting and everything else
 
@@ -64,7 +64,7 @@ WorldGenerator::WorldGenerator(int seed) ://TODO seed
 
 
 
-Chunk WorldGenerator::generateChunk(glm::vec2 chunk_pos) 
+Chunk WorldGenerator::generateChunk(glm::ivec2 chunk_pos) 
 {   
     // generates block_array then passes it to chunk constructor for lighting and everything else
 
@@ -256,7 +256,7 @@ float WorldGenerator::simplexNoise3D(float x, float y, float z, float amplitude)
 
 
 
-int WorldGenerator::randomInt2D(glm::vec2 pos, int modulus) //TODO integrate seed
+int WorldGenerator::randomInt2D(glm::ivec2 pos, int modulus) //TODO integrate seed
 {
     //std::lock_guard<std::mutex> lock(rand_mutex);
     srand((((((pos.x-0)*29 + 11)*13)+17 + 27*(pos.y-0))*23));

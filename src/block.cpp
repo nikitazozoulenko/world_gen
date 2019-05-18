@@ -19,7 +19,7 @@ BlockModel::~BlockModel() //can only be done on main thread?
     {
         glDeleteVertexArrays(1, &VAOs[i]);
         glDeleteBuffers(1, &VBOs[i]);
-        glDeleteBuffers(1, &mat_VBOs[i]);
+        glDeleteBuffers(1, &pos_VBOs[i]);
         glDeleteBuffers(1, &texArrayID_VBOs[i]);
         glDeleteBuffers(1, &light_VBOs[i]);
     }

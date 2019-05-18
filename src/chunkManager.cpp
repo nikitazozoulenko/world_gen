@@ -96,7 +96,7 @@ ChunkManager::ChunkManager(Player& player) :
     player(player),
     stay_alive(true),
     n_workers(1),
-    chunk_view_distance(20)
+    chunk_view_distance(4)
 {
 
 }
@@ -221,6 +221,8 @@ void ChunkManager::changeBlock(float x, float y, float z, int blockID)
 }
 
 
+
+
 void ChunkManager::changeBlock(int x, int y, int z, int blockID)
 {
     if (isInBounds(x, y, z))
@@ -232,26 +234,18 @@ void ChunkManager::changeBlock(int x, int y, int z, int blockID)
         //CHANGE BLOCK   (and lighting, TODO)
         info.blockID=blockID;
 
-        //UPDATE LIGHTING
-        std::unordered_set<glm::vec3, std::hash<glm::vec3>> points;
-        blockChangePropagateDownSunlight(x,y,z, points);
-        points.insert(glm::vec3(x,y,z));
-        points.insert(glm::vec3(x+1,y,z));
-        points.insert(glm::vec3(x-1,y,z));
-        points.insert(glm::vec3(x,y+1,z));
-        points.insert(glm::vec3(x,y-1,z));
-        points.insert(glm::vec3(x,y,z+1));
-        points.insert(glm::vec3(x,y,z-1));
-        globalRecursiveLightBFS(points);
-
-        //last param is that you have to check the reverse sides for the block surrounding the changed block
-        updateVisible(x, y, z);
+        Chunk& chunk = getChunk(x,y,z);
+        chunk.sunlightChecking(); //3000
+        updateLighting(chunk.position);  //64000
+        updateVisible(x, y, z); //100 ish
         updateVisible(x+1, y, z);
         updateVisible(x-1, y, z);
         updateVisible(x, y+1, z);
         updateVisible(x, y-1, z);
         updateVisible(x, y, z+1);
         updateVisible(x, y, z-1);
+        chunk.visibiltyChecking(); //30000
+        updateEdges(chunk.position); //5000
     }
 }
 
@@ -275,7 +269,6 @@ void ChunkManager::blockChangePropagateDownSunlight(int x, int yy, int z, std::u
 
 BlockInfo& ChunkManager::getBlockInfo(float x, float y, float z)
 {
-    //WARNING check if in bounds outside of this function
     int x_int = std::floor(x);
     int y_int = std::floor(y);
     int z_int = std::floor(z);
@@ -291,8 +284,21 @@ BlockInfo& ChunkManager::getBlockInfo(int x, int y, int z)
     int local_x = x - chunk_x*CH_WIDTH;
     int local_y = y;
     int local_z = z - chunk_z*CH_WIDTH;
-    BlockInfo& info = chunk_map[glm::ivec2(chunk_x, chunk_z)].getBlockInfo(local_x, local_y, local_z);
+    BlockInfo& info = getChunk(x,y,z).getBlockInfo(local_x, local_y, local_z);
     return info;
+}
+
+Chunk& ChunkManager::getChunk(float x, float y, float z)
+{
+    int ch_x = std::floor(x / (float)CH_WIDTH);
+    int ch_z = std::floor(z / (float)CH_WIDTH);
+    return chunk_map[glm::ivec2(ch_x, ch_z)];
+}
+
+
+Chunk& ChunkManager::getChunk(int x, int y, int z)
+{
+    return getChunk((float)x, (float)y, (float)z);
 }
 
 

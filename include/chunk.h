@@ -14,8 +14,8 @@
 #include "shaderprogram.h"
 #include "block.h"
 
-#define CH_WIDTH 16
-#define CH_HEIGHT 64
+#define CH_WIDTH 10
+#define CH_HEIGHT 100
 
 
 class Array3D
@@ -40,7 +40,7 @@ struct RenderBlockInfo
 class Chunk
 {
 public:
-    glm::vec2 position;
+    glm::ivec2 position;
     bool re_init_vaos;
     bool first_vbo_init;
 
@@ -49,11 +49,13 @@ public:
     void removeFromRenderMap(int face, glm::vec3 pos);
 
     Chunk() = default;  //for std map
-    Chunk(glm::vec2 position, const Array3D& blocks_array);
+    Chunk(glm::ivec2 position, const Array3D& blocks_array);
     ~Chunk();
 
     void draw(Shaderprogram& shaderprogram, glm::vec3& view_dir, std::array<std::unordered_map<int, int>,6>& texArrayIDLookup);
     BlockInfo& getBlockInfo(int x, int y, int z);
+    void sunlightChecking();
+    void visibiltyChecking();
 
 private:
     Array3D block_array;
@@ -62,11 +64,9 @@ private:
     std::unordered_map<glm::vec3, RenderBlockInfo, std::hash<glm::vec3>> render_faces_map[6];
     int sunlight_level[CH_WIDTH][CH_WIDTH];
 
-    void visibiltyChecking();
     bool helperFunInterestingAdjacantPoint(int x, int y, int z);
     void lightBFSHelperFunc(int light_value, int x, int y, int z, std::unordered_set<glm::vec3, std::hash<glm::vec3>>& new_points);
     void recursiveLightBFS(std::unordered_set<glm::vec3, std::hash<glm::vec3>>& points);
-    void sunlightChecking();
     bool blockIsInChunk(int local_x, int local_y, int local_z);
     void visibilityCheckingAtPos(int face, int x, int y, int z, unsigned int blockID);
     void rebuildVBOs(std::array<std::unordered_map<int, int>,6>& );
