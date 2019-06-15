@@ -27,50 +27,16 @@ WorldGenerator::WorldGenerator(int seed) ://TODO seed
 }
 
 
-// Chunk WorldGenerator::generateChunk(glm::ivec2 chunk_pos) 
-// {   
-//     // generates block_array then passes it to chunk constructor for lighting and everything else
-
-//     //mountains
-//     std::vector<float> sizes = {170, 140, 30, 10};
-//     std::vector<float> amplitudes = {50,40, 7, 2};
-
-//     Array3D block_array;
-//     //init chunk here
-//     for (int x=0; x<CH_WIDTH; x++)
-//     {
-//         for (int z=0; z<CH_WIDTH; z++)
-//         {
-//             int perlin = (int) simplexOctaves2D(x+chunk_pos.x*CH_WIDTH, z+chunk_pos.y*CH_WIDTH, sizes, amplitudes);
-//             for (int y=0; y<CH_HEIGHT; y++)
-//             {
-//                 unsigned int blockID = 0;
-//                 if(y==perlin)
-//                     blockID = 2; //grass
-//                 else if (y<perlin && y>perlin-4)
-//                     blockID = 1; //dirt
-//                 else if (y<= perlin-4)
-//                     blockID = 3; //stone
-//                 block_array.at(x, y, z).blockID = blockID;
-//             }
-//         }
-//     }
-
-//     Chunk chunk = Chunk(chunk_pos, block_array);
-//     return chunk;
-// }
-
-
-
-
-
 Chunk WorldGenerator::generateChunk(glm::ivec2 chunk_pos) 
 {   
     // generates block_array then passes it to chunk constructor for lighting and everything else
 
-    //mountains
+    //  mountains
+    // std::vector<float> sizes = {170, 140, 30, 10};
+    // std::vector<float> amplitudes = {50,40, 7, 2};
+
     std::vector<float> sizes = {32};
-    std::vector<float> amplitudes = {100};
+    std::vector<float> amplitudes = {20};
 
     Array3D block_array;
     //init chunk here
@@ -78,14 +44,24 @@ Chunk WorldGenerator::generateChunk(glm::ivec2 chunk_pos)
     {
         for (int z=0; z<CH_WIDTH; z++)
         {
+            int perlin = (int) simplexOctaves2D(x+chunk_pos.x*CH_WIDTH, z+chunk_pos.y*CH_WIDTH, sizes, amplitudes);
             for (int y=0; y<CH_HEIGHT; y++)
             {
+                // unsigned int blockID = 0;
+                // if(y==perlin)
+                //     blockID = 2; //grass
+                // else if (y<perlin && y>perlin-4)
+                //     blockID = 1; //dirt
+                // else if (y<= perlin-4)
+                //     blockID = 3; //stone
+                // block_array.at(x, y, z).blockID = blockID;
                 unsigned int blockID = 0;
-                int perlin = (int) simplexOctaves3D(x+chunk_pos.x*CH_WIDTH, y, z+chunk_pos.y*CH_WIDTH, sizes, amplitudes);
-                if(perlin>50)
-                {
+                if(y==perlin) //temp all is dirt
                     blockID = 1;
-                }
+                else if (y<perlin && y>perlin-4)
+                    blockID = 1; 
+                else if (y<= perlin-4)
+                    blockID = 1; 
                 block_array.at(x, y, z).blockID = blockID;
             }
         }
@@ -94,6 +70,41 @@ Chunk WorldGenerator::generateChunk(glm::ivec2 chunk_pos)
     Chunk chunk = Chunk(chunk_pos, block_array);
     return chunk;
 }
+
+
+
+
+
+// Chunk WorldGenerator::generateChunk(glm::ivec2 chunk_pos) 
+// {   
+//     // generates block_array then passes it to chunk constructor for lighting and everything else
+
+//     //mountains
+//     std::vector<float> sizes = {32};
+//     std::vector<float> amplitudes = {100};
+
+//     Array3D block_array;
+//     //init chunk here
+//     for (int x=0; x<CH_WIDTH; x++)
+//     {
+//         for (int z=0; z<CH_WIDTH; z++)
+//         {
+//             for (int y=0; y<CH_HEIGHT; y++)
+//             {
+//                 unsigned int blockID = 0;
+//                 int perlin = (int) simplexOctaves3D(x+chunk_pos.x*CH_WIDTH, y, z+chunk_pos.y*CH_WIDTH, sizes, amplitudes);
+//                 if(perlin>50)
+//                 {
+//                     blockID = 1;
+//                 }
+//                 block_array.at(x, y, z).blockID = blockID;
+//             }
+//         }
+//     }
+
+//     Chunk chunk = Chunk(chunk_pos, block_array);
+//     return chunk;
+// }
 
 
 
@@ -254,13 +265,20 @@ float WorldGenerator::simplexNoise3D(float x, float y, float z, float amplitude)
 }
 
 
-
-
 int WorldGenerator::randomInt2D(glm::ivec2 pos, int modulus) //TODO integrate seed
 {
-    //std::lock_guard<std::mutex> lock(rand_mutex);
-    srand((((((pos.x-0)*29 + 11)*13)+17 + 27*(pos.y-0))*23));
-    return rand() % modulus;
+    // //std::lock_guard<std::mutex> lock(rand_mutex);
+    // int r = ((((pos.x-0)*29 + 11)*13)+17 + 27*(pos.y-0));
+    // return r % modulus;
+    int N=3;
+    glm::uvec2 v = (glm::uvec2) pos;
+    uint s=0x9E3779B9u;
+    for(int i=0; i<N; ++i) {
+        v.x += ((v.y<<4u)+0xA341316Cu)^(v.y+s)^((v.y>>5u)+0xC8013EA4u);
+        v.y += ((v.x<<4u)+0xAD90777Du)^(v.x+s)^((v.x>>5u)+0x7E95761Eu);
+        s += 0x9E3779B9u;
+    }
+    return (v.x^v.y) % modulus;
 }
 
 

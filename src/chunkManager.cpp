@@ -96,7 +96,7 @@ ChunkManager::ChunkManager(Player& player) :
     player(player),
     stay_alive(true),
     n_workers(1),
-    chunk_view_distance(4)
+    chunk_view_distance(25)
 {
 
 }
