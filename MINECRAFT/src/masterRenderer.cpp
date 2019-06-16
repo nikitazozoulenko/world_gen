@@ -2,10 +2,11 @@
 
 #include <iostream>
 
-MasterRenderer::MasterRenderer(Camera* p_camera, World* p_world) :
-    p_camera(p_camera),
-    p_world(p_world),
-    block_renderer(BlockRenderer(p_camera, p_world))
+MasterRenderer::MasterRenderer(GameWorld* p_game_world) 
+    : block_renderer(BlockRenderer(p_game_world)),
+      obj_renderer(ObjectRenderer(p_game_world)),
+      ui_renderer(UIRenderer(p_game_world)),
+      p_game_world(p_game_world)
 {
     glEnable(GL_DEPTH_TEST);
     //glEnable(GL_CULL_FACE);
@@ -22,4 +23,10 @@ void MasterRenderer::render()
 
     //blocks
     block_renderer.render();
+
+    //objects
+    obj_renderer.render();
+
+    //finally ui
+    ui_renderer.render();
 }

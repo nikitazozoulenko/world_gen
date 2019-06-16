@@ -44,7 +44,7 @@ void Shaderprogram::use()
 }
 
 
-void Shaderprogram::setUniformMat4(const char * name, glm::mat4 matrix)
+void Shaderprogram::setUniformMat4(const char * name, glm::mat4& matrix)
 {
 	//retrieve the matrix uniform locations
     unsigned int loc = glGetUniformLocation(ID, name);
@@ -52,7 +52,7 @@ void Shaderprogram::setUniformMat4(const char * name, glm::mat4 matrix)
     glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(matrix));
 }
 
-void Shaderprogram::setUniformVec3(const char * name, glm::vec3 vector)
+void Shaderprogram::setUniformVec3(const char * name, glm::vec3& vector)
 {
     unsigned int loc = glGetUniformLocation(ID, name);
     glUniform3fv(loc, 1, glm::value_ptr(vector));

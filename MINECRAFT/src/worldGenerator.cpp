@@ -265,7 +265,7 @@ float WorldGenerator::simplexNoise3D(float x, float y, float z, float amplitude)
 }
 
 
-int WorldGenerator::randomInt2D(glm::ivec2 pos, int modulus) //TODO integrate seed
+int WorldGenerator::randomInt2D(glm::ivec2 pos, int modulus) //TODO integrate seed. IS IT UNIFORM???? TEST IT
 {
     // //std::lock_guard<std::mutex> lock(rand_mutex);
     // int r = ((((pos.x-0)*29 + 11)*13)+17 + 27*(pos.y-0));

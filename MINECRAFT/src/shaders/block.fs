@@ -1,10 +1,14 @@
 #version 330 core
 out vec4 FragColor;
 
-in vec3 Normal;
+in vec3 FragPos;
 in vec2 TexCoords;
+in vec3 Normal;
+flat in int BlockTexID;
+flat in int FaceLighting;
 
-uniform vec3 color;
+uniform sampler2DArray ourTexture;
+uniform vec3 sun_dir;
 
 void main()
 {   
@@ -14,5 +18,5 @@ void main()
     vec3 cubeLight = normalize(vec3(3,2,1));
     float diff = max(dot(norm, cubeLight), dot(norm, -cubeLight));
     
-    FragColor = diff * vec4(color.x, color.y, color.z, 1.0f);
+    FragColor = diff * pow(0.9, 15-FaceLighting) * texture(ourTexture, vec3(TexCoords.x, TexCoords.y, BlockTexID));
 }

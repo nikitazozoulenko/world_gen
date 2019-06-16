@@ -19,6 +19,9 @@ BlockModel::~BlockModel() //can only be done on main thread?
     {
         glDeleteVertexArrays(1, &VAOs[i]);
         glDeleteBuffers(1, &VBOs[i]);
+        glDeleteBuffers(1, &pos_VBOs[i]);
+        glDeleteBuffers(1, &texArrayID_VBOs[i]);
+        glDeleteBuffers(1, &light_VBOs[i]);
     }
 }
 
@@ -79,7 +82,7 @@ void BlockModel::setup_VAO_VBO()
 
 void BlockModel::setup_face(std::vector<float> vertices, int side)
 {
-    // first, configure the cube's VAO and VBO
+    // first, configure the cube's VAO (and VBO)         //NOTE: all cubes have same VAO, (also same vbo? dunno)
     glGenVertexArrays(1, &(VAOs[side]));
     glGenBuffers(1, &(VBOs[side]));
 

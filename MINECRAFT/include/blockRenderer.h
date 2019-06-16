@@ -7,24 +7,28 @@
 #include <unordered_map>
 
 #include "shaderprogram.h"
-#include "world.h"
-#include "camera.h"
+#include "gameWorld.h"
 #include "block.h"
 
 class BlockRenderer
 {
 public:
-    BlockRenderer(Camera* p_camera, World* p_world);
-    void render();
-    
-private:
     Shaderprogram block_shaderprogram;
-    BlockModel block_model;
-    Camera* p_camera;
-    World* p_world;
 
+    BlockRenderer(GameWorld* p_game_world);
+    void render();
     void setProjectionMatrix();
     void setViewMatrix();
+    
+private:
+    GameWorld* p_game_world;
+
+    unsigned int block_texture;
+    std::array<std::unordered_map<int, int>,6> texArrayIDLookup;
+
+    void createModelMap();
     void createShaders();
+    void setup_block_texture();
+    void setupTexArrayIDLookup(int n_blocks);
 };
 #endif // BLOCKRENDERER_H

@@ -6,12 +6,11 @@
 static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
 
-InputHandler::InputHandler(Displaywindow* p_displaywindow, Camera* p_camera, World* p_world) :
-    p_displaywindow(p_displaywindow),
-    p_camera(p_camera),
-    p_world(p_world)
+InputHandler::InputHandler(Displaywindow* p_displaywindow, GameWorld* p_game_world)
 {
-    //callbacks
+    this->p_displaywindow = p_displaywindow;
+    this->p_game_world = p_game_world;
+
     setCallbacks();
 
     //other options
@@ -19,20 +18,18 @@ InputHandler::InputHandler(Displaywindow* p_displaywindow, Camera* p_camera, Wor
 }
 
 
-// for FPS counter, NOTE: glfwPollEvents has built in 60 fps limit.
 void InputHandler::updateDeltaTime()
 {
     float currentFrame = glfwGetTime();
     delta_time = currentFrame - last_frame_time;
     last_frame_time = currentFrame;
-    std::cout << 1/delta_time << std::endl;
+    //std::cout << 1/delta_time << std::endl;
 }
 
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 void InputHandler::processKeyboardInput()
 {   
-    std::cout << "test" << std::endl;
     GLFWwindow* window = p_displaywindow->window;
     //escape exit window
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -40,17 +37,17 @@ void InputHandler::processKeyboardInput()
 
     //movement
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        p_camera->ProcessKeyboard(Camera::FORWARD, delta_time);
+        p_game_world->player.camera.ProcessKeyboard(Camera::FORWARD, delta_time);
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        p_camera->ProcessKeyboard(Camera::BACKWARD, delta_time);
+        p_game_world->player.camera.ProcessKeyboard(Camera::BACKWARD, delta_time);
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        p_camera->ProcessKeyboard(Camera::LEFT, delta_time);
+        p_game_world->player.camera.ProcessKeyboard(Camera::LEFT, delta_time);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        p_camera->ProcessKeyboard(Camera::RIGHT, delta_time);
+        p_game_world->player.camera.ProcessKeyboard(Camera::RIGHT, delta_time);
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-        p_camera->ProcessKeyboard(Camera::UP, delta_time);
+        p_game_world->player.camera.ProcessKeyboard(Camera::UP, delta_time);
     if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
-        p_camera->ProcessKeyboard(Camera::DOWN, delta_time);
+        p_game_world->player.camera.ProcessKeyboard(Camera::DOWN, delta_time);
 }
 
 
@@ -62,6 +59,7 @@ void InputHandler::setCallbacks()
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwSetScrollCallback(window, scroll_callback);
     glfwSetCursorPosCallback(window, cursor_pos_callback);
+    glfwSetMouseButtonCallback(window, mouse_button_callback);
 }
 
 
@@ -80,7 +78,7 @@ void InputHandler::framebuffer_size_callback(GLFWwindow* window, int width, int 
 void InputHandler::scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
     InputHandler* my_input_handler = (InputHandler*)glfwGetWindowUserPointer(window);
-    my_input_handler->p_camera->ProcessMouseScroll(yoffset);
+    my_input_handler->p_game_world->player.camera.ProcessMouseScroll(yoffset);
 }
 
 
@@ -102,5 +100,28 @@ void InputHandler::cursor_pos_callback(GLFWwindow* window, double xpos, double y
     my_input_handler->mouse_x = xpos;
     my_input_handler->mouse_y = ypos;
 
-    my_input_handler->p_camera->ProcessMouseMovement(xoffset, yoffset);
+    my_input_handler->p_game_world->player.camera.ProcessMouseMovement(xoffset, yoffset);
+}
+
+
+void InputHandler::mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
+{
+    InputHandler* inp = (InputHandler*)glfwGetWindowUserPointer(window);
+    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+    {
+        if(inp->p_game_world->block_is_targeted)
+        {
+            glm::vec3 pos = inp->p_game_world->target_pos;
+            inp->p_game_world->changeBlock(pos.x, pos.y, pos.z, 0);
+        }
+    }
+
+    if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
+    {
+        if(inp->p_game_world->block_is_targeted)
+        {
+            glm::vec3 pos = inp->p_game_world->before_pos;
+            inp->p_game_world->changeBlock(pos.x, pos.y, pos.z, 3);
+        }
+    }
 }
