@@ -35,6 +35,7 @@ public:
     Chunk(glm::ivec2 position);
 
     void draw(Shaderprogram& shaderprogram, BlockModel& block_model);
+    int buildVBOs(BlockModel& block_model);
     int& getBlock(int x, int y, int z);
 private:
     glm::ivec2 position;

@@ -3,8 +3,8 @@ out vec4 FragColor;
 
 in vec3 Normal;
 in vec2 TexCoords;
+flat in int block;
 
-uniform vec3 color;
 
 void main()
 {   
@@ -14,5 +14,6 @@ void main()
     vec3 cubeLight = normalize(vec3(3,2,1));
     float diff = max(dot(norm, cubeLight), dot(norm, -cubeLight));
     
+    vec3 color = vec3(0.7, 0.7, 0.7);
     FragColor = diff * vec4(color.x, color.y, color.z, 1.0f);
 }
