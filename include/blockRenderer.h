@@ -7,24 +7,23 @@
 #include <unordered_map>
 
 #include "shaderprogram.h"
-#include "world.h"
 #include "camera.h"
-#include "block.h"
 
 class BlockRenderer
 {
 public:
-    BlockRenderer(Camera* p_camera, World* p_world);
+    BlockRenderer(Camera* p_camera);
     void render();
     
 private:
-    Shaderprogram block_shaderprogram;
-    BlockModel block_model;
+    Shaderprogram quad_shaderprogram;
+    Shaderprogram ray_shaderprogram;
     Camera* p_camera;
-    World* p_world;
+    unsigned int quadVAO;
+    unsigned int quadVBO;
+    unsigned int ray_texture;
 
-    void setProjectionMatrix();
-    void setViewMatrix();
+    void setupQuad();
     void createShaders();
 };
 #endif // BLOCKRENDERER_H

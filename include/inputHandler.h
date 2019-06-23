@@ -5,13 +5,12 @@
 #include <GLFW/glfw3.h>
 
 #include "camera.h"
-#include "world.h"
 #include "displaywindow.h"
 
 class InputHandler
 {
 public:
-    InputHandler(Displaywindow* p_displaywindow, Camera* p_camera, World* p_world);
+    InputHandler(Displaywindow* p_displaywindow, Camera* p_camera);
     void processKeyboardInput();
     void setCallbacks();
     void updateDeltaTime();
@@ -19,7 +18,6 @@ public:
 private:
     Displaywindow* p_displaywindow;
     Camera* p_camera;
-    World* p_world;
 
     float mouse_x;
     float mouse_y;

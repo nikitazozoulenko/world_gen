@@ -6,10 +6,9 @@
 static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
 
-InputHandler::InputHandler(Displaywindow* p_displaywindow, Camera* p_camera, World* p_world) :
+InputHandler::InputHandler(Displaywindow* p_displaywindow, Camera* p_camera) :
     p_displaywindow(p_displaywindow),
-    p_camera(p_camera),
-    p_world(p_world)
+    p_camera(p_camera)
 {
     //callbacks
     setCallbacks();
@@ -32,7 +31,6 @@ void InputHandler::updateDeltaTime()
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 void InputHandler::processKeyboardInput()
 {   
-    std::cout << "test" << std::endl;
     GLFWwindow* window = p_displaywindow->window;
     //escape exit window
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)

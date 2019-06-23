@@ -11,20 +11,15 @@
 #include "../include/masterRenderer.h"
 #include "../include/camera.h"
 #include "../include/inputHandler.h"
-#include "../include/world.h"
 #include "../include/misc.h"
 
 
 int main()
 {
-    Displaywindow displaywindow = Displaywindow(1280, 720, "My Window"); //note, have to change SCRWIDTH SCRHEIGHT in multiple places (masterrenderer proj matrix)
+    Displaywindow displaywindow = Displaywindow(800, 800, "My Window"); //note, have to change SCRWIDTH SCRHEIGHT in multiple places (masterrenderer proj matrix)
     Camera camera;
-    World world;
-    std::cout << "main1" << std::endl;
-    InputHandler input_handler = InputHandler(&displaywindow, &camera, &world);
-    std::cout << "main2" << std::endl;
-    MasterRenderer renderer = MasterRenderer(&camera, &world);
-    std::cout << "main3" << std::endl;
+    InputHandler input_handler = InputHandler(&displaywindow, &camera);
+    MasterRenderer renderer = MasterRenderer(&camera);
 
     // render loop
     while (!glfwWindowShouldClose(displaywindow.window))
@@ -32,7 +27,7 @@ int main()
         // // per-frame time logic
         input_handler.updateDeltaTime();
         input_handler.processKeyboardInput();
-        print_vec3("pos", camera.pos);  //should work, but atm i have 10000 fps soooo...
+        print_vec3("pos", camera.pos);
         
         // //render
         renderer.render();

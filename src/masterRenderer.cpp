@@ -2,10 +2,9 @@
 
 #include <iostream>
 
-MasterRenderer::MasterRenderer(Camera* p_camera, World* p_world) :
+MasterRenderer::MasterRenderer(Camera* p_camera) :
     p_camera(p_camera),
-    p_world(p_world),
-    block_renderer(BlockRenderer(p_camera, p_world))
+    block_renderer(BlockRenderer(p_camera))
 {
     glEnable(GL_DEPTH_TEST);
     //glEnable(GL_CULL_FACE);

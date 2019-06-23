@@ -18,13 +18,16 @@ std::string Shader::ParseShaderFile(const std::string& filename)
 	std::string output;
 	std::string line;
 
-	if (file.is_open()) {
-		while (file.good()) {
+	if (file.is_open()) 
+	{
+		while (file.good()) 
+		{
 			getline(file, line);
 			output.append(line + "\n");
 		}
 	}
-	else {
+	else 
+	{
 		std::cerr << "Unable to load shader with file name: " << filename << std::endl;
 	}
 	return output;
@@ -34,10 +37,8 @@ std::string Shader::ParseShaderFile(const std::string& filename)
 unsigned int Shader::CreateShader(const std::string& shader_string, GLenum shadertype)
 {
 	ID = glCreateShader(shadertype); //GL_VERTEX_SHADER, GL_FRA...
-
-	if (ID == 0) {
+	if (ID == 0) 
 		std::cerr << "Error: Shader creation failed" << std::endl;
-	}
 
 	const GLchar* shaderSourceStrings[1];
 	int shaderSourceStringLengths[1] = { (int) shader_string.length() };

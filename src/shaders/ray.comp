@@ -1,0 +1,138 @@
+#version 430
+layout(local_size_x = 1, local_size_y = 1) in;
+layout(rgba32f, binding = 0) uniform image2D img_output;
+
+uniform vec3 cam_pos;
+uniform vec3 cam_dir;
+uniform vec3 cam_up;
+
+
+float distToSphere(vec3 p, vec3 circle_origin, float r)
+{   // p point which distance is measured from. r is radius
+    // NOTE: does not work inside the sphere
+    return length(p-circle_origin)-r;
+}
+float distToSphere(vec3 p, vec4 sphere)
+{
+    return distToSphere(p, sphere.xyz, sphere.w);
+}
+
+
+float distToPlane(vec3 p, vec3 n, vec3 q)
+{   // p point which distance is measured from.
+    // n plane normal.
+    // q a point on the plane.
+    n = normalize(n);
+    float dist = dot(p-q, n);
+    return dist;
+}
+
+
+float distField(vec3 p)
+{   // Returns the distance to the closes object from point p
+    // in world space. This is a scalar field.
+
+    // 2 spheres, 1 plane
+    vec4 sphere0 = vec4(10,5,4,2);
+    vec4 sphere1 = vec4(7,6,6,3);
+    vec3 n0 =  vec3(0,1,0);
+    vec3 q0 = vec3(0,-2,0);
+
+    float dist = min(distToPlane(p, n0, q0), min(distToSphere(p, sphere0), distToSphere(p, sphere1)));
+    return dist;
+}
+
+
+float rayMarching(vec3 p, vec3 ray)
+{   // Ray Marching algorithm until distance bigger than MAX_DIST_MARCH,
+    // or distance less than eps or MAX_STEPS_MARCH have been taken
+    float total_dist = 0;
+    float MAX_DIST_MARCH = 1000;
+    int MAX_STEPS_MARCH = 100;
+    float eps = 0.01;
+    for (int i=0; i<MAX_STEPS_MARCH; i++)
+    {
+        float dist = distField(p);
+        total_dist += dist;
+        if (total_dist>MAX_DIST_MARCH || dist<eps)
+        {
+          break;
+        }
+        p += dist*ray;
+    }
+    return total_dist;
+}
+
+
+vec3 distFieldGradient(vec3 p)
+{   // Calculates the numerical gradient of the distance field
+    // (normal to object surface) at point p in world space.
+    vec2 eps = vec2(0.0001, 0);
+    float d = distField(p);
+    vec3 grad = d - vec3(distField(p-eps.xyy), 
+                         distField(p-eps.yxy), 
+                         distField(p-eps.yyx));
+    return normalize(grad);
+}
+
+
+float simpleLighting(vec3 p)
+{   // diffuse lighting
+    vec3 light_pos = vec3(13,13,13);
+    vec3 light_dir = normalize(light_pos - p);
+    vec3 normal = distFieldGradient(p);
+    float diffuse = dot(normal, light_dir);
+    return clamp(diffuse, 0, 1);
+}
+
+
+vec3 rotate(vec3 v, vec3 axis, float rad) 
+{   //Quaternion rotation
+    float hr = rad / 2.0;
+    float s = sin(hr);
+    vec4 q = vec4(axis * s, cos(hr));
+    vec3 q2 = q.xyz + q.xyz;
+    vec3 qq2 = q.xyz * q2;
+    vec2 qx = q.xx * q2.yz;
+    float qy = q.y * q2.z;
+    vec3 qw = q.w * q2.xyz;
+    mat3 matRot = mat3(
+        1.0 - (qq2.y + qq2.z),  qx.x - qw.z,            qx.y + qw.y,
+        qx.x + qw.z,            1.0 - (qq2.x + qq2.z),  qy - qw.x,
+        qx.y - qw.y,            qy + qw.x,              1.0 - (qq2.x + qq2.y)
+    );
+    return matRot * v;
+}
+
+
+vec3 getPerspectiveProjectionRayDirection(ivec2 pixel_coords)
+{   // Uniformly distributed points on sphere.
+    // Scale the screen coords to [-FOV/2, FOV/2]^2
+    float FOV = radians(75);
+    ivec2 im_dims = imageSize(img_output);
+    vec2 rot_amounts = (pixel_coords / vec2(im_dims) -0.5)*FOV;
+
+    vec3 ray = rotate(cam_dir, cam_up, rot_amounts.x);
+    ray = rotate(ray, cross(cam_up, cam_dir), rot_amounts.y);
+    return normalize(ray);
+}
+
+
+void main() 
+{
+    // base pixel colour for image
+    vec4 pixel = vec4(1.0, 1.0, 1.0, 1.0);
+
+    // get index in global work group i.e x,y position.
+    // Then get ray
+    ivec2 pixel_coords = ivec2(gl_GlobalInvocationID.xy);
+    vec3 ray = getPerspectiveProjectionRayDirection(pixel_coords);
+    float dist = rayMarching(cam_pos, ray);
+    vec3 p = cam_pos + ray*dist;
+    float diffuse = simpleLighting(p);
+
+    pixel = vec4(diffuse,diffuse,diffuse, 1.0);
+    
+    // output to a specific pixel in the image
+    imageStore(img_output, pixel_coords, pixel);
+}
