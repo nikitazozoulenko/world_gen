@@ -6,12 +6,12 @@ BlockRenderer::BlockRenderer(Camera* p_camera) :
 {
     setupQuad();
     createShaders();
+    setupTextures();
 
     // dimensions of the image
     int WIDTH = 800;
     int HEIGHT = 800;
     glGenTextures(1, &ray_texture);
-    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, ray_texture);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -38,6 +38,14 @@ BlockRenderer::BlockRenderer(Camera* p_camera) :
     int work_grp_inv;
     glGetIntegerv(GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS, &work_grp_inv);
     printf("max local work group invocations %i\n", work_grp_inv);
+}
+
+
+void BlockRenderer::setupTextures()
+{
+    // Block textures
+    block_texture = loadTexture("/home/nikita/Code/world_gen/resources/wallstone_texture.jpg");
+    block_normal = loadTexture("/home/nikita/Code/world_gen/resources/wallstone_normal.jpg");
 }
 
 
@@ -68,17 +76,24 @@ void BlockRenderer::render()
     unsigned int WIDTH = 800;
     unsigned int HEIGHT = 800;
     ray_shaderprogram.bind();
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, block_texture);
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, block_normal);
+
     //uniforms
     ray_shaderprogram.setUniformVec3("cam_pos", p_camera->pos);
     ray_shaderprogram.setUniformVec3("cam_dir", p_camera->front);
     ray_shaderprogram.setUniformVec3("cam_up", p_camera->up);
+    ray_shaderprogram.setUniformFloat("time", glfwGetTime());
     glDispatchCompute(WIDTH, HEIGHT, 1);
 
-    quad_shaderprogram.bind();
     glBindVertexArray(quadVAO);
-    glActiveTexture(GL_TEXTURE0);
+    quad_shaderprogram.bind();
 
+    //wait for the compute shader to be done before binding the ray texture
     glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, ray_texture);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
@@ -93,7 +108,5 @@ void BlockRenderer::createShaders()
 
     quad_shaderprogram = Shaderprogram(vertex_path, geometry_path, fragment_path, nullptr);
     ray_shaderprogram = Shaderprogram(nullptr, nullptr, nullptr, compute_path);
-    // shader configuration UNIFORMS, removed atm
-    //sunlight pos maybe for lighting
-    //block_shaderprogram.use()
+    ray_shaderprogram.unbind();
 }

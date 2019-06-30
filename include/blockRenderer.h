@@ -22,8 +22,11 @@ private:
     unsigned int quadVAO;
     unsigned int quadVBO;
     unsigned int ray_texture;
+    unsigned int block_texture;
+    unsigned int block_normal;
 
     void setupQuad();
     void createShaders();
+    void setupTextures();
 };
 #endif // BLOCKRENDERER_H
