@@ -44,8 +44,9 @@ BlockRenderer::BlockRenderer(Camera* p_camera) :
 void BlockRenderer::setupTextures()
 {
     // Block textures
-    block_texture = loadTexture("/home/nikita/Code/world_gen/resources/wallstone_texture.jpg");
     block_normal = loadTexture("/home/nikita/Code/world_gen/resources/wallstone_normal.jpg");
+    block_texture = loadTexture("/home/nikita/Code/world_gen/resources/wallstone_texture.jpg");
+    std::cout << "BLOCK " << block_texture << " " << block_normal << std::endl;
 }
 
 
@@ -75,6 +76,8 @@ void BlockRenderer::render()
 {
     unsigned int WIDTH = 800;
     unsigned int HEIGHT = 800;
+    unsigned int SPP = 16; //note: have to edit this in compute shader code also
+
     ray_shaderprogram.bind();
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, block_texture);
@@ -86,7 +89,7 @@ void BlockRenderer::render()
     ray_shaderprogram.setUniformVec3("cam_dir", p_camera->front);
     ray_shaderprogram.setUniformVec3("cam_up", p_camera->up);
     ray_shaderprogram.setUniformFloat("time", glfwGetTime());
-    glDispatchCompute(WIDTH, HEIGHT, 1);
+    glDispatchCompute(WIDTH, HEIGHT, SPP);
 
     glBindVertexArray(quadVAO);
     quad_shaderprogram.bind();
@@ -108,5 +111,10 @@ void BlockRenderer::createShaders()
 
     quad_shaderprogram = Shaderprogram(vertex_path, geometry_path, fragment_path, nullptr);
     ray_shaderprogram = Shaderprogram(nullptr, nullptr, nullptr, compute_path);
+    
+    // sampler2D for additional textures
+    ray_shaderprogram.bind();
+    ray_shaderprogram.setUniformInt("texture_map", GL_TEXTURE1);
+    ray_shaderprogram.setUniformInt("normal_map", GL_TEXTURE2);
     ray_shaderprogram.unbind();
 }

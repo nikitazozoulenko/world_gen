@@ -1,0 +1,248 @@
+#version 430
+layout(local_size_x = 1, local_size_y = 1) in;
+layout(rgba32f, binding = 0) uniform image2D img_output;
+
+layout(binding=1) uniform sampler2D texture_map;
+layout(binding=2) uniform sampler2D normal_map;
+
+uniform vec3 cam_pos;
+uniform vec3 cam_dir;
+uniform vec3 cam_up;
+uniform float time;
+
+#define N_OBJECTS 4
+#define MAX_DIST_MARCH 1000
+#define MAX_STEPS_MARCH 200
+
+#define PI 3.14159265359
+
+struct Object           // Specify the scene with object primitives and their material properties
+{
+    int type;           // -1:no obj hit, 0:sphere, 1:box, 2:plane
+    int texID;          // which texture to use
+
+    vec3 center;        // also a point which lies on the plane
+    vec3 size;          // box side length
+    vec3 plane_normal;  // plane normal
+    float r;            // circle radius
+};
+
+
+struct DistObjPair
+{
+    float dist;
+    Object obj;
+};
+
+
+float cubeSDF(vec3 p, vec3 cube_middle, vec3 size) {
+    // If d.x < 0, then -1 < p.x < 1, and same logic applies to p.y, p.z
+    // So if all components of d are negative, then p is inside the unit cube
+    vec3 d = abs(cube_middle-p) - size;
+    
+    // Assuming p is inside the cube, how far is it from the surface?
+    // Result will be negative or zero.
+    float insideDistance = min(max(d.x, max(d.y, d.z)), 0.0);
+    
+    // Assuming p is outside the cube, how far is it from the surface?
+    // Result will be positive or zero.
+    float outsideDistance = length(max(d, 0.0));
+    
+    return insideDistance + outsideDistance;
+}
+
+
+float sphereSDF(vec3 p, vec3 circle_origin, float r)
+{   // p point which distance is measured from. r is radius
+    // NOTE: may not work inside the sphere
+    return length(p-circle_origin)-r;
+}
+
+
+float planeSDF(vec3 p, vec3 q, vec3 n)
+{   // p point which distance is measured from.
+    // n plane normal.
+    // q a point on the plane.
+    n = normalize(n);
+    float dist = dot(p-q, n);
+    return dist;
+}
+
+
+DistObjPair SDF(vec3 p, Object objects[N_OBJECTS])
+{   // Returns the distance to the closes object from point p in world space,
+    // as well as the object hit
+    float min_dist = MAX_DIST_MARCH;
+    Object min_obj;
+    min_obj.type=-1;
+    for (int i=0; i<N_OBJECTS; i++)
+    {
+        // get the distance to the object
+        float dist;
+        Object obj = objects[i];  //1:sphere, 2:box, 3:plane
+        if (obj.type==0) dist = sphereSDF(p, obj.center, obj.r);
+        else if (obj.type==1) dist = cubeSDF(p, obj.center, obj.size);
+        else if (obj.type==2) dist = planeSDF(p, obj.center, obj.plane_normal);
+
+        // calculate min(dist, min_dist) and remember object
+        if (min_dist > dist)
+        {
+            min_dist = dist;
+            min_obj = obj;
+        }
+    }
+    return DistObjPair(min_dist, min_obj);
+}
+
+
+DistObjPair rayMarching(vec3 p, vec3 ray, Object objects[N_OBJECTS])
+{   // Ray Marching algorithm until distance bigger than MAX_DIST_MARCH,
+    // or distance less than eps or MAX_STEPS_MARCH have been taken
+    float eps = 0.001;
+    float total_dist = eps;
+    Object closest_obj;
+    closest_obj.type=-1;
+    for (int i=0; i<MAX_STEPS_MARCH; i++)
+    {
+        DistObjPair dist_obj_pair = SDF(p + total_dist*ray, objects);
+        total_dist += dist_obj_pair.dist;
+        if (eps>dist_obj_pair.dist)
+        {
+            closest_obj = dist_obj_pair.obj;
+            break;
+        }
+        if (total_dist>=MAX_DIST_MARCH)
+        {
+          break;
+        }
+    }
+    return DistObjPair(total_dist, closest_obj);
+}
+            
+
+vec3 SDFNumericalGradient(vec3 p, Object objects[N_OBJECTS])
+{   // Calculates the numerical gradient of the distance field
+    // (normal to object surface) at point p in world space.
+    vec2 eps = vec2(0.0001, 0);
+    vec3 grad = vec3(SDF(p+eps.xyy, objects).dist - SDF(p-eps.xyy, objects).dist, 
+                     SDF(p+eps.yxy, objects).dist - SDF(p-eps.yxy, objects).dist, 
+                     SDF(p+eps.yyx, objects).dist - SDF(p-eps.yyx, objects).dist);
+    return normalize(grad);
+}
+
+
+vec2 uvMapping(vec3 p, Object hit_obj)
+{   // P point in world space on the surface of sphere
+    if (hit_obj.type==0)
+    {   // Sphere
+        vec3 local_pos = p - hit_obj.center;
+        float r = hit_obj.r;
+        float u = 0.5 + atan(local_pos.y, local_pos.x) / (2*PI);
+        float v = 0.5 - asin(local_pos.z/r) / PI;
+        return vec2(u,v);
+    } else if(hit_obj.type==1)
+    {   // Box
+        return(vec2(0.2,0.2));
+    } else if(hit_obj.type==2)
+    {   // Plane. Project 0 on plane. then get basis for plane and project
+        vec3 normal = hit_obj.plane_normal;
+        vec3 q = dot(hit_obj.center, normal)*normal;
+        vec3 f1 = normalize(hit_obj.center-q);
+        vec3 f2 = cross(normal, f1);
+        vec2 uv = vec2(dot(f1, p-hit_obj.center), dot(f2,p-hit_obj.center));
+        return uv;
+    }else
+    {   //no object hit
+        return vec2(0,0);
+    }
+
+}
+
+
+vec4 simpleLighting(vec3 p, Object hit_obj, Object objects[N_OBJECTS])
+{   // p is point in world space (surface or havnt found anything)
+    // diffuse lighting
+    vec3 light_pos = vec3(-5,20,0);
+    vec3 light_dir = normalize(light_pos - p);
+    vec3 normal = SDFNumericalGradient(p, objects);
+    vec2 uv = uvMapping(p, hit_obj);
+    vec3 diffuse = texture(texture_map, uv).xyz;
+    float phong = clamp(dot(normal, light_dir), 0., 1.);
+    // diffuse = vec3(phong, phong, phong);
+    diffuse *= phong;
+    if (hit_obj.type==-1)
+        diffuse = vec3(1,0,0);
+    // SHADOWS
+    if (hit_obj.type!=-1)
+    {   // raymarch from point p on surface in the direction of the light source. if it intersects before light, then shadow
+        float eps = 0.002;
+        DistObjPair dist_obj_pair = rayMarching(p+normal*eps, light_dir, objects);
+        float d = dist_obj_pair.dist;
+        if(d<length(light_pos-p))
+            diffuse *= 0.1;
+    }
+    vec4 pixel = vec4(diffuse.xyz, 1.0);
+    return pixel;
+}
+
+
+vec3 rotate(vec3 v, vec3 axis, float rad) 
+{   //Quaternion rotation
+    float hr = rad / 2.0;
+    float s = sin(hr);
+    vec4 q = vec4(axis * s, cos(hr));
+    vec3 q2 = q.xyz + q.xyz;
+    vec3 qq2 = q.xyz * q2;
+    vec2 qx = q.xx * q2.yz;
+    float qy = q.y * q2.z;
+    vec3 qw = q.w * q2.xyz;
+    mat3 matRot = mat3(
+        1.0 - (qq2.y + qq2.z),  qx.x - qw.z,            qx.y + qw.y,
+        qx.x + qw.z,            1.0 - (qq2.x + qq2.z),  qy - qw.x,
+        qx.y - qw.y,            qy + qw.x,              1.0 - (qq2.x + qq2.y)
+    );
+    return matRot * v;
+}
+
+
+vec3 getPerspectiveProjectionRayDirection(ivec2 pixel_coords)
+{   // Uniformly distributed points on sphere.
+    // Scale the screen coords to [-FOV/2, FOV/2]^2
+    float FOV = radians(75);
+    ivec2 im_dims = imageSize(img_output);
+    vec2 rot_amounts = (pixel_coords / vec2(im_dims) -0.5)*FOV;
+    vec3 ray = rotate(cam_dir, cam_up, rot_amounts.x);
+    ray = rotate(ray, cross(cam_up, cam_dir), rot_amounts.y);
+    return normalize(ray);
+}
+
+
+void main() 
+{   // Populate scene with objects
+    Object objects[N_OBJECTS];
+    objects[0].type=0;
+    objects[0].center=vec3(10, 7, 3*sin(time));
+    objects[0].r=3.0;
+    objects[1].type=0;
+    objects[1].center=vec3(5, 4, 5);
+    objects[1].r=2.0;
+    objects[2].type=1;
+    objects[2].center=vec3(20, 5, -3);
+    objects[2].size=vec3(2,4,7);
+    objects[3].type=2;
+    objects[3].center=vec3(0, -2, 0);
+    objects[3].plane_normal=vec3(0,1,0);
+
+    // get index in global work group i.e x,y position.
+    // Then get ray and cast the ray
+    ivec2 pixel_coords = ivec2(gl_GlobalInvocationID.xy);
+    vec3 ray = getPerspectiveProjectionRayDirection(pixel_coords);
+    DistObjPair dist_obj_pair = rayMarching(cam_pos, ray, objects);
+    float dist = dist_obj_pair.dist;
+    Object hit_obj = dist_obj_pair.obj;
+    vec3 p = cam_pos + ray*dist;
+    vec4 pixel = simpleLighting(p, hit_obj, objects);
+    
+    // output to a specific pixel in the image
+    imageStore(img_output, pixel_coords, pixel);
+}

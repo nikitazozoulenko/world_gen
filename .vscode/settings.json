@@ -60,6 +60,11 @@
         "condition_variable": "cpp",
         "mutex": "cpp",
         "valarray": "cpp",
-        "glad.h": "c"
+        "glad.h": "c",
+        "bit": "cpp",
+        "map": "cpp",
+        "hash_map": "cpp",
+        "hash_set": "cpp",
+        "slist": "cpp"
     }
 }
