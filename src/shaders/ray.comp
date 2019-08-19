@@ -10,30 +10,55 @@ layout(binding=2) uniform sampler2D normal_map;
 uniform vec3 cam_pos;
 uniform vec3 cam_dir;
 uniform vec3 cam_up;
-uniform float time;
+uniform float game_time;
 
 shared vec3 pixel_samples[SSP_SIZE];
 
-#define MAX_DEPTH 100000
+#define MAX_DIST 100000
+#define MIN_DIST 0.0
+#define N_BOUNCES 1
 #define PI 3.14159265359
 
 struct Object           
 {
     int type;           // -1:no obj hit, 0:sphere, 1:box, 2:plane
-    int texID;          // which texture to use
-
+    vec3 color;         // The color
     vec3 center;        // also a point which lies on the plane
-    vec3 size;          // box side length
-    vec3 plane_normal;  // plane normal
     float r;            // circle radius
 };
 
 
-struct DistObjPair
-{
-    float dist;
-    Object obj;
+struct HitRecord
+{   
+    float dist; //distance to point hit
+    vec3 p;     //where it was hit
+    vec3 normal;
+    Object hit_obj;
 };
+
+
+uint randUInt(inout uint rand_state)
+{   // wang_hash uint32_t
+    // Uniform [0, MAX_UINT32_T]
+    uint seed = int(rand_state);
+    rand_state += 1;
+
+    seed = (seed ^ 61) ^ (seed >> 16);
+    seed *= 9;
+    seed = seed ^ (seed >> 4);
+    seed *= 0x27d4eb2d;
+    seed = seed ^ (seed >> 15);
+    return seed;
+}
+
+
+float randFloat(inout uint rand_state)
+{   // wang_hash uint32_t
+    // Uniform in range [0.0, 1.0]
+    double n = randUInt(rand_state);
+    uint MAX = -1;
+    return float(n/MAX);
+}
 
 
 vec3 rotate(vec3 v, vec3 axis, float rad) 
@@ -66,66 +91,123 @@ vec3 getPerspectiveProjectionRayDirection(ivec2 pixel_coords)
     return normalize(ray);
 }
 
-float intersectSphere(vec3 ray_dir, vec3 pos, vec3 center, float r)
-{   //returns dist to sphere. if dist==-1 then no hit.
-    vec3 v = center-pos;
-    float dist = -1;
-    if (dot(v, ray_dir)>0)
-    {   // in front of ray
-        vec3 proj = v-dot(v, ray_dir)*ray_dir;
-        float len = length(proj);
-        if (len<=r)
-        {   //intersection possible
-            vec3 intersection = center - proj - (ray_dir*sqrt(r*r-len*len));
-            dist = distance(intersection, pos);
+
+HitRecord sphereIntersect(vec3 ray_dir, vec3 ray_pos, float t_min, float t_max, Object sphere) 
+{
+    HitRecord hit_record;
+    hit_record.dist=MAX_DIST;
+    vec3 oc = ray_pos - sphere.center;
+    float a = dot(ray_dir, ray_dir);
+    float b = dot(oc, ray_dir);
+    float c = dot(oc, oc) - (sphere.r * sphere.r);
+    float discriminant = b*b-a*c;
+    if (discriminant>0)
+    {
+        float dist = (-b-sqrt(b*b-a*c))/a;
+        bool hit = false;
+        if (dist<t_max && dist>t_min){
+            hit=true;
+        } else{
+            dist = (-b+sqrt(b*b-a*c))/a;
+            if (dist<t_max && dist>t_min)
+                hit=true;
+        }
+        
+        if(hit){
+            hit_record.dist = dist;
+            hit_record.p = ray_pos + ray_dir*dist;
+            hit_record.normal = normalize(hit_record.p - sphere.center);
+            hit_record.hit_obj = sphere;
         }
     }
-    return dist;
+    return hit_record;
 }
 
-float intersectRay(vec3 ray_dir, vec3 pos)
-{
-    // Only one object currently, one sphere
-    vec3 center = vec3(5,5,5);
-    float r = 1.0;
-    float dist = intersectSphere(ray_dir, pos, center, r);
-    return dist;
+
+HitRecord intersectRay(vec3 ray_dir, vec3 ray_pos, inout uint rand_state)
+{   
+    const int N_OBJ = 2;
+    Object spheres[N_OBJ];
+    //sphere0
+    spheres[0].color = vec3(0.5, 0.5, 0);
+    spheres[0].center = vec3(0, 4.5, 0);
+    spheres[0].r = 5.0;
+    //sphere1 plane ish
+    spheres[1].color = vec3(1.0, 1.0, 1.0);
+    spheres[1].center = vec3(0,-1000, 0);
+    spheres[1].r = 1000;
+    // //sphere2
+    // spheres[2].color = vec3(0.0, 0.0, 1.0);
+    // spheres[2].center = vec3(25,8,25);
+    // spheres[2].r = 7.0;
+
+
+    HitRecord min_hit;
+    min_hit.dist=MAX_DIST;
+    float min_dist = MAX_DIST;
+    for (int i=0; i<N_OBJ; i++){
+        HitRecord hit_record = sphereIntersect(ray_dir, ray_pos, MIN_DIST, MAX_DIST, spheres[i]);
+        if (min_dist>hit_record.dist){
+            min_dist = hit_record.dist;
+            min_hit = hit_record;
+        }
+    }
+    return min_hit;
+}
+
+
+vec3 lambertianReflectance(vec3 n, vec3 p, inout uint rand_state)
+{   
+    float theta = 2*PI*randFloat(rand_state);
+    float phi = PI*randFloat(rand_state);
+    vec3 v = vec3(sin(theta)*sin(phi), sin(theta)*cos(phi), cos(theta));
+    return normalize(n+v);
+}
+
+
+vec3 pathTrace(vec3 ray_dir, vec3 ray_pos, inout uint rand_state) //do all the bounces
+{   
+    int hit_counter=0;
+    for(int i=0; i<1+N_BOUNCES; i++)
+    {
+        HitRecord hit_record = intersectRay(ray_dir, cam_pos, rand_state);
+        if(hit_record.dist>0 && hit_record.dist!=MAX_DIST){
+            ray_pos = hit_record.p;
+            ray_dir = lambertianReflectance(hit_record.normal, ray_pos, rand_state);
+            hit_counter +=1;
+            continue;
+        } else{
+            break;
+        }
+    }
+    float t = (ray_dir.y+1)/2.0;
+    t=0;
+    vec3 pixel = (1.0-t)*vec3(1,1,1) + t*vec3(0.5,0.7,1.0);
+    return pow(0.5, hit_counter) * pixel;
 }
 
 
 void main()
-{
-    // get index in global work group i.e x,y position.
-    // Then get ray and cast the ray
+{   
+    // Init starting ray. State for PRNG
     ivec2 pixel_coords = ivec2(gl_GlobalInvocationID.xy);
     vec3 ray_dir = getPerspectiveProjectionRayDirection(pixel_coords);
+    uint rand_state = int(pixel_coords.x + 800*pixel_coords.y + 800*800*gl_GlobalInvocationID.z+int(game_time*800*800));
 
-    float dist = intersectRay(ray_dir, cam_pos);
-    float diff = 0;
-    if(dist>=0)
-    {
-        diff = 1;
-    }
+    vec3 pixel = pathTrace(ray_dir, cam_pos, rand_state);
 
-    vec3 pixel = vec3(diff, diff, diff);
-    uint sample_id = gl_LocalInvocationID.z;
-    pixel_samples[sample_id] = pixel;
-
-    //make sure all samples have been run
+    //Store sample
+    pixel_samples[gl_LocalInvocationID.z] = pixel;
     memoryBarrierShared();
     barrier();
     
     //only write once per pixel location
-    if(gl_LocalInvocationID.z==0)
-    {   
+    if(gl_LocalInvocationID.z==0){   
         vec3 avg_pixel = vec3(0,0,0);
-        for(int i=0; i<SSP_SIZE; i++)
-        {
+        for(int i=0; i<SSP_SIZE; i++){
             avg_pixel += pixel_samples[i] / SSP_SIZE;
         }
         // output to a specific pixel in the image
-        imageStore(img_output, pixel_coords, vec4(avg_pixel.xyz, 1));
+        imageStore(img_output, pixel_coords, vec4(sqrt(avg_pixel.xyz), 1));
     }
-
-    
 }

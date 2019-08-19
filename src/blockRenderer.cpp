@@ -9,8 +9,8 @@ BlockRenderer::BlockRenderer(Camera* p_camera) :
     setupTextures();
 
     // dimensions of the image
-    int WIDTH = 800;
-    int HEIGHT = 800;
+    int WIDTH = 512;
+    int HEIGHT = 512;
     glGenTextures(1, &ray_texture);
     glBindTexture(GL_TEXTURE_2D, ray_texture);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -74,8 +74,8 @@ void BlockRenderer::setupQuad()
 
 void BlockRenderer::render()
 {
-    unsigned int WIDTH = 800;
-    unsigned int HEIGHT = 800;
+    unsigned int WIDTH = 512;
+    unsigned int HEIGHT = 512;
     unsigned int SPP = 16; //note: have to edit this in compute shader code also
 
     ray_shaderprogram.bind();
@@ -88,7 +88,7 @@ void BlockRenderer::render()
     ray_shaderprogram.setUniformVec3("cam_pos", p_camera->pos);
     ray_shaderprogram.setUniformVec3("cam_dir", p_camera->front);
     ray_shaderprogram.setUniformVec3("cam_up", p_camera->up);
-    ray_shaderprogram.setUniformFloat("time", glfwGetTime());
+    ray_shaderprogram.setUniformFloat("game_time", glfwGetTime());
     glDispatchCompute(WIDTH, HEIGHT, SPP);
 
     glBindVertexArray(quadVAO);

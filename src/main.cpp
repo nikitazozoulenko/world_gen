@@ -16,7 +16,7 @@
 
 int main()
 {
-    Displaywindow displaywindow = Displaywindow(800, 800, "My Window"); //note, have to change SCRWIDTH SCRHEIGHT in multiple places (masterrenderer proj matrix)
+    Displaywindow displaywindow = Displaywindow(512, 512, "Path Tracer"); //note, have to change SCRWIDTH SCRHEIGHT in multiple places (masterrenderer proj matrix)
     Camera camera;
     InputHandler input_handler = InputHandler(&displaywindow, &camera);
     MasterRenderer renderer = MasterRenderer(&camera);
