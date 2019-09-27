@@ -2,23 +2,21 @@
 #include "../include/misc.h"
 
 BlockRenderer::BlockRenderer(Camera* p_camera) :
-    p_camera(p_camera)
+    p_camera(p_camera),
+    image_width(512),
+    image_height(512)
 {
     setupQuad();
     createShaders();
-    setupTextures();
 
-    // dimensions of the image
-    int WIDTH = 512;
-    int HEIGHT = 512;
-    glGenTextures(1, &ray_texture);
-    glBindTexture(GL_TEXTURE_2D, ray_texture);
+    glGenTextures(1, &comp_texture);
+    glBindTexture(GL_TEXTURE_2D, comp_texture);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, WIDTH, HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
-    glBindImageTexture(0, ray_texture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, image_width, image_height, 0, GL_RGBA, GL_FLOAT, NULL);
+    glBindImageTexture(0, comp_texture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
 
     //////////////////////////////////////////////////////////////
     // Work group sizes
@@ -38,15 +36,6 @@ BlockRenderer::BlockRenderer(Camera* p_camera) :
     int work_grp_inv;
     glGetIntegerv(GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS, &work_grp_inv);
     printf("max local work group invocations %i\n", work_grp_inv);
-}
-
-
-void BlockRenderer::setupTextures()
-{
-    // Block textures
-    block_normal = loadTexture("/home/nikita/Code/world_gen/resources/wallstone_normal.jpg");
-    block_texture = loadTexture("/home/nikita/Code/world_gen/resources/wallstone_texture.jpg");
-    std::cout << "BLOCK " << block_texture << " " << block_normal << std::endl;
 }
 
 
@@ -74,30 +63,22 @@ void BlockRenderer::setupQuad()
 
 void BlockRenderer::render()
 {
-    unsigned int WIDTH = 512;
-    unsigned int HEIGHT = 512;
-    unsigned int SPP = 16; //note: have to edit this in compute shader code also
-
-    ray_shaderprogram.bind();
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, block_texture);
-    glActiveTexture(GL_TEXTURE2);
-    glBindTexture(GL_TEXTURE_2D, block_normal);
-
     //uniforms
-    ray_shaderprogram.setUniformVec3("cam_pos", p_camera->pos);
-    ray_shaderprogram.setUniformVec3("cam_dir", p_camera->front);
-    ray_shaderprogram.setUniformVec3("cam_up", p_camera->up);
-    ray_shaderprogram.setUniformFloat("game_time", glfwGetTime());
-    glDispatchCompute(WIDTH, HEIGHT, SPP);
-
-    glBindVertexArray(quadVAO);
     quad_shaderprogram.bind();
+    quad_shaderprogram.setUniformFloat("game_time", glfwGetTime());
+    comp_shaderprogram.bind();
+    comp_shaderprogram.setUniformFloat("game_time", glfwGetTime());
 
-    //wait for the compute shader to be done before binding the ray texture
+    //compute shader
+    glDispatchCompute(image_width, image_height, 1);
+    //wait for the compute shader to be done before binding the comp texture
     glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+
+    //render
+    quad_shaderprogram.bind();
+    glBindVertexArray(quadVAO);
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, ray_texture);
+    glBindTexture(GL_TEXTURE_2D, comp_texture);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
@@ -107,14 +88,8 @@ void BlockRenderer::createShaders()
     const char * vertex_path =   "/home/nikita/Code/world_gen/src/shaders/quad.vert";
     const char * geometry_path = nullptr;
     const char * fragment_path = "/home/nikita/Code/world_gen/src/shaders/quad.frag";
-    const char * compute_path =  "/home/nikita/Code/world_gen/src/shaders/ray.comp";
+    const char * compute_path =  "/home/nikita/Code/world_gen/src/shaders/generation.comp";
 
     quad_shaderprogram = Shaderprogram(vertex_path, geometry_path, fragment_path, nullptr);
-    ray_shaderprogram = Shaderprogram(nullptr, nullptr, nullptr, compute_path);
-    
-    // sampler2D for additional textures
-    ray_shaderprogram.bind();
-    ray_shaderprogram.setUniformInt("texture_map", GL_TEXTURE1);
-    ray_shaderprogram.setUniformInt("normal_map", GL_TEXTURE2);
-    ray_shaderprogram.unbind();
+    comp_shaderprogram = Shaderprogram(nullptr, nullptr, nullptr, compute_path);
 }

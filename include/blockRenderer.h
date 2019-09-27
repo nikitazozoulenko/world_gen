@@ -17,16 +17,15 @@ public:
     
 private:
     Shaderprogram quad_shaderprogram;
-    Shaderprogram ray_shaderprogram;
+    Shaderprogram comp_shaderprogram;
     Camera* p_camera;
     unsigned int quadVAO;
     unsigned int quadVBO;
-    unsigned int ray_texture;
-    unsigned int block_texture;
-    unsigned int block_normal;
+    unsigned int comp_texture;
+    unsigned int image_width;
+    unsigned int image_height;
 
     void setupQuad();
     void createShaders();
-    void setupTextures();
 };
 #endif // BLOCKRENDERER_H
