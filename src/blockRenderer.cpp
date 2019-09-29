@@ -68,6 +68,7 @@ void BlockRenderer::render()
     quad_shaderprogram.setUniformFloat("game_time", glfwGetTime());
     comp_shaderprogram.bind();
     comp_shaderprogram.setUniformFloat("game_time", glfwGetTime());
+    comp_shaderprogram.setUniformVec3("cam_pos", p_camera->pos);
 
     //compute shader
     glDispatchCompute(image_width, image_height, 1);
