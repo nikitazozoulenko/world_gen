@@ -3,8 +3,8 @@
 
 BlockRenderer::BlockRenderer(Camera* p_camera) :
     p_camera(p_camera),
-    image_width(512),
-    image_height(512)
+    image_width(256),
+    image_height(256)
 {
     setupQuad();
     createShaders();

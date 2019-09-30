@@ -6,7 +6,7 @@ uniform float game_time;
 uniform vec3 cam_pos;
 
 #define PI 3.14159265359
-#define N_OCTAVES 1
+#define N_OCTAVES 3
 
 
 uint wang_hash(uint seed)
@@ -34,6 +34,15 @@ uint ivec2ToUIntPRNG(ivec2 v)
     uint x = uint(v.x);
     uint y = uint(v.y);
     return wang_hash(wang_hash(x)+y);
+}
+
+
+uint ivec3ToUIntPRNG(ivec3 v)
+{
+    uint x = uint(v.x);
+    uint y = uint(v.y);
+    uint z = uint(v.z);
+    return wang_hash(wang_hash(wang_hash(x)+y)+z);
 }
 
 
@@ -115,6 +124,82 @@ float simplexNoise2D(float x, float y, float amplitude) //"world" x and y, can b
 }
 
 
+float simplexNoise3D(float x, float y, float z, float amplitude) //"world" x, y and z, can be scaled
+{
+    float noise = 0.0f;
+
+    //scewed coordinates 
+    float NNN = 3.0f;
+    float F = (sqrt(NNN+1)-1)/NNN;
+    float G = (1-1/sqrt(NNN+1))/NNN;
+    float x_scew = x + (x+y+z)*F;
+    float y_scew = y + (x+y+z)*F;
+    float z_scew = z + (x+y+z)*F;
+
+    //which hypercube coordinates 
+    float x_b = floor(x_scew);
+    float y_b = floor(y_scew);
+    float z_b = floor(z_scew);
+
+    //internal coordinates
+    float x_i = x_scew-x_b;
+    float y_i = y_scew-y_b;
+    float z_i = z_scew-z_b;
+
+    //order for edge traversal
+    const int N_CORNERS = 4;
+    ivec3 corners[N_CORNERS];
+    corners[0] = ivec3(x_b, y_b, z_b);
+    corners[1];
+    corners[2];
+    corners[3] = corners[0] + ivec3(1, 1, 1);
+    if(x_i > y_i && x_i > z_i)
+    {
+        corners[1] = corners[0] + ivec3(1, 0, 0);
+        if(y_i > z_i)
+            corners[2] = corners[0] + ivec3(1, 1, 0);
+        else
+            corners[2] = corners[0] + ivec3(1, 0, 1);
+    }
+    else if(y_i > x_i && y_i > z_i)
+    {
+        corners[1] = corners[0] + ivec3(0, 1, 0);
+        if(x_i > z_i)
+            corners[2] = corners[0] + ivec3(1, 1, 0);
+        else
+            corners[2] = corners[0] + ivec3(0, 1, 1);
+    }
+    else if(z_i > x_i && z_i > y_i)
+    {
+        corners[1] = corners[0] + ivec3(0, 0, 1);
+        if(x_i > y_i)
+            corners[2] = corners[0] + ivec3(1, 0, 1);
+        else
+            corners[2] = corners[0] + ivec3(0, 1, 1);
+    }
+
+    //traverse every edge
+    for(int i=0; i<N_CORNERS; i++)
+    {
+        ivec3 vert = corners[i];
+        float factor = (vert.x+vert.y+vert.z)*G;
+        float x_n = x-(vert.x - factor);
+        float y_n = y-(vert.y - factor);
+        float z_n = z-(vert.z - factor);
+
+        float M = max(0, 0.5 - x_n*x_n - y_n*y_n - z_n*z_n);
+        uint PRNG = ivec3ToUIntPRNG(vert);
+        float f0 = randFloatAccumulate(PRNG)*2-1;
+        float f1 = randFloatAccumulate(PRNG)*2-1;
+        float f2 = randFloatAccumulate(PRNG)*2-1;
+        noise += M*M*M*M * dot(vec3(f0, f1, f2), vec3(x_n, y_n, z_n));
+    }
+
+    //scale to [0, amplitude]
+    return (32.0f * noise +1.0f)/2.0f * amplitude;
+}
+
+
 
 float simplexOctaves2D(float world_x, float world_z, float sizes[N_OCTAVES], float amplitudes[N_OCTAVES])
 {
@@ -125,11 +210,21 @@ float simplexOctaves2D(float world_x, float world_z, float sizes[N_OCTAVES], flo
         float amplitude = amplitudes[i];
         noise += simplexNoise2D(world_x/size, world_z/size, amplitude);
     }
-    // //bounds checking
-    // if (noise > CH_HEIGHT-1)
-    //     noise = CH_HEIGHT-1;
-    // else if (noise < 0)
-    //     noise = 0;
+    // No bounds checking
+    return noise;
+}
+
+
+float simplexOctaves3D(float world_x, float world_y, float world_z, float sizes[N_OCTAVES], float amplitudes[N_OCTAVES])
+{
+    float noise = 0.0f;
+    for (int i=0; i<N_OCTAVES; i++)
+    {
+        float size = sizes[i];
+        float amplitude = amplitudes[i];
+        noise += simplexNoise3D(world_x/size, world_y/size, world_z/size, amplitude);
+    }
+    // No bounds checking
     return noise;
 }
 
@@ -141,9 +236,13 @@ void main()
 
     float sizes[N_OCTAVES];
     float amplitudes[N_OCTAVES];
-    sizes[0] = 2.0;
-    amplitudes[0] = 1.0;
-    float noise = simplexOctaves2D(x+cam_pos.z, y+cam_pos.x, sizes, amplitudes);
+    sizes[0] = 32.0;
+    sizes[1] = 64.0;
+    sizes[2] = 128.0;
+    amplitudes[0] = 0.15;
+    amplitudes[1] = 0.35;
+    amplitudes[2] = 0.5;
+    float noise = simplexOctaves3D(x+cam_pos.z, y+cam_pos.x, 30*game_time, sizes, amplitudes);
 
     //Store sample
     imageStore(img_output, ivec2(x,y), vec4(noise, noise, noise, 1));
