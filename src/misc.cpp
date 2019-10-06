@@ -100,9 +100,16 @@ unsigned int loadTextureArray(char const * path, int img_width, int n_blocks)
 
 //----print functions for easier debugging
 //-------------------------------------------------------
+
+void print_vec4(std::string text, glm::vec4 vec)
+{
+    std::cout << text << " x:" << vec.x <<" y:" << vec.y << " z:" << vec.z << " w:" << vec.w << std::endl;
+}
+
+
 void print_vec3(std::string text, glm::vec3 vec)
 {
-    std::cout << text << " x:" << vec.x <<" y:" << vec.y << " z" << vec.z << std::endl;
+    std::cout << text << " x:" << vec.x <<" y:" << vec.y << " z:" << vec.z << std::endl;
 }
 
 
@@ -110,6 +117,13 @@ void print_vec2(std::string text, glm::vec2 vec)
 {
     std::cout << text << " x:" << vec.x <<" y:" << vec.y << std::endl;
 }
+
+
+void print_float(std::string text, float val)
+{
+    std::cout << text << val << std::endl;
+}
+
 
 void print_text(std::string text)
 {

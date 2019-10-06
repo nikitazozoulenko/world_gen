@@ -92,6 +92,20 @@ void Shaderprogram::setUniformVec3(const char * name, float x, float y, float z)
 }
 
 
+void Shaderprogram::setUniformVec2(const char * name, glm::vec2 vector)
+{
+    unsigned int loc = glGetUniformLocation(ID, name);
+    glUniform2fv(loc, 1, glm::value_ptr(vector));
+}
+
+
+void Shaderprogram::setUniformVec2(const char * name, float x, float y)
+{   
+    unsigned int loc = glGetUniformLocation(ID, name);
+    glUniform2f(loc, x, y);
+}
+
+
 void Shaderprogram::setUniformFloat(const char * name, float number)
 {
     unsigned int loc = glGetUniformLocation(ID, name);

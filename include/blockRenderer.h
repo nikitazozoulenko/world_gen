@@ -8,6 +8,7 @@
 
 #include "shaderprogram.h"
 #include "camera.h"
+#include "chunk.h"
 
 class BlockRenderer
 {
@@ -16,16 +17,13 @@ public:
     void render();
     
 private:
-    Shaderprogram quad_shaderprogram;
+    Shaderprogram march_cube_draw_shaderprogram;
     Shaderprogram comp_shaderprogram;
     Camera* p_camera;
-    unsigned int quadVAO;
-    unsigned int quadVBO;
     unsigned int comp_texture;
-    unsigned int image_width;
-    unsigned int image_height;
+    
 
-    void setupQuad();
     void createShaders();
+    void createMarchComputeTexture();
 };
 #endif // BLOCKRENDERER_H

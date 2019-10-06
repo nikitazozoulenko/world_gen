@@ -21,6 +21,8 @@ public:
     void setUniformMat4(const char * name, glm::mat4 matrix);
     void setUniformVec3(const char * name, glm::vec3 vector);
     void setUniformVec3(const char * name, float x, float y, float z);
+    void setUniformVec2(const char * name, glm::vec2 vector);
+    void setUniformVec2(const char * name, float x, float y);
     void setUniformFloat(const char * name, float number);
     void setUniformInt(const char * name, int number);  
     unsigned int ID;

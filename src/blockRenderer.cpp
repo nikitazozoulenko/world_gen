@@ -2,20 +2,22 @@
 #include "../include/misc.h"
 
 BlockRenderer::BlockRenderer(Camera* p_camera) :
-    p_camera(p_camera),
-    image_width(256),
-    image_height(256)
+    p_camera(p_camera)
 {
-    setupQuad();
     createShaders();
+    createMarchComputeTexture();
+}
 
+
+void BlockRenderer::createMarchComputeTexture()
+{
     glGenTextures(1, &comp_texture);
-    glBindTexture(GL_TEXTURE_2D, comp_texture);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, image_width, image_height, 0, GL_RGBA, GL_FLOAT, NULL);
+    glBindTexture(GL_TEXTURE_3D, comp_texture);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA32F, CH_WIDTH+1, CH_HEIGHT+1, CH_DEPTH+1, 0, GL_RGBA, GL_FLOAT, NULL);
     glBindImageTexture(0, comp_texture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
 
     //////////////////////////////////////////////////////////////
@@ -39,58 +41,43 @@ BlockRenderer::BlockRenderer(Camera* p_camera) :
 }
 
 
-void BlockRenderer::setupQuad()
-{
-    float vertices[] = 
-    {   // positions // texture coords
-         1,  1,  0,  1.0f, 1.0f,   // top right
-         1, -1,  0,  1.0f, 0.0f,   // bottom right
-        -1, -1,  0,  0.0f, 0.0f,   // bottom left
-        -1,  1,  0,  0.0f, 1.0f    // top left 
-    };
-
-    glGenVertexArrays(1, &quadVAO);
-    glGenBuffers(1, &quadVBO);
-    glBindVertexArray(quadVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3*sizeof(float)));
-    glEnableVertexAttribArray(1);
-}
-
-
 void BlockRenderer::render()
 {
-    //uniforms
-    quad_shaderprogram.bind();
-    quad_shaderprogram.setUniformFloat("game_time", glfwGetTime());
+    //uniforms for vertex and fragment shader, marching cube
+    march_cube_draw_shaderprogram.bind();
+    march_cube_draw_shaderprogram.setUniformFloat("game_time", glfwGetTime());
+    glm::mat4 view = p_camera->getViewMatrix();
+    march_cube_draw_shaderprogram.setUniformMat4("view", view);
+    glm::mat4 projection = glm::perspective(glm::radians(p_camera->zoom), (float)1280 / (float)720, 0.1f, 1000.0f);
+    march_cube_draw_shaderprogram.setUniformMat4("projection", projection);
+
+    //uniforms compute shader terrain generation
     comp_shaderprogram.bind();
     comp_shaderprogram.setUniformFloat("game_time", glfwGetTime());
-    comp_shaderprogram.setUniformVec3("cam_pos", p_camera->pos);
+    comp_shaderprogram.setUniformInt("CH_WIDTH", CH_WIDTH);
+    comp_shaderprogram.setUniformInt("CH_HEIGHT", CH_HEIGHT);
+    comp_shaderprogram.setUniformInt("CH_DEPTH", CH_DEPTH);
+    comp_shaderprogram.setUniformVec2("chunk_pos", glm::vec2(0,0));
 
     //compute shader
-    glDispatchCompute(image_width, image_height, 1);
+    glDispatchCompute(CH_WIDTH+1, CH_HEIGHT+1, CH_DEPTH+1);
     //wait for the compute shader to be done before binding the comp texture
     glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+    Chunk chunk(glm::ivec2(0,0));
 
     //render
-    quad_shaderprogram.bind();
-    glBindVertexArray(quadVAO);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, comp_texture);
-    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+    march_cube_draw_shaderprogram.bind();
+    chunk.render();
 }
 
 
 void BlockRenderer::createShaders()
 {   
-    const char * vertex_path =   "/home/nikita/Code/world_gen/src/shaders/quad.vert";
+    const char * vertex_path =   "/home/nikita/Code/world_gen/src/shaders/marchCubeDraw.vert";
     const char * geometry_path = nullptr;
-    const char * fragment_path = "/home/nikita/Code/world_gen/src/shaders/quad.frag";
+    const char * fragment_path = "/home/nikita/Code/world_gen/src/shaders/marchCubeDraw.frag";
     const char * compute_path =  "/home/nikita/Code/world_gen/src/shaders/generation.comp";
 
-    quad_shaderprogram = Shaderprogram(vertex_path, geometry_path, fragment_path, nullptr);
+    march_cube_draw_shaderprogram = Shaderprogram(vertex_path, geometry_path, fragment_path, nullptr);
     comp_shaderprogram = Shaderprogram(nullptr, nullptr, nullptr, compute_path);
 }
