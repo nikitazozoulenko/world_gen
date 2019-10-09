@@ -17,7 +17,7 @@ void BlockRenderer::createMarchComputeTexture()
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA32F, CH_WIDTH+1, CH_HEIGHT+1, CH_DEPTH+1, 0, GL_RGBA, GL_FLOAT, NULL);
+    glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA32F, CH_WIDTH+1, CH_HEIGHT, CH_DEPTH+1, 0, GL_RGBA, GL_FLOAT, NULL);
     glBindImageTexture(0, comp_texture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
 
     //////////////////////////////////////////////////////////////
@@ -41,6 +41,18 @@ void BlockRenderer::createMarchComputeTexture()
 }
 
 
+Chunk BlockRenderer::createChunk(glm::ivec2 pos)
+{
+    comp_shaderprogram.bind();
+    comp_shaderprogram.setUniformVec2("chunk_pos", pos);
+    //run compute shader
+    glDispatchCompute(CH_WIDTH+1, CH_HEIGHT, CH_DEPTH+1);
+    //wait for the compute shader to be done before reading texture
+    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+    return Chunk(pos);
+}
+
+
 void BlockRenderer::render()
 {
     //uniforms for vertex and fragment shader, marching cube
@@ -57,17 +69,16 @@ void BlockRenderer::render()
     comp_shaderprogram.setUniformInt("CH_WIDTH", CH_WIDTH);
     comp_shaderprogram.setUniformInt("CH_HEIGHT", CH_HEIGHT);
     comp_shaderprogram.setUniformInt("CH_DEPTH", CH_DEPTH);
-    comp_shaderprogram.setUniformVec2("chunk_pos", glm::vec2(0,0));
+
 
     //compute shader
-    glDispatchCompute(CH_WIDTH+1, CH_HEIGHT+1, CH_DEPTH+1);
-    //wait for the compute shader to be done before binding the comp texture
-    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
-    Chunk chunk(glm::ivec2(0,0));
+    Chunk chunk00 = createChunk(glm::ivec2(0,0));
+    Chunk chunk01 = createChunk(glm::ivec2(0,1));
 
     //render
     march_cube_draw_shaderprogram.bind();
-    chunk.render();
+    chunk00.render();
+    chunk01.render();
 }
 
 

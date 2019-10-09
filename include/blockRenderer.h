@@ -25,5 +25,6 @@ private:
 
     void createShaders();
     void createMarchComputeTexture();
+    Chunk createChunk(glm::ivec2 pos);
 };
 #endif // BLOCKRENDERER_H

@@ -324,8 +324,6 @@ void Chunk::setUp()
     for(int x=0; x<CH_WIDTH; x++){
         for(int y=0; y<CH_HEIGHT; y++){
             for(int z=0; z<CH_DEPTH; z++){
-                // print_vec3("pos", glm::vec3(x,y,z));
-                // print_float("val", getData(x,y,z).x);
                 marchingCube(x,y,z);
             }
         }
@@ -363,7 +361,12 @@ void Chunk::marchingCube(int x, int y, int z)
     //Find which vertices are inside of the surface and which are outside
     int cornerFlagIndex = 0;
     for(int i=0; i<8; i++){
-        float corner_val = getData( glm::vec3(x,y,z) + vertexOffsets[i] ).x;
+        glm::vec3 vertex = glm::vec3(x,y,z) + vertexOffsets[i];
+        float corner_val;
+        if (vertex.y==CH_HEIGHT)
+            corner_val = 0;
+        else
+            corner_val = getData(vertex).x;
         if(corner_val <= surface_level)
             cornerFlagIndex |= 1<<i;
     }
@@ -422,7 +425,7 @@ void Chunk::marchingCube(int x, int y, int z)
 
 glm::vec4 Chunk::getData(int x, int y, int z)
 {
-    size_t depth = z * (CH_HEIGHT+1)*(CH_WIDTH+1)*4;
+    size_t depth = z * (CH_HEIGHT)*(CH_WIDTH+1)*4;
     size_t row = y * (CH_WIDTH+1)*4;
     size_t col = x * 4;
 

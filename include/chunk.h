@@ -24,7 +24,7 @@ public:
 private:
     glm::ivec2 pos;
     float surface_level;
-    float data[(CH_WIDTH+1) * (CH_HEIGHT+1) * (CH_DEPTH+1) * 4];
+    float data[(CH_WIDTH+1) * (CH_HEIGHT) * (CH_DEPTH+1) * 4];
     std::vector<glm::vec3> vertices;
     std::vector<glm::vec3> normals;
     unsigned int VAO;
