@@ -1,37 +1,19 @@
-#include "../include/inputHandler.h"
+#include <inputScheme.h>
 
 #include <iostream>
 #include <cmath>
 
-static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
-
-InputHandler::InputHandler(Displaywindow* p_displaywindow, Camera* p_camera) :
-    p_displaywindow(p_displaywindow),
+InputScheme::InputScheme(GLFWwindow* window, Camera* p_camera) :
+    window(window),
     p_camera(p_camera)
 {
-    //callbacks
-    setCallbacks();
 
-    //other options
-    glfwSetInputMode(p_displaywindow->window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);//disable cursor
 }
-
-
-// for FPS counter, NOTE: glfwPollEvents has built in 60 fps limit.
-void InputHandler::updateDeltaTime()
-{
-    float currentFrame = glfwGetTime();
-    delta_time = currentFrame - last_frame_time;
-    last_frame_time = currentFrame;
-    std::cout << 1/delta_time << std::endl;
-}
-
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
-void InputHandler::processKeyboardInput()
+void InputScheme::processKeyboardInput(float delta_time)
 {   
-    GLFWwindow* window = p_displaywindow->window;
     //escape exit window
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
@@ -52,11 +34,15 @@ void InputHandler::processKeyboardInput()
 }
 
 
-void InputHandler::setCallbacks()
+void InputScheme::init()
 {   
-    GLFWwindow* window = p_displaywindow->window;
+    //disable cursor
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);//disable cursor
+
+    //set user defined pointer for mouse callbacks
     glfwSetWindowUserPointer(window, this);
 
+    //other callbacks
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwSetScrollCallback(window, scroll_callback);
     glfwSetCursorPosCallback(window, cursor_pos_callback);
@@ -65,7 +51,7 @@ void InputHandler::setCallbacks()
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
 // ---------------------------------------------------------------------------------------------
-void InputHandler::framebuffer_size_callback(GLFWwindow* window, int width, int height)
+void InputScheme::framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
     // make sure the viewport matches the new window dimensions; note that width and 
     // height will be significantly larger than specified on retina displays.
@@ -75,30 +61,30 @@ void InputHandler::framebuffer_size_callback(GLFWwindow* window, int width, int 
 
 // glfw: whenever the mouse scroll wheel scrolls, this callback is called
 // ----------------------------------------------------------------------
-void InputHandler::scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+void InputScheme::scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-    InputHandler* my_input_handler = (InputHandler*)glfwGetWindowUserPointer(window);
-    my_input_handler->p_camera->ProcessMouseScroll(yoffset);
+    InputScheme* my_input_scheme = (InputScheme*)glfwGetWindowUserPointer(window);
+    my_input_scheme->p_camera->ProcessMouseScroll(yoffset);
 }
 
 
 // glfw: whenever the mouse moves, this callback is called
 // -------------------------------------------------------
-void InputHandler::cursor_pos_callback(GLFWwindow* window, double xpos, double ypos)
+void InputScheme::cursor_pos_callback(GLFWwindow* window, double xpos, double ypos)
 {   
-    InputHandler* my_input_handler = (InputHandler*)glfwGetWindowUserPointer(window);
-    if (my_input_handler->firstmouse)
+    InputScheme* my_input_scheme = (InputScheme*)glfwGetWindowUserPointer(window);
+    if (my_input_scheme->firstmouse)
     {
-        my_input_handler->mouse_x = xpos;
-        my_input_handler->mouse_y = ypos;
-        my_input_handler->firstmouse = false;
+        my_input_scheme->mouse_x = xpos;
+        my_input_scheme->mouse_y = ypos;
+        my_input_scheme->firstmouse = false;
     }
 
-    float xoffset = xpos - my_input_handler->mouse_x;
-    float yoffset = my_input_handler->mouse_y - ypos; // reversed since y-coordinates go from bottom to top
+    float xoffset = xpos - my_input_scheme->mouse_x;
+    float yoffset = my_input_scheme->mouse_y - ypos; // reversed since y-coordinates go from bottom to top
 
-    my_input_handler->mouse_x = xpos;
-    my_input_handler->mouse_y = ypos;
+    my_input_scheme->mouse_x = xpos;
+    my_input_scheme->mouse_y = ypos;
 
-    my_input_handler->p_camera->ProcessMouseMovement(xoffset, yoffset);
+    my_input_scheme->p_camera->ProcessMouseMovement(xoffset, yoffset);
 }

@@ -1,8 +1,8 @@
-#include "../include/blockRenderer.h"
-#include "../include/misc.h"
+#include <blockRenderer.h>
+#include <misc.h>
 
-BlockRenderer::BlockRenderer(Camera* p_camera) :
-    p_camera(p_camera)
+BlockRenderer::BlockRenderer(Settings* p_settings) :
+    p_settings(p_settings)
 {
     createShaders();
     createMarchComputeTexture();
@@ -53,14 +53,14 @@ Chunk BlockRenderer::createChunk(glm::ivec2 pos)
 }
 
 
-void BlockRenderer::render()
+void BlockRenderer::render(Camera* p_camera)
 {
     //uniforms for vertex and fragment shader, marching cube
     march_cube_draw_shaderprogram.bind();
     march_cube_draw_shaderprogram.setUniformFloat("game_time", glfwGetTime());
     glm::mat4 view = p_camera->getViewMatrix();
     march_cube_draw_shaderprogram.setUniformMat4("view", view);
-    glm::mat4 projection = glm::perspective(glm::radians(p_camera->zoom), (float)1280 / (float)720, 0.1f, 1000.0f);
+    glm::mat4 projection = glm::perspective(glm::radians(p_camera->zoom), (float)p_settings->getWindowWidth() / (float)p_settings->getWindowHeight(), 0.1f, 1000.0f);
     march_cube_draw_shaderprogram.setUniformMat4("projection", projection);
 
     //uniforms compute shader terrain generation

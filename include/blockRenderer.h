@@ -6,20 +6,22 @@
 
 #include <unordered_map>
 
-#include "shaderprogram.h"
-#include "camera.h"
-#include "chunk.h"
+#include <shaderprogram.h>
+#include <camera.h>
+#include <settings.h>
+#include <chunk.h>
 
 class BlockRenderer
 {
 public:
-    BlockRenderer(Camera* p_camera);
-    void render();
+    BlockRenderer(Settings* p_settings);
+    void render(Camera* p_camera);
     
 private:
     Shaderprogram march_cube_draw_shaderprogram;
     Shaderprogram comp_shaderprogram;
-    Camera* p_camera;
+
+    Settings* p_settings;
     unsigned int comp_texture;
     
 

@@ -4,15 +4,19 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "blockRenderer.h"
+#include <blockRenderer.h>
+#include <uiRenderer.h>
 
 class MasterRenderer
 {
 public:
-    MasterRenderer(Camera* p_camera);
-    void render();
+    MasterRenderer(GLFWwindow* window, Settings* p_settings);
+    void render(Camera* p_camera);
 private:
     BlockRenderer block_renderer;
-    Camera* p_camera;
+    UIRenderer ui_renderer;
+
+    GLFWwindow* window;
+    Settings* p_settings;
 };
 #endif // MASTERRENDERER_H

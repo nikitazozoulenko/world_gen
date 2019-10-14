@@ -2,10 +2,11 @@
 #define WORLD_CHUNK_H
 
 #include <glm/glm.hpp>
-#include <unordered_map>
-#include "shaderprogram.h"
-#include "camera.h"
 
+#include <shaderprogram.h>
+#include <camera.h>
+
+#include <unordered_map>
 #include <vector>
 
 #define CH_WIDTH 32

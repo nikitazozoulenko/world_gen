@@ -3,13 +3,17 @@
 
 
 
-Displaywindow::Displaywindow(const unsigned int& width, const unsigned int& height, const char* title)
+Displaywindow::Displaywindow(Settings& settings)
 {
-    Init(width, height, title);
+    loadGLFW();
+    glm::vec2 dimensions = settings.getContextCreationDimensions();
+    std::string window_title = settings.getWindowTitle();
+    createWindow(dimensions.x, dimensions.y, window_title.c_str());
+    loadGlad();
 }
 
 
-void Displaywindow::Init(const unsigned int& width, const unsigned int& height, const char* title)
+void Displaywindow::loadGLFW()
 {
     // glfw: initialize and configure
     // ------------------------------
@@ -17,7 +21,21 @@ void Displaywindow::Init(const unsigned int& width, const unsigned int& height, 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+}
 
+
+void Displaywindow::loadGlad()
+{
+    // glad: load all OpenGL function pointers
+    // ---------------------------------------
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+    {
+        std::cout << "Failed to initialize GLAD" << std::endl;
+    }    
+}
+
+void Displaywindow::createWindow(const unsigned int& width, const unsigned int& height, const char* title)
+{
     // glfw window creation
     // --------------------
     window = glfwCreateWindow(width, height, title, NULL, NULL);
@@ -27,11 +45,4 @@ void Displaywindow::Init(const unsigned int& width, const unsigned int& height, 
         glfwTerminate();
     }
     glfwMakeContextCurrent(window);
-
-    // glad: load all OpenGL function pointers
-    // ---------------------------------------
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-    {
-        std::cout << "Failed to initialize GLAD" << std::endl;
-    }    
 }

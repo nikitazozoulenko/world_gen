@@ -4,13 +4,15 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-#include "camera.h"
+#include <settings.h>
 
 class Displaywindow
 {
 public:
-    Displaywindow(const unsigned int& width, const unsigned int& height, const char* title);
-    void Init(const unsigned int& width, const unsigned int& height, const char* title);
+    Displaywindow(Settings& settings);
+    void loadGLFW();
+    void loadGlad();
+    void createWindow(const unsigned int& width, const unsigned int& height, const char* title);
     GLFWwindow* window;
 protected:
 private:
