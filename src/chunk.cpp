@@ -346,6 +346,7 @@ void Chunk::setUp()
     glEnableVertexAttribArray(1);
 }
 
+
 void Chunk::render()
 {
     // BIND THE APPROPRIATE SHADER FIRST

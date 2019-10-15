@@ -9,6 +9,7 @@
 #include <settings.h>
 #include <masterRenderer.h>
 #include <scene.h>
+#include <timer.h>
 
 class Program
 {
@@ -30,6 +31,9 @@ private:
 
     // Current Scene, game world may be included in scene
     Scene scene;
+
+    //For delta_time, other
+    Timer timer;
 };
 
 #endif // MY_PROGRAM_H

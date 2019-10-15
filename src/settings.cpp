@@ -2,8 +2,8 @@
 #include <misc.h>
 
 Settings::Settings() :
-    width(500),
-    height(500),
+    width(1280),
+    height(720),
     window_title("Marching Cubes")
 {
 

@@ -7,7 +7,8 @@ Program::Program() :
     settings(Settings()),
     window(createWindow(settings)),
     renderer(MasterRenderer(window, &settings)),
-    scene(Scene(window))
+    scene(Scene(window)),
+    timer(Timer())
 {
 
 }
@@ -62,14 +63,11 @@ void Program::run()
     while (!glfwWindowShouldClose(window))
     {
         // per-frame time logic
-        float delta_time = 0.1;
+        float delta_time = timer.update_delta_time();
         scene.input_scheme.processKeyboardInput(delta_time);
         glfwPollEvents(); // to be included in input_scheme
-
-        print_float("test", 0.3f);
         
         //render
         scene.render(renderer);
-        glfwSwapBuffers(window);
     }
 }

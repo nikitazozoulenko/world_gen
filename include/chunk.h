@@ -9,9 +9,9 @@
 #include <unordered_map>
 #include <vector>
 
-#define CH_WIDTH 32
-#define CH_HEIGHT 32
-#define CH_DEPTH 32
+#define CH_WIDTH 16
+#define CH_HEIGHT 16
+#define CH_DEPTH 16
 
 class Chunk
 {
