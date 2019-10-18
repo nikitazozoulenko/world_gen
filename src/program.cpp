@@ -7,10 +7,18 @@ Program::Program() :
     settings(Settings()),
     window(createWindow(settings)),
     renderer(MasterRenderer(window, &settings)),
-    scene(Scene(window)),
+    p_scene(new FreeCamWorld(&settings, window)),
     timer(Timer())
 {
 
+}
+
+Program::~Program()
+{
+    if(p_scene)
+    {
+        delete p_scene;
+    }
 }
 
 
@@ -56,18 +64,25 @@ GLFWwindow* Program::createWindow(Settings& settings)
 }
 
 
+void Program::changeSceneIfNeeded()
+{
+
+}
+
+
 void Program::run()
 {
-    scene.input_scheme.init();
+    p_scene->p_input_scheme->init();
     // render loop
     while (!glfwWindowShouldClose(window))
     {
+        changeSceneIfNeeded();
         // per-frame time logic
         float delta_time = timer.update_delta_time();
-        scene.input_scheme.processKeyboardInput(delta_time);
+        p_scene->p_input_scheme->processKeyboardInput(delta_time);
         glfwPollEvents(); // to be included in input_scheme
         
         //render
-        scene.render(renderer);
+        p_scene->render(renderer);
     }
 }

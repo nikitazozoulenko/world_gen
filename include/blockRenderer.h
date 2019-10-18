@@ -10,23 +10,19 @@
 #include <camera.h>
 #include <settings.h>
 #include <chunk.h>
+#include <world.h>
 
 class BlockRenderer
 {
 public:
     BlockRenderer(Settings* p_settings);
-    void render(Camera* p_camera);
+    void render(ChunkMapivec2& chunk_map, Camera& camera);
     
 private:
-    Shaderprogram march_cube_draw_shaderprogram;
-    Shaderprogram comp_shaderprogram;
-
     Settings* p_settings;
+    Shaderprogram march_cube_draw_shaderprogram;
     unsigned int comp_texture;
-    
 
     void createShaders();
-    void createMarchComputeTexture();
-    Chunk createChunk(glm::ivec2 pos);
 };
 #endif // BLOCKRENDERER_H

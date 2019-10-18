@@ -5,33 +5,31 @@
 
 #include <shaderprogram.h>
 #include <camera.h>
+#include <settings.h>
 
 #include <unordered_map>
 #include <vector>
 
-#define CH_WIDTH 16
-#define CH_HEIGHT 16
-#define CH_DEPTH 16
-
 class Chunk
 {
 public:
-    Chunk(glm::ivec2 pos);
+    Chunk(Settings* p_settings, glm::ivec2 pos);
+    ~Chunk();
     void render();
     glm::vec4 getData(int x, int y, int z);
     glm::vec4 getData(glm::ivec3 v);
     void setData(float value, int x, int y, int z);
     
 private:
+    Settings* p_settings;
     glm::ivec2 pos;
     float surface_level;
-    float data[(CH_WIDTH+1) * (CH_HEIGHT) * (CH_DEPTH+1) * 4];
+    float* data;
     std::vector<glm::vec3> vertices;
     std::vector<glm::vec3> normals;
     unsigned int VAO;
     unsigned int vertex_VBO;
     unsigned int normal_VBO;
-
 
     void setUp();
     void marchingCube(int x, int y, int z);

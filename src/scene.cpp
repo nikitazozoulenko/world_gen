@@ -1,13 +1,34 @@
 #include <scene.h>
 
-Scene::Scene(GLFWwindow* window):
+//////////// SCENE ///////////////////////////////////////////////////////////
+
+Scene::Scene(Settings* p_settings, GLFWwindow* window, InputScheme* p_input_scheme):
     camera(Camera()),
-    input_scheme(InputScheme(window, &camera))
+    p_settings(p_settings),
+    p_input_scheme(p_input_scheme)
 {
 
 }
 
-void Scene::render(MasterRenderer& masterRenderer)
+Scene::~Scene()
 {
-    masterRenderer.render(&camera);
+    if(p_input_scheme)
+    {
+        delete p_input_scheme;
+    }
+}
+
+//////////// FREE CAM SCENE ///////////////////////////////////////////////////////////
+
+FreeCamWorld::FreeCamWorld(Settings* p_settings, GLFWwindow* window):
+    Scene(p_settings, window, new FreeCamWorldInputScheme(window, &camera)),
+    world(World(p_settings))
+{
+
+}
+
+
+void FreeCamWorld::render(MasterRenderer& masterRenderer)
+{
+    masterRenderer.render(world, camera);
 }

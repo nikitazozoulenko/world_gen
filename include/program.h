@@ -15,6 +15,7 @@ class Program
 {
 public:
     Program();
+    ~Program();
     void run();
 private:
     // Universal settings for everything
@@ -30,7 +31,8 @@ private:
     MasterRenderer renderer;
 
     // Current Scene, game world may be included in scene
-    Scene scene;
+    Scene* p_scene;
+    void changeSceneIfNeeded();
 
     //For delta_time, other
     Timer timer;

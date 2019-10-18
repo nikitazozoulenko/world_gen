@@ -10,7 +10,7 @@
 #include <string>
 
 //Own includes
-#include "shader.h"
+#include <shader.h>
 
 class Shaderprogram 
 {

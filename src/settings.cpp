@@ -4,7 +4,10 @@
 Settings::Settings() :
     width(1280),
     height(720),
-    window_title("Marching Cubes")
+    window_title("Marching Cubes"),
+    chunk_width(128),
+    chunk_height(32),
+    chunk_depth(128)
 {
 
 }
@@ -34,4 +37,19 @@ int Settings::getWindowHeight()
 std::string Settings::getWindowTitle()
 {
     return window_title;
+}
+
+int Settings::getChunkWidth()
+{
+    return chunk_width;
+}
+
+int Settings::getChunkHeight()
+{
+    return chunk_height;
+}
+
+int Settings::getChunkDepth()
+{
+    return chunk_depth;
 }

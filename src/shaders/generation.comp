@@ -247,7 +247,7 @@ void main()
     amplitudes[0] = 1;
     // amplitudes[1] = 0.35;
     // amplitudes[2] = 0.4;
-    float noise = simplexOctaves3D(x+CH_WIDTH*chunk_pos.x, y, z+CH_DEPTH*chunk_pos.y, sizes, amplitudes);
+    float noise = simplexOctaves3D(x+CH_WIDTH*chunk_pos.x, y + game_time, z+CH_DEPTH*chunk_pos.y, sizes, amplitudes);
 
     //Store sample
     imageStore(img_output, xyz, vec4(noise, noise, noise, noise));

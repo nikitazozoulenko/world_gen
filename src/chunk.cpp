@@ -310,7 +310,8 @@ const int triangleConnectionTable[256][16] =
 };
 
 
-Chunk::Chunk(glm::ivec2 pos) :
+Chunk::Chunk(Settings* p_settings, glm::ivec2 pos) :
+    p_settings(p_settings),
     pos(pos),
     surface_level(0.5)
 {
@@ -318,12 +319,28 @@ Chunk::Chunk(glm::ivec2 pos) :
 }
 
 
+Chunk::~Chunk()
+{
+    print_vec2("deleting", pos);
+    if(data)
+    {
+        delete data;
+    }
+}
+
+
 void Chunk::setUp()
 {
+    int ch_width = p_settings->getChunkWidth();
+    int ch_height = p_settings->getChunkHeight();
+    int ch_depth = p_settings->getChunkDepth();
+
+    data = new float[(ch_width+1)*(ch_height)*(ch_depth+1)*4];
+
     glGetTexImage(GL_TEXTURE_3D, 0, GL_RGBA, GL_FLOAT, data);
-    for(int x=0; x<CH_WIDTH; x++){
-        for(int y=0; y<CH_HEIGHT; y++){
-            for(int z=0; z<CH_DEPTH; z++){
+    for(int x=0; x<ch_width; x++){
+        for(int y=0; y<ch_height; y++){
+            for(int z=0; z<ch_depth; z++){
                 marchingCube(x,y,z);
             }
         }
@@ -355,16 +372,19 @@ void Chunk::render()
 }
 
 
-void Chunk::marchingCube(int x, int y, int z)
-{// Performs the marching cubes algorithm on one grid cube.
-    glm::vec3 world_coord = glm::vec3(x+pos.x*CH_WIDTH,y,z+pos.y*CH_DEPTH);
+void Chunk::marchingCube(int x, int y, int z) // Performs the marching cubes algorithm on one grid cube.
+{
+    int ch_width = p_settings->getChunkWidth();
+    int ch_height = p_settings->getChunkHeight();
+    int ch_depth = p_settings->getChunkDepth();
+    glm::vec3 world_coord = glm::vec3(x+pos.x*ch_width,y,z+pos.y*ch_depth);
 
     //Find which vertices are inside of the surface and which are outside
     int cornerFlagIndex = 0;
     for(int i=0; i<8; i++){
         glm::vec3 vertex = glm::vec3(x,y,z) + vertexOffsets[i];
         float corner_val;
-        if (vertex.y==CH_HEIGHT)
+        if (vertex.y==ch_height)
             corner_val = 0;
         else
             corner_val = getData(vertex).x;
@@ -426,8 +446,11 @@ void Chunk::marchingCube(int x, int y, int z)
 
 glm::vec4 Chunk::getData(int x, int y, int z)
 {
-    size_t depth = z * (CH_HEIGHT)*(CH_WIDTH+1)*4;
-    size_t row = y * (CH_WIDTH+1)*4;
+    int ch_width = p_settings->getChunkWidth();
+    int ch_height = p_settings->getChunkHeight();
+
+    size_t depth = z * (ch_height)*(ch_width+1)*4;
+    size_t row = y * (ch_width+1)*4;
     size_t col = x * 4;
 
     float r = data[depth + row + col]; 

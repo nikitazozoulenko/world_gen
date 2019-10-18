@@ -6,12 +6,13 @@
 
 #include <blockRenderer.h>
 #include <uiRenderer.h>
+#include <world.h>
 
 class MasterRenderer
 {
 public:
     MasterRenderer(GLFWwindow* window, Settings* p_settings);
-    void render(Camera* p_camera);
+    void render(World& world, Camera& camera);
 private:
     BlockRenderer block_renderer;
     UIRenderer ui_renderer;

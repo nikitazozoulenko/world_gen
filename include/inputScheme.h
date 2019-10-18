@@ -11,12 +11,22 @@ class InputScheme
 {
 public:
     InputScheme(GLFWwindow* window, Camera* p_camera);
+    virtual void processKeyboardInput(float delta_time) = 0;
+    virtual void init() = 0;
+protected:
+    GLFWwindow* window;
+    Camera* p_camera;
+private:
+};
+
+
+class FreeCamWorldInputScheme : public InputScheme
+{
+public:
+    FreeCamWorldInputScheme(GLFWwindow* window, Camera* p_camera);
     void processKeyboardInput(float delta_time);
     void init();
 private:
-    GLFWwindow* window;
-    Camera* p_camera;
-
     float mouse_x;
     float mouse_y;
     bool firstmouse = true;
@@ -27,14 +37,3 @@ private:
 };
 
 #endif // INPUT_SCHEME_H
-
-
-
-// // for FPS counter, NOTE: glfwPollEvents has built in 60 fps limit.
-// void InputHandler::updateDeltaTime()
-// {
-//     float currentFrame = glfwGetTime();
-//     delta_time = currentFrame - last_frame_time;
-//     last_frame_time = currentFrame;
-//     std::cout << 1/delta_time << std::endl;
-// }

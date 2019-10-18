@@ -16,11 +16,18 @@ public:
     int getWindowWidth();
     glm::vec2 getContextCreationDimensions();
     std::string getWindowTitle();
+    int getChunkWidth();
+    int getChunkHeight();
+    int getChunkDepth();
 protected:
 private:
     int width;
     int height;
     std::string window_title;
+
+    int chunk_width;
+    int chunk_height;
+    int chunk_depth;
 };
 
 #endif // MY_SETTINGS_THING_H

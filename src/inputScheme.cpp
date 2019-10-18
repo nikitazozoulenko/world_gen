@@ -3,7 +3,7 @@
 #include <iostream>
 #include <cmath>
 
-
+///////// ABSTRACT INPUT SCHEME //////////////////////////////////////////////////////////////////////////////////
 InputScheme::InputScheme(GLFWwindow* window, Camera* p_camera) :
     window(window),
     p_camera(p_camera)
@@ -11,8 +11,17 @@ InputScheme::InputScheme(GLFWwindow* window, Camera* p_camera) :
 
 }
 
+
+///////// FreeCamWorld InputScheme //////////////////////////////////////////////////////////////////////////////////
+FreeCamWorldInputScheme::FreeCamWorldInputScheme(GLFWwindow* window, Camera* p_camera) :
+    InputScheme(window, p_camera)
+{
+
+}
+
+
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
-void InputScheme::processKeyboardInput(float delta_time)
+void FreeCamWorldInputScheme::processKeyboardInput(float delta_time)
 {   
     //escape exit window
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -34,7 +43,7 @@ void InputScheme::processKeyboardInput(float delta_time)
 }
 
 
-void InputScheme::init()
+void FreeCamWorldInputScheme::init()
 {   
     //disable cursor
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);//disable cursor
@@ -50,8 +59,7 @@ void InputScheme::init()
 
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
-// ---------------------------------------------------------------------------------------------
-void InputScheme::framebuffer_size_callback(GLFWwindow* window, int width, int height)
+void FreeCamWorldInputScheme::framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
     // make sure the viewport matches the new window dimensions; note that width and 
     // height will be significantly larger than specified on retina displays.
@@ -60,19 +68,17 @@ void InputScheme::framebuffer_size_callback(GLFWwindow* window, int width, int h
 
 
 // glfw: whenever the mouse scroll wheel scrolls, this callback is called
-// ----------------------------------------------------------------------
-void InputScheme::scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+void FreeCamWorldInputScheme::scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-    InputScheme* my_input_scheme = (InputScheme*)glfwGetWindowUserPointer(window);
+    FreeCamWorldInputScheme* my_input_scheme = (FreeCamWorldInputScheme*)glfwGetWindowUserPointer(window);
     my_input_scheme->p_camera->ProcessMouseScroll(yoffset);
 }
 
 
 // glfw: whenever the mouse moves, this callback is called
-// -------------------------------------------------------
-void InputScheme::cursor_pos_callback(GLFWwindow* window, double xpos, double ypos)
+void FreeCamWorldInputScheme::cursor_pos_callback(GLFWwindow* window, double xpos, double ypos)
 {   
-    InputScheme* my_input_scheme = (InputScheme*)glfwGetWindowUserPointer(window);
+    FreeCamWorldInputScheme* my_input_scheme = (FreeCamWorldInputScheme*)glfwGetWindowUserPointer(window);
     if (my_input_scheme->firstmouse)
     {
         my_input_scheme->mouse_x = xpos;

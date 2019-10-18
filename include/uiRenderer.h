@@ -4,8 +4,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "shaderprogram.h"
-#include "camera.h"
+#include <shaderprogram.h>
+#include <camera.h>
 
 #include <vector>
 #include <map>
