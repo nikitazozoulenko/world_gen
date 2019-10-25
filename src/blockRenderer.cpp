@@ -1,8 +1,8 @@
 #include <blockRenderer.h>
 #include <misc.h>
 
-BlockRenderer::BlockRenderer(Settings* p_settings) :
-    p_settings(p_settings)
+BlockRenderer::BlockRenderer(Settings& settings) :
+    settings(settings)
 {
     createShaders();
 }
@@ -15,7 +15,7 @@ void BlockRenderer::render(ChunkMapivec2& chunk_map, Camera& camera)
     march_cube_draw_shaderprogram.setUniformFloat("game_time", glfwGetTime());
     glm::mat4 view = camera.getViewMatrix();
     march_cube_draw_shaderprogram.setUniformMat4("view", view);
-    glm::mat4 projection = glm::perspective(glm::radians(camera.zoom), (float)p_settings->getWindowWidth() / (float)p_settings->getWindowHeight(), 0.1f, 1000.0f);
+    glm::mat4 projection = glm::perspective(glm::radians(camera.zoom), (float)settings.getWindowWidth() / (float)settings.getWindowHeight(), 0.1f, 1000.0f);
     march_cube_draw_shaderprogram.setUniformMat4("projection", projection);
 
     //render

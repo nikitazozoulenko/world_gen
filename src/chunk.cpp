@@ -310,8 +310,8 @@ const int triangleConnectionTable[256][16] =
 };
 
 
-Chunk::Chunk(Settings* p_settings, glm::ivec2 pos) :
-    p_settings(p_settings),
+Chunk::Chunk(Settings& settings, glm::ivec2 pos) :
+    settings(settings),
     pos(pos),
     surface_level(0.5)
 {
@@ -331,9 +331,9 @@ Chunk::~Chunk()
 
 void Chunk::setUp()
 {
-    int ch_width = p_settings->getChunkWidth();
-    int ch_height = p_settings->getChunkHeight();
-    int ch_depth = p_settings->getChunkDepth();
+    int ch_width = settings.getChunkWidth();
+    int ch_height = settings.getChunkHeight();
+    int ch_depth = settings.getChunkDepth();
 
     data = new float[(ch_width+1)*(ch_height)*(ch_depth+1)*4];
 
@@ -374,9 +374,9 @@ void Chunk::render()
 
 void Chunk::marchingCube(int x, int y, int z) // Performs the marching cubes algorithm on one grid cube.
 {
-    int ch_width = p_settings->getChunkWidth();
-    int ch_height = p_settings->getChunkHeight();
-    int ch_depth = p_settings->getChunkDepth();
+    int ch_width = settings.getChunkWidth();
+    int ch_height = settings.getChunkHeight();
+    int ch_depth = settings.getChunkDepth();
     glm::vec3 world_coord = glm::vec3(x+pos.x*ch_width,y,z+pos.y*ch_depth);
 
     //Find which vertices are inside of the surface and which are outside
@@ -446,8 +446,8 @@ void Chunk::marchingCube(int x, int y, int z) // Performs the marching cubes alg
 
 glm::vec4 Chunk::getData(int x, int y, int z)
 {
-    int ch_width = p_settings->getChunkWidth();
-    int ch_height = p_settings->getChunkHeight();
+    int ch_width = settings.getChunkWidth();
+    int ch_height = settings.getChunkHeight();
 
     size_t depth = z * (ch_height)*(ch_width+1)*4;
     size_t row = y * (ch_width+1)*4;

@@ -11,13 +11,14 @@
 class MasterRenderer
 {
 public:
-    MasterRenderer(GLFWwindow* window, Settings* p_settings);
+    MasterRenderer(GLFWwindow* window, Settings& settings);
     void render(World& world, Camera& camera);
+    void render_menu(Camera& camera);
 private:
     BlockRenderer block_renderer;
     UIRenderer ui_renderer;
 
     GLFWwindow* window;
-    Settings* p_settings;
+    Settings& settings;
 };
 #endif // MASTERRENDERER_H

@@ -14,13 +14,13 @@
 class Scene 
 {
 public:
-    Scene(Settings* p_settings, GLFWwindow* window, InputScheme* p_input_scheme);
+    Scene(Settings& settings, GLFWwindow* window, InputScheme* p_input_scheme);
     ~Scene();
     virtual void render(MasterRenderer& masterRenderer) = 0;
     InputScheme* p_input_scheme;
     Camera camera;
 protected:
-    Settings* p_settings;
+    Settings& settings;
 private:
     //std::vector<UIElement> ui_elements;
 };
@@ -29,7 +29,7 @@ private:
 class FreeCamWorld: public Scene
 {
 public:
-    FreeCamWorld(Settings* p_settings, GLFWwindow* window);
+    FreeCamWorld(Settings& settings, GLFWwindow* window);
     void render(MasterRenderer& masterRenderer);
     World world;
 protected:
@@ -40,7 +40,7 @@ private:
 class MainMenu: public Scene
 {
 public:
-    MainMenu(GLFWwindow* window);
+    MainMenu(Settings& settings, GLFWwindow* window);
     void render(MasterRenderer& masterRenderer);
 protected:
 private:

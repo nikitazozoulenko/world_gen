@@ -13,7 +13,7 @@
 class Chunk
 {
 public:
-    Chunk(Settings* p_settings, glm::ivec2 pos);
+    Chunk(Settings& settings, glm::ivec2 pos);
     ~Chunk();
     void render();
     glm::vec4 getData(int x, int y, int z);
@@ -21,7 +21,7 @@ public:
     void setData(float value, int x, int y, int z);
     
 private:
-    Settings* p_settings;
+    Settings& settings;
     glm::ivec2 pos;
     float surface_level;
     float* data;

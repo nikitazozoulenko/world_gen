@@ -19,9 +19,9 @@ typedef std::unordered_map<glm::ivec2, Chunk, std::hash<glm::ivec2>> ChunkMapive
 class ChunkManager
 {
 public:
-    ChunkManager(Settings* p_settings, ChunkMapivec2& chunk_map);
+    ChunkManager(Settings& settings, ChunkMapivec2& chunk_map);
 private:
-    Settings* p_settings;
+    Settings& settings;
     ChunkMapivec2& chunk_map;
     Shaderprogram comp_shaderprogram;
     unsigned int comp_texture;
@@ -35,10 +35,10 @@ private:
 class World
 {
 public:
-    World(Settings* p_settings);
+    World(Settings& settings);
     ChunkMapivec2 chunk_map;
 private:
-    Settings* p_settings;
+    Settings& settings;
     ChunkManager chunk_manager;
 };
 

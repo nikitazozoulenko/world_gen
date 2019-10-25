@@ -1,45 +1,36 @@
 #include <inputScheme.h>
-
 #include <iostream>
 #include <cmath>
 
+#include <misc.h>
+
 ///////// ABSTRACT INPUT SCHEME //////////////////////////////////////////////////////////////////////////////////
-InputScheme::InputScheme(GLFWwindow* window, Camera* p_camera) :
+InputScheme::InputScheme(Settings& settings, GLFWwindow* window, Camera& camera) :
     window(window),
-    p_camera(p_camera)
+    camera(camera),
+    settings(settings)
 {
 
 }
 
-
-///////// FreeCamWorld InputScheme //////////////////////////////////////////////////////////////////////////////////
-FreeCamWorldInputScheme::FreeCamWorldInputScheme(GLFWwindow* window, Camera* p_camera) :
-    InputScheme(window, p_camera)
+// glfw: whenever the window size changed (by OS or user resize) this callback function executes
+void InputScheme::framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
+    // make sure the viewport matches the new window dimensions; note that width and 
+    // height will be significantly larger than specified on retina displays.
 
+    glViewport(0, 0, width, height);
 }
 
 
-// process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
-void FreeCamWorldInputScheme::processKeyboardInput(float delta_time)
-{   
-    //escape exit window
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////// FreeCamWorld InputScheme //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    //movement
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        p_camera->ProcessKeyboard(Camera::FORWARD, delta_time);
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        p_camera->ProcessKeyboard(Camera::BACKWARD, delta_time);
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        p_camera->ProcessKeyboard(Camera::LEFT, delta_time);
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        p_camera->ProcessKeyboard(Camera::RIGHT, delta_time);
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-        p_camera->ProcessKeyboard(Camera::UP, delta_time);
-    if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
-        p_camera->ProcessKeyboard(Camera::DOWN, delta_time);
+FreeCamWorldInputScheme::FreeCamWorldInputScheme(Settings& settings, GLFWwindow* window, Camera& camera) :
+    InputScheme(settings, window, camera)
+{
+
 }
 
 
@@ -55,15 +46,47 @@ void FreeCamWorldInputScheme::init()
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwSetScrollCallback(window, scroll_callback);
     glfwSetCursorPosCallback(window, cursor_pos_callback);
+    glfwSetKeyCallback(window, change_scene_key_callback);
 }
 
 
-// glfw: whenever the window size changed (by OS or user resize) this callback function executes
-void FreeCamWorldInputScheme::framebuffer_size_callback(GLFWwindow* window, int width, int height)
+void FreeCamWorldInputScheme::remove()
 {
-    // make sure the viewport matches the new window dimensions; note that width and 
-    // height will be significantly larger than specified on retina displays.
-    glViewport(0, 0, width, height);
+    glfwSetWindowUserPointer(window, NULL);
+    glfwSetScrollCallback(window, NULL);
+    glfwSetCursorPosCallback(window, NULL);
+    glfwSetKeyCallback(window, NULL);
+}
+
+
+void freeCamMovementInput(GLFWwindow* window, float delta_time, Camera& camera)
+{
+    //movement
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        camera.ProcessKeyboard(Camera::FORWARD, delta_time);
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        camera.ProcessKeyboard(Camera::BACKWARD, delta_time);
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        camera.ProcessKeyboard(Camera::LEFT, delta_time);
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        camera.ProcessKeyboard(Camera::RIGHT, delta_time);
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+        camera.ProcessKeyboard(Camera::UP, delta_time);
+    if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
+        camera.ProcessKeyboard(Camera::DOWN, delta_time);
+}
+
+
+// process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
+void FreeCamWorldInputScheme::processKeyboardInput(float delta_time)
+{   
+    glfwPollEvents();
+
+    //escape exit window
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+
+    freeCamMovementInput(window, delta_time, camera);
 }
 
 
@@ -71,7 +94,7 @@ void FreeCamWorldInputScheme::framebuffer_size_callback(GLFWwindow* window, int 
 void FreeCamWorldInputScheme::scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
     FreeCamWorldInputScheme* my_input_scheme = (FreeCamWorldInputScheme*)glfwGetWindowUserPointer(window);
-    my_input_scheme->p_camera->ProcessMouseScroll(yoffset);
+    my_input_scheme->camera.ProcessMouseScroll(yoffset);
 }
 
 
@@ -92,5 +115,58 @@ void FreeCamWorldInputScheme::cursor_pos_callback(GLFWwindow* window, double xpo
     my_input_scheme->mouse_x = xpos;
     my_input_scheme->mouse_y = ypos;
 
-    my_input_scheme->p_camera->ProcessMouseMovement(xoffset, yoffset);
+    my_input_scheme->camera.ProcessMouseMovement(xoffset, yoffset);
+}
+
+// glfw: TODO
+void FreeCamWorldInputScheme::change_scene_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+    FreeCamWorldInputScheme* my_input_scheme = (FreeCamWorldInputScheme*)glfwGetWindowUserPointer(window);
+    if (key == GLFW_KEY_L && action == GLFW_PRESS)
+        my_input_scheme->change_scene=SCENE_MainMenu;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////// MainMenu InputScheme //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+MainMenuInputScheme::MainMenuInputScheme(Settings& settings, GLFWwindow* window, Camera& camera) :
+    InputScheme(settings, window, camera)
+{
+
+}
+
+
+void MainMenuInputScheme::init()
+{
+    //set user defined pointer for mouse callbacks
+    glfwSetWindowUserPointer(window, this);
+
+    //other callbacks
+    glfwSetKeyCallback(window, change_scene_key_callback);
+}
+
+
+void MainMenuInputScheme::remove()
+{
+    glfwSetKeyCallback(window, NULL);
+}
+
+
+void MainMenuInputScheme::processKeyboardInput(float delta_time)
+{
+    glfwPollEvents();
+
+    //escape exit window
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+}
+
+
+// glfw: TODO
+void MainMenuInputScheme::change_scene_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+    FreeCamWorldInputScheme* my_input_scheme = (FreeCamWorldInputScheme*)glfwGetWindowUserPointer(window);
+    if (key == GLFW_KEY_L && action == GLFW_PRESS)
+        my_input_scheme->change_scene=SCENE_FreeCamWorld;
 }

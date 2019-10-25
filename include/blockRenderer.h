@@ -15,11 +15,11 @@
 class BlockRenderer
 {
 public:
-    BlockRenderer(Settings* p_settings);
+    BlockRenderer(Settings& settings);
     void render(ChunkMapivec2& chunk_map, Camera& camera);
     
 private:
-    Settings* p_settings;
+    Settings& settings;
     Shaderprogram march_cube_draw_shaderprogram;
     unsigned int comp_texture;
 

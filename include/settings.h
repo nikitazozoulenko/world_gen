@@ -7,6 +7,9 @@
 
 #include <string>
 
+#define SCENE_FreeCamWorld  18823
+#define SCENE_MainMenu      24354
+
 // Stores all settings that you would want to have
 class Settings 
 {
