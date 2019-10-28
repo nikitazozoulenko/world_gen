@@ -33,7 +33,7 @@ FreeCamWorld::FreeCamWorld(Settings& settings, GLFWwindow* window):
 
 void FreeCamWorld::render(MasterRenderer& masterRenderer)
 {
-    masterRenderer.render(world, camera);
+    masterRenderer.render_freecamworld(world, camera);
 }
 
 
@@ -42,14 +42,22 @@ void FreeCamWorld::render(MasterRenderer& masterRenderer)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 MainMenu::MainMenu(Settings& settings, GLFWwindow* window):
-    Scene(settings, window, new MainMenuInputScheme(settings, window, camera))
+    Scene(settings, window, new MainMenuInputScheme(settings, window, camera, ui_windows))
 {
-
+    createUI();
 }
+
+void MainMenu::createUI()
+{
+    UIWindow window0 = UIWindow(glm::vec2(0.1, 0.1), 0.4, 0.4, glm::vec3(54/255.0, 54/255.0, 99/255.0));
+    UIWindow window1 = UIWindow(glm::vec2(0.2, 0.6), 0.7, 0.3, glm::vec3(0.8,0.3,0.2));
+    ui_windows.push_back(window0);
+    ui_windows.push_back(window1);
+}
+
 
 void MainMenu::render(MasterRenderer& masterRenderer)
 {
-    print_float("rendering", 0);
-    masterRenderer.render_menu(camera);
+    masterRenderer.render_mainmenu(camera, ui_windows);
 }
 

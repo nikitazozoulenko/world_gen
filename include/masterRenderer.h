@@ -7,13 +7,16 @@
 #include <blockRenderer.h>
 #include <uiRenderer.h>
 #include <world.h>
+#include <uiWindow.h>
+
+#include<vector>
 
 class MasterRenderer
 {
 public:
     MasterRenderer(GLFWwindow* window, Settings& settings);
-    void render(World& world, Camera& camera);
-    void render_menu(Camera& camera);
+    void render_freecamworld(World& world, Camera& camera);
+    void render_mainmenu(Camera& camera, std::vector<UIWindow>& ui_windows);
 private:
     BlockRenderer block_renderer;
     UIRenderer ui_renderer;

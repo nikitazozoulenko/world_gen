@@ -6,10 +6,11 @@
 
 //Standard includes
 #include <string>
-#include <uiElement.h>
 #include <masterRenderer.h>
 #include <inputScheme.h>
 #include <settings.h>
+#include <uiWindow.h>
+
 
 class Scene 
 {
@@ -22,7 +23,6 @@ public:
 protected:
     Settings& settings;
 private:
-    //std::vector<UIElement> ui_elements;
 };
 
 
@@ -44,6 +44,9 @@ public:
     void render(MasterRenderer& masterRenderer);
 protected:
 private:
+    std::vector<UIWindow> ui_windows;
+
+    void createUI();
 };
 
 

@@ -6,12 +6,15 @@
 
 #include <settings.h>
 #include <camera.h>
+#include <uiWindow.h>
+
+#include <vector>
 
 class InputScheme
 {
 public:
     InputScheme(Settings& settings, GLFWwindow* window, Camera& camera);
-    virtual void processKeyboardInput(float delta_time) = 0;
+    virtual void processInput(float delta_time) = 0;
     virtual void init() = 0;
     virtual void remove() = 0;
 
@@ -36,7 +39,7 @@ class FreeCamWorldInputScheme : public InputScheme
 {
 public:
     FreeCamWorldInputScheme(Settings& settings, GLFWwindow* window, Camera& camera);
-    void processKeyboardInput(float delta_time);
+    void processInput(float delta_time);
     void init();
     void remove();
 private:
@@ -45,16 +48,19 @@ private:
     static void change_scene_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 };
 
+
 class MainMenuInputScheme : public InputScheme
 {
 public:
-    MainMenuInputScheme(Settings& settings, GLFWwindow* window, Camera& camera);
-    void processKeyboardInput(float delta_time);
+    MainMenuInputScheme(Settings& settings, GLFWwindow* window, Camera& camera, std::vector<UIWindow>& ui_windows);
+    void processInput(float delta_time);
     void init();
     void remove();
 private:
     static void cursor_pos_callback(GLFWwindow* window, double xpos, double ypos);
     static void change_scene_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+
+    std::vector<UIWindow>& ui_windows;
 };
 
 

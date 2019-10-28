@@ -1,8 +1,10 @@
 #include <inputScheme.h>
 #include <iostream>
 #include <cmath>
+#include <algorithm>
 
 #include <misc.h>
+
 
 ///////// ABSTRACT INPUT SCHEME //////////////////////////////////////////////////////////////////////////////////
 InputScheme::InputScheme(Settings& settings, GLFWwindow* window, Camera& camera) :
@@ -78,7 +80,7 @@ void freeCamMovementInput(GLFWwindow* window, float delta_time, Camera& camera)
 
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
-void FreeCamWorldInputScheme::processKeyboardInput(float delta_time)
+void FreeCamWorldInputScheme::processInput(float delta_time)
 {   
     glfwPollEvents();
 
@@ -93,67 +95,76 @@ void FreeCamWorldInputScheme::processKeyboardInput(float delta_time)
 // glfw: whenever the mouse scroll wheel scrolls, this callback is called
 void FreeCamWorldInputScheme::scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-    FreeCamWorldInputScheme* my_input_scheme = (FreeCamWorldInputScheme*)glfwGetWindowUserPointer(window);
-    my_input_scheme->camera.ProcessMouseScroll(yoffset);
+    FreeCamWorldInputScheme* p_input_scheme = (FreeCamWorldInputScheme*)glfwGetWindowUserPointer(window);
+    p_input_scheme->camera.ProcessMouseScroll(yoffset);
 }
 
 
 // glfw: whenever the mouse moves, this callback is called
 void FreeCamWorldInputScheme::cursor_pos_callback(GLFWwindow* window, double xpos, double ypos)
 {   
-    FreeCamWorldInputScheme* my_input_scheme = (FreeCamWorldInputScheme*)glfwGetWindowUserPointer(window);
-    if (my_input_scheme->firstmouse)
+    FreeCamWorldInputScheme* p_input_scheme = (FreeCamWorldInputScheme*)glfwGetWindowUserPointer(window);
+    if (p_input_scheme->firstmouse)
     {
-        my_input_scheme->mouse_x = xpos;
-        my_input_scheme->mouse_y = ypos;
-        my_input_scheme->firstmouse = false;
+        p_input_scheme->mouse_x = xpos;
+        p_input_scheme->mouse_y = ypos;
+        p_input_scheme->firstmouse = false;
     }
 
-    float xoffset = xpos - my_input_scheme->mouse_x;
-    float yoffset = my_input_scheme->mouse_y - ypos; // reversed since y-coordinates go from bottom to top
+    float xoffset = xpos - p_input_scheme->mouse_x;
+    float yoffset = p_input_scheme->mouse_y - ypos; // reversed since y-coordinates go from bottom to top
 
-    my_input_scheme->mouse_x = xpos;
-    my_input_scheme->mouse_y = ypos;
+    p_input_scheme->mouse_x = xpos;
+    p_input_scheme->mouse_y = ypos;
 
-    my_input_scheme->camera.ProcessMouseMovement(xoffset, yoffset);
+    p_input_scheme->camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
-// glfw: TODO
+
+// glfw: I required a callback to change scenes so it doesnt get used twice and change back directly
 void FreeCamWorldInputScheme::change_scene_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-    FreeCamWorldInputScheme* my_input_scheme = (FreeCamWorldInputScheme*)glfwGetWindowUserPointer(window);
+    FreeCamWorldInputScheme* p_input_scheme = (FreeCamWorldInputScheme*)glfwGetWindowUserPointer(window);
     if (key == GLFW_KEY_L && action == GLFW_PRESS)
-        my_input_scheme->change_scene=SCENE_MainMenu;
+        p_input_scheme->change_scene=SCENE_MainMenu;
 }
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////// MainMenu InputScheme //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-MainMenuInputScheme::MainMenuInputScheme(Settings& settings, GLFWwindow* window, Camera& camera) :
-    InputScheme(settings, window, camera)
+
+MainMenuInputScheme::MainMenuInputScheme(Settings& settings, GLFWwindow* window, Camera& camera, std::vector<UIWindow>& ui_windows) :
+    InputScheme(settings, window, camera),
+    ui_windows(ui_windows)
 {
 
 }
 
 
 void MainMenuInputScheme::init()
-{
+{   
+    //cursor
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);//disable cursor
+
     //set user defined pointer for mouse callbacks
     glfwSetWindowUserPointer(window, this);
 
     //other callbacks
     glfwSetKeyCallback(window, change_scene_key_callback);
+    glfwSetCursorPosCallback(window, cursor_pos_callback);
 }
 
 
 void MainMenuInputScheme::remove()
 {
     glfwSetKeyCallback(window, NULL);
+    glfwSetCursorPosCallback(window, NULL);
 }
 
 
-void MainMenuInputScheme::processKeyboardInput(float delta_time)
+void MainMenuInputScheme::processInput(float delta_time)
 {
     glfwPollEvents();
 
@@ -163,10 +174,69 @@ void MainMenuInputScheme::processKeyboardInput(float delta_time)
 }
 
 
-// glfw: TODO
+// glfw: I required a callback to change scenes so it doesnt get used twice and change back directly
 void MainMenuInputScheme::change_scene_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-    FreeCamWorldInputScheme* my_input_scheme = (FreeCamWorldInputScheme*)glfwGetWindowUserPointer(window);
+    FreeCamWorldInputScheme* p_input_scheme = (FreeCamWorldInputScheme*)glfwGetWindowUserPointer(window);
     if (key == GLFW_KEY_L && action == GLFW_PRESS)
-        my_input_scheme->change_scene=SCENE_FreeCamWorld;
+        p_input_scheme->change_scene=SCENE_FreeCamWorld;
+}
+
+
+// glfw: whenever the mouse moves, this callback is called
+void MainMenuInputScheme::cursor_pos_callback(GLFWwindow* window, double xpos, double ypos)
+{   //does logic for moving UIWindows
+    MainMenuInputScheme* p_input_scheme = (MainMenuInputScheme*)glfwGetWindowUserPointer(window);
+    std::vector<UIWindow>& ui_windows = p_input_scheme->ui_windows;
+
+    //normalizes [0,1] coords. y from bot to top, x from left to right
+    float x =  xpos/p_input_scheme->settings.getWindowWidth();
+    float y =  1.0 - ypos/p_input_scheme->settings.getWindowHeight();
+
+    //offsets update. special
+    if (p_input_scheme->firstmouse){
+        p_input_scheme->mouse_x = x;
+        p_input_scheme->mouse_y = y;
+        p_input_scheme->firstmouse = false;
+    }
+    float xoffset = x - p_input_scheme->mouse_x;
+    float yoffset = y - p_input_scheme->mouse_y;
+    p_input_scheme->mouse_x = x;
+    p_input_scheme->mouse_y = y;
+
+    //if mouse clicked
+    int state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
+    if (state == GLFW_PRESS){
+        //find all ui_windows that are under the cursor to later pick the top most one.
+        std::vector<int> window_indices;
+        for(int i=0; i<ui_windows.size(); i++){   
+            UIWindow& ui_window = ui_windows[i];
+            float& x0 = ui_window.coords.x;
+            float& y0 = ui_window.coords.y;
+            float& width = ui_window.width;
+            float& height = ui_window.height;
+
+            //if (x,y) in window
+            if(x<(x0+width) && x0<x){
+                if(y<(y0+height) && y0<y){
+                    window_indices.push_back(i);
+                }
+            }
+        }
+
+        //now pick the top most window
+        if(window_indices.size()>0){
+            std::sort(window_indices.begin(), window_indices.end(), [&ui_windows](const auto& lhs, const auto& rhs){return ui_windows[lhs].last_clicked > ui_windows[rhs].last_clicked;});
+            UIWindow& ui_window = ui_windows[window_indices[0]];
+            float& x0 = ui_window.coords.x;
+            float& y0 = ui_window.coords.y;
+            float& width = ui_window.width;
+            float& height = ui_window.height;
+            //now do logic things
+
+            x0 += xoffset;
+            y0 += yoffset;
+            ui_window.last_clicked = glfwGetTime();
+        }
+    }
 }

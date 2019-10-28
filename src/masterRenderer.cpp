@@ -15,7 +15,7 @@ MasterRenderer::MasterRenderer(GLFWwindow* window, Settings& settings) :
 }
 
 
-void MasterRenderer::render(World& world, Camera& camera)
+void MasterRenderer::render_freecamworld(World& world, Camera& camera)
 {
     //once every frame
     glClearColor(135/255.0f, 206/255.0f, 235/255.0f, 1.0f);
@@ -26,11 +26,11 @@ void MasterRenderer::render(World& world, Camera& camera)
 }
 
 
-void MasterRenderer::render_menu(Camera& camera)
+void MasterRenderer::render_mainmenu(Camera& camera, std::vector<UIWindow>& ui_windows)
 {
     glClearColor(123/255.0f, 45/255.0f, 67/255.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    ui_renderer.render();
+    ui_renderer.render(ui_windows);
     glfwSwapBuffers(window);
 }

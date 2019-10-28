@@ -19,6 +19,8 @@ public:
     Shaderprogram(const char * vertex_path, const char * geometry_path, const char * fragment_path, const char * compute_path);
     void checkProgramError(unsigned int flag, const std::string& error_message);
     void setUniformMat4(const char * name, glm::mat4 matrix);
+    void setUniformVec4(const char * name, glm::vec4 vector);
+    void setUniformVec4(const char * name, float x, float y, float z, float w);
     void setUniformVec3(const char * name, glm::vec3 vector);
     void setUniformVec3(const char * name, float x, float y, float z);
     void setUniformVec2(const char * name, glm::vec2 vector);

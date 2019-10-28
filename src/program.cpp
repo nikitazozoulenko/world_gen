@@ -103,8 +103,7 @@ void Program::run()
 
         // per-frame time logic
         float delta_time = timer.update_delta_time();
-        p_scene->p_input_scheme->processKeyboardInput(delta_time);
-        
+        p_scene->p_input_scheme->processInput(delta_time);
         //render
         p_scene->render(renderer);
     }

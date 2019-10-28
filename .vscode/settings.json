@@ -87,6 +87,7 @@
         "ios": "cpp",
         "queue": "cpp",
         "stack": "cpp",
-        "tensor": "cpp"
+        "tensor": "cpp",
+        "*.inc": "cpp"
     }
 }

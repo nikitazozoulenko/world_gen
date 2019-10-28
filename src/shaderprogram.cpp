@@ -78,6 +78,20 @@ void Shaderprogram::setUniformMat4(const char * name, glm::mat4 matrix)
 }
 
 
+void Shaderprogram::setUniformVec4(const char * name, glm::vec4 vector)
+{
+    unsigned int loc = glGetUniformLocation(ID, name);
+    glUniform4fv(loc, 1, glm::value_ptr(vector));
+}
+
+
+void Shaderprogram::setUniformVec4(const char * name, float x, float y, float z, float w)
+{   
+    unsigned int loc = glGetUniformLocation(ID, name);
+    glUniform4f(loc, x, y, z, w);
+}
+
+
 void Shaderprogram::setUniformVec3(const char * name, glm::vec3 vector)
 {
     unsigned int loc = glGetUniformLocation(ID, name);
