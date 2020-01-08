@@ -188,6 +188,7 @@ void MainMenuInputScheme::cursor_pos_callback(GLFWwindow* window, double xpos, d
 {   //does logic for moving UIWindows
     MainMenuInputScheme* p_input_scheme = (MainMenuInputScheme*)glfwGetWindowUserPointer(window);
     std::vector<UIWindow>& ui_windows = p_input_scheme->ui_windows;
+    int& last_mouse_state = p_input_scheme->last_mouse_state;
 
     //normalizes [0,1] coords. y from bot to top, x from left to right
     float x =  xpos/p_input_scheme->settings.getWindowWidth();
@@ -204,39 +205,7 @@ void MainMenuInputScheme::cursor_pos_callback(GLFWwindow* window, double xpos, d
     p_input_scheme->mouse_x = x;
     p_input_scheme->mouse_y = y;
 
-    //if mouse clicked
-    int state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
-    if (state == GLFW_PRESS){
-        //find all ui_windows that are under the cursor to later pick the top most one.
-        std::vector<int> window_indices;
-        for(int i=0; i<ui_windows.size(); i++){   
-            UIWindow& ui_window = ui_windows[i];
-            float& x0 = ui_window.coords.x;
-            float& y0 = ui_window.coords.y;
-            float& width = ui_window.width;
-            float& height = ui_window.height;
-
-            //if (x,y) in window
-            if(x<(x0+width) && x0<x){
-                if(y<(y0+height) && y0<y){
-                    window_indices.push_back(i);
-                }
-            }
-        }
-
-        //now pick the top most window
-        if(window_indices.size()>0){
-            std::sort(window_indices.begin(), window_indices.end(), [&ui_windows](const auto& lhs, const auto& rhs){return ui_windows[lhs].last_clicked > ui_windows[rhs].last_clicked;});
-            UIWindow& ui_window = ui_windows[window_indices[0]];
-            float& x0 = ui_window.coords.x;
-            float& y0 = ui_window.coords.y;
-            float& width = ui_window.width;
-            float& height = ui_window.height;
-            //now do logic things
-
-            x0 += xoffset;
-            y0 += yoffset;
-            ui_window.last_clicked = glfwGetTime();
-        }
-    }
+    int mouse_state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
+    UIWindow::uiwindow_mouse_callback(mouse_state, last_mouse_state, ui_windows, xoffset, yoffset, x, y);
+    last_mouse_state = mouse_state;
 }

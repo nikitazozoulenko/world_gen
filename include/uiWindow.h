@@ -6,9 +6,15 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include <vector>
+
 #include <shaderprogram.h>
 
 class UIWindow
+// What window should be:
+//     *Create window,
+//     *give window buttons, text, sliders,
+//     *give layout
 {
 public:
     UIWindow(glm::vec2 coords, float width, float height, glm::vec3 color);
@@ -26,8 +32,12 @@ public:
     //color in [0,1]^3
     glm::vec3 color;
 
-    //last time the window was clicked
-    double last_clicked;
+    //last time the window was clicked, used to know which is top most window
+    double time_last_press;
+    bool held_down;
+
+    static UIWindow* find_uiwindow_on_cursor(std::vector<UIWindow>& ui_windows, float& x, float& y);
+    static void uiwindow_mouse_callback(int& mouse_state, int& last_mouse_state, std::vector<UIWindow>& ui_windows, float& xoffset, float& yoffset, float& x, float& y);
 
 private:
     void setup();

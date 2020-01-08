@@ -61,6 +61,7 @@ private:
     static void change_scene_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
     std::vector<UIWindow>& ui_windows;
+    int last_mouse_state;
 };
 
 
