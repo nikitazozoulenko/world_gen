@@ -72,40 +72,43 @@ UIWindow* UIWindow::find_uiwindow_on_cursor(std::vector<UIWindow>& ui_windows, f
     return nullptr;
 }
 
-void UIWindow::uiwindow_mouse_callback(int& mouse_state, int& last_mouse_state, std::vector<UIWindow>& ui_windows, float& xoffset, float& yoffset, float& x, float& y)
+void UIWindow::uiwindow_mouse_move_callback(int& mouse_state, std::vector<UIWindow>& ui_windows, float& xoffset, float& yoffset, float& x, float& y)
 {
     //if mouse pressed (state is either PRESS or RELEASE)
     if (mouse_state == GLFW_PRESS)
     {
-        UIWindow* pressed_uiwindow = find_uiwindow_on_cursor(ui_windows, x, y);
-        if (pressed_uiwindow)
+        UIWindow* p_pressed_uiwindow = find_uiwindow_on_cursor(ui_windows, x, y);
+        if (p_pressed_uiwindow)
         {
-            bool& held_down = pressed_uiwindow->held_down;
-            double& time_last_press = pressed_uiwindow->time_last_press;
-            float& x0 = pressed_uiwindow->coords.x;
-            float& y0 = pressed_uiwindow->coords.y;
-            float& width = pressed_uiwindow->width;
-            float& height = pressed_uiwindow->height;
+            bool& held_down = p_pressed_uiwindow->held_down;
+            float& x0 = p_pressed_uiwindow->coords.x;
+            float& y0 = p_pressed_uiwindow->coords.y;
             if(held_down)
-            {
-                //MOUSE HOLD LOGIC
+            {//MOUSE HOLD LOGIC
                 x0 += xoffset;
                 y0 += yoffset;
-            }else
-            {
-                //MOUSE CLICK LOGIC
-                if(last_mouse_state == GLFW_RELEASE){
-                    held_down = true;
-                }
-            }
-            time_last_press = glfwGetTime();
-        }
-        else
-        {
-            //reset all was pressed last callback for next callback
-            for (auto& uiwindow : ui_windows){
-                uiwindow.held_down = false;
             }
         }
     }
+}
+
+void UIWindow::uiwindow_click_callback(int& mouse_state, std::vector<UIWindow>& ui_windows, float& x,float& y)
+{
+    if (mouse_state == GLFW_PRESS)
+    {
+        UIWindow* p_pressed_uiwindow = find_uiwindow_on_cursor(ui_windows, x, y);
+        if (p_pressed_uiwindow)
+        {
+            p_pressed_uiwindow->held_down=true;
+            p_pressed_uiwindow->time_last_press = glfwGetTime();
+        }
+    }
+    else//if mouse_state == GLFW_RELEASE
+    {
+        for (auto& uiwindow : ui_windows)
+        {//reset all was pressed last callback for next callback
+            uiwindow.held_down = false;
+        }
+    }
+    
 }

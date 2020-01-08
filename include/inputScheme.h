@@ -59,9 +59,10 @@ public:
 private:
     static void cursor_pos_callback(GLFWwindow* window, double xpos, double ypos);
     static void change_scene_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+    static void mouse_click_callback(GLFWwindow* window, int button, int action, int mods);
 
     std::vector<UIWindow>& ui_windows;
-    int last_mouse_state;
+    int mouse_state;
 };
 
 

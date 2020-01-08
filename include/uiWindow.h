@@ -37,7 +37,8 @@ public:
     bool held_down;
 
     static UIWindow* find_uiwindow_on_cursor(std::vector<UIWindow>& ui_windows, float& x, float& y);
-    static void uiwindow_mouse_callback(int& mouse_state, int& last_mouse_state, std::vector<UIWindow>& ui_windows, float& xoffset, float& yoffset, float& x, float& y);
+    static void uiwindow_mouse_move_callback(int& mouse_state, std::vector<UIWindow>& ui_windows, float& xoffset, float& yoffset, float& x, float& y);
+    static void uiwindow_click_callback(int& mouse_state, std::vector<UIWindow>& ui_windows, float& x,float& y);
 
 private:
     void setup();

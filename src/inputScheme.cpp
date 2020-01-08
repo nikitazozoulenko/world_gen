@@ -137,7 +137,8 @@ void FreeCamWorldInputScheme::change_scene_key_callback(GLFWwindow* window, int 
 
 MainMenuInputScheme::MainMenuInputScheme(Settings& settings, GLFWwindow* window, Camera& camera, std::vector<UIWindow>& ui_windows) :
     InputScheme(settings, window, camera),
-    ui_windows(ui_windows)
+    ui_windows(ui_windows),
+    mouse_state(0)
 {
 
 }
@@ -154,6 +155,7 @@ void MainMenuInputScheme::init()
     //other callbacks
     glfwSetKeyCallback(window, change_scene_key_callback);
     glfwSetCursorPosCallback(window, cursor_pos_callback);
+    glfwSetMouseButtonCallback(window, mouse_click_callback);
 }
 
 
@@ -188,11 +190,10 @@ void MainMenuInputScheme::cursor_pos_callback(GLFWwindow* window, double xpos, d
 {   //does logic for moving UIWindows
     MainMenuInputScheme* p_input_scheme = (MainMenuInputScheme*)glfwGetWindowUserPointer(window);
     std::vector<UIWindow>& ui_windows = p_input_scheme->ui_windows;
-    int& last_mouse_state = p_input_scheme->last_mouse_state;
-
     //normalizes [0,1] coords. y from bot to top, x from left to right
     float x =  xpos/p_input_scheme->settings.getWindowWidth();
     float y =  1.0 - ypos/p_input_scheme->settings.getWindowHeight();
+    int& mouse_state = p_input_scheme->mouse_state;
 
     //offsets update. special
     if (p_input_scheme->firstmouse){
@@ -205,7 +206,21 @@ void MainMenuInputScheme::cursor_pos_callback(GLFWwindow* window, double xpos, d
     p_input_scheme->mouse_x = x;
     p_input_scheme->mouse_y = y;
 
-    int mouse_state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
-    UIWindow::uiwindow_mouse_callback(mouse_state, last_mouse_state, ui_windows, xoffset, yoffset, x, y);
-    last_mouse_state = mouse_state;
+    UIWindow::uiwindow_mouse_move_callback(mouse_state, ui_windows, xoffset, yoffset, x, y);
+}
+
+
+// glfw: whenever the mouse is pressed or released, this callback is called (only when state changes)
+void MainMenuInputScheme::mouse_click_callback(GLFWwindow* window, int button, int action, int mods)
+{
+    MainMenuInputScheme* p_input_scheme = (MainMenuInputScheme*)glfwGetWindowUserPointer(window);
+    std::vector<UIWindow>& ui_windows = p_input_scheme->ui_windows;
+    p_input_scheme->mouse_state = action;
+    //normalizes [0,1] coords. y from bot to top, x from left to right
+    double xpos, ypos;
+    glfwGetCursorPos(window, &xpos, &ypos);
+    float x =  xpos/p_input_scheme->settings.getWindowWidth();
+    float y =  1.0 - ypos/p_input_scheme->settings.getWindowHeight();
+
+    UIWindow::uiwindow_click_callback(action, ui_windows, x, y);
 }
