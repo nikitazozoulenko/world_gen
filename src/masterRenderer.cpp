@@ -5,8 +5,7 @@
 MasterRenderer::MasterRenderer(GLFWwindow* window, Settings& settings) :
     window(window),
     settings(settings),
-    block_renderer(BlockRenderer(settings)),
-    ui_renderer(UIRenderer())
+    block_renderer(BlockRenderer(settings))
 {
     glEnable(GL_DEPTH_TEST);
     //glEnable(GL_CULL_FACE);
@@ -26,11 +25,11 @@ void MasterRenderer::render_freecamworld(World& world, Camera& camera)
 }
 
 
-void MasterRenderer::render_mainmenu(Camera& camera, std::vector<UIWindow>& ui_windows)
+void MasterRenderer::render_mainmenu(std::vector<UIWindow*>& ui_windows, Camera& camera)
 {
     glClearColor(123/255.0f, 45/255.0f, 67/255.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+    //TODO only use new renderer not masterRenderer old ideas
     ui_renderer.render(ui_windows);
     glfwSwapBuffers(window);
 }

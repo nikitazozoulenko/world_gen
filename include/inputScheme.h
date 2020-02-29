@@ -52,7 +52,7 @@ private:
 class MainMenuInputScheme : public InputScheme
 {
 public:
-    MainMenuInputScheme(Settings& settings, GLFWwindow* window, Camera& camera, std::vector<UIWindow>& ui_windows);
+    MainMenuInputScheme(Settings& settings, GLFWwindow* window, Camera& camera, std::vector<UIWindow*>& ui_windows);
     void processInput(float delta_time);
     void init();
     void remove();
@@ -61,7 +61,7 @@ private:
     static void change_scene_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
     static void mouse_click_callback(GLFWwindow* window, int button, int action, int mods);
 
-    std::vector<UIWindow>& ui_windows;
+    std::vector<UIWindow*>& ui_windows;
     int mouse_state;
 };
 

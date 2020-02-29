@@ -6,7 +6,7 @@
 Program::Program() :
     settings(Settings()),
     window(createWindow(settings)),
-    renderer(MasterRenderer(window, settings)),
+    masterRenderer(MasterRenderer(window, settings)),
     p_scene(createFreeCamWorld()),
     timer(Timer())
 {
@@ -66,20 +66,19 @@ GLFWwindow* Program::createWindow(Settings& settings)
 
 FreeCamWorld* Program::createFreeCamWorld()
 {
-    return new FreeCamWorld(settings, window);
+    return new FreeCamWorld(settings, window, masterRenderer);
 }
 
 
 MainMenu* Program::createMainMenu()
 {
-    return new MainMenu(settings, window);
+    return new MainMenu(settings, window, masterRenderer);
 }
 
 
 void Program::changeSceneIfNeeded()
 {
     int change_scene = p_scene->p_input_scheme->change_scene;
-    print_float("change_scene", change_scene);
     if(change_scene)
     {
         p_scene->p_input_scheme->remove();
@@ -104,7 +103,8 @@ void Program::run()
         // per-frame time logic
         float delta_time = timer.update_delta_time();
         p_scene->p_input_scheme->processInput(delta_time);
+        p_scene->scene_logic(delta_time);
         //render
-        p_scene->render(renderer);
+        p_scene->render();
     }
 }

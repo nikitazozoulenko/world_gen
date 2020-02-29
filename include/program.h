@@ -28,7 +28,7 @@ private:
     GLFWwindow* window;
 
     // Renderer
-    MasterRenderer renderer;
+    MasterRenderer masterRenderer;
 
     // Current Scene, game world may be included in scene
     Scene* p_scene;

@@ -1,0 +1,3 @@
+sudo apt-get install libglfw3-dev libglfw3 libglm-dev libfreetype6 libfreetype6-dev 
+
+put glad header file in /usr/include/glad

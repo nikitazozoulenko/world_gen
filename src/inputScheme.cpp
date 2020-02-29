@@ -135,7 +135,7 @@ void FreeCamWorldInputScheme::change_scene_key_callback(GLFWwindow* window, int 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-MainMenuInputScheme::MainMenuInputScheme(Settings& settings, GLFWwindow* window, Camera& camera, std::vector<UIWindow>& ui_windows) :
+MainMenuInputScheme::MainMenuInputScheme(Settings& settings, GLFWwindow* window, Camera& camera, std::vector<UIWindow*>& ui_windows) :
     InputScheme(settings, window, camera),
     ui_windows(ui_windows),
     mouse_state(0)
@@ -163,6 +163,7 @@ void MainMenuInputScheme::remove()
 {
     glfwSetKeyCallback(window, NULL);
     glfwSetCursorPosCallback(window, NULL);
+    glfwSetMouseButtonCallback(window, NULL);
 }
 
 
@@ -189,7 +190,7 @@ void MainMenuInputScheme::change_scene_key_callback(GLFWwindow* window, int key,
 void MainMenuInputScheme::cursor_pos_callback(GLFWwindow* window, double xpos, double ypos)
 {   //does logic for moving UIWindows
     MainMenuInputScheme* p_input_scheme = (MainMenuInputScheme*)glfwGetWindowUserPointer(window);
-    std::vector<UIWindow>& ui_windows = p_input_scheme->ui_windows;
+    std::vector<UIWindow*>& ui_windows = p_input_scheme->ui_windows;
     //normalizes [0,1] coords. y from bot to top, x from left to right
     float x =  xpos/p_input_scheme->settings.getWindowWidth();
     float y =  1.0 - ypos/p_input_scheme->settings.getWindowHeight();
@@ -214,7 +215,7 @@ void MainMenuInputScheme::cursor_pos_callback(GLFWwindow* window, double xpos, d
 void MainMenuInputScheme::mouse_click_callback(GLFWwindow* window, int button, int action, int mods)
 {
     MainMenuInputScheme* p_input_scheme = (MainMenuInputScheme*)glfwGetWindowUserPointer(window);
-    std::vector<UIWindow>& ui_windows = p_input_scheme->ui_windows;
+    std::vector<UIWindow*>& ui_windows = p_input_scheme->ui_windows;
     p_input_scheme->mouse_state = action;
     //normalizes [0,1] coords. y from bot to top, x from left to right
     double xpos, ypos;
