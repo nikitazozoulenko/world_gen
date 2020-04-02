@@ -69,19 +69,15 @@ void MainMenu::createUIWindow(glm::vec2 coords, float width, float height, glm::
     //add to list
     UIWindow* p_ui_window = new UIWindow(coords, width, height, color);
     ui_windows.push_back(p_ui_window);
-    //add render info
-    masterRenderer.ui_renderer.add_ui_window(p_ui_window);
 }
 
 
 void MainMenu::removeUIWindow(UIWindow* p_ui_window)
 {
-    //remove all render info
-    masterRenderer.ui_renderer.remove_ui_window(p_ui_window);
     //remove from list
     auto position = std::find(ui_windows.begin(), ui_windows.end(), p_ui_window);
     ui_windows.erase(position);
-
+    delete p_ui_window;
 }
 
 

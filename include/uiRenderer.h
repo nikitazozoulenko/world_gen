@@ -21,15 +21,18 @@ public:
     UIRenderer();
     void render(std::vector<UIWindow*>& ui_windows);
 
-    void add_ui_window(UIWindow* p_ui_window);
-    void remove_ui_window(UIWindow* p_ui_window);
+    // void add_ui_window(UIWindow* p_ui_window);
+    // void remove_ui_window(UIWindow* p_ui_window);
     
 private:
     Shaderprogram ui_shaderprogram;
-    std::unordered_map<UIWindow*, unsigned int> VAOS;
-    std::unordered_map<UIWindow*, unsigned int> VBOS;
+    unsigned int vao_quad;
+    unsigned int vbo_quad;
+    // std::unordered_map<UIWindow*, unsigned int> VAOS;
+    // std::unordered_map<UIWindow*, unsigned int> VBOS;
     FontDrawer fontDrawer;
     void createShaders();
+    void create_quad_vao_vbo();
 };
 
 

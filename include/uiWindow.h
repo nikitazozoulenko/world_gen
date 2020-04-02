@@ -34,19 +34,9 @@ public:
 private:
 };
 
-// class SlidersBundle3D
-// {
-// public:
-//     SlidersBundle3D()
-// private:
-// }
 
 
 class UIWindow
-// What window should be: TODO, may be wrong read at a later date
-//     *Create window,
-//     *give window buttons, text, sliders,
-//     *give layout
 {
 public:
     UIWindow(glm::vec2 coords, float width, float height, glm::vec3 color);
