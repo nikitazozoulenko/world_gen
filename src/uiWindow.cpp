@@ -4,11 +4,12 @@
 #include <algorithm>
 
 
-UISlider::UISlider(double min, double max, double width, double height, double tick_width, double line_height):
+UISlider::UISlider(float min, float max, glm::vec2 coords, float width, float height, float tick_width, float line_height):
     min(min),
     max(max),
     value((min+max)/2.0),
     held_down(false),
+    coords(coords),
     width(width),
     height(height),
     tick_width(tick_width),
@@ -24,10 +25,10 @@ UIWindow::UIWindow(glm::vec2 coords, float width, float height, glm::vec3 color)
     height(height),
     color(color),
     time_last_press(glfwGetTime()),
-    held_down(false),
-    slider(UISlider(0.0, 10.0, 1.0, 1.0))
+    held_down(false)
 {
-
+    sliders.push_back(UISlider(10.0, 20.0, glm::vec2(0.1,0.1), 0.4, 0.4, 0.3, 0.1));
+    sliders.push_back(UISlider(10.0, 20.0, glm::vec2(0.6,0.6), 0.3, 0.3, 0.3, 0.1));
 }
 
 
