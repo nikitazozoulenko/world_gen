@@ -59,7 +59,7 @@ MainMenu::MainMenu(Settings& settings, GLFWwindow* window, MasterRenderer& maste
 
 void MainMenu::createUI()
 {
-    createUIWindow(glm::vec2(0.1, 0.1), 0.4, 0.4, glm::vec3(54/255.0, 54/255.0, 99/255.0));
+    createUIWindow(glm::vec2(0.1, 0.1), 0.3, 0.2, glm::vec3(54/255.0, 54/255.0, 99/255.0));
     //createUIWindow(glm::vec2(0.2, 0.6), 0.7, 0.3, glm::vec3(0.8,0.3,0.2));
 }
 

@@ -54,12 +54,16 @@ public:
 
     //ui elements
     std::vector<UISlider> sliders;
+    UISlider* p_pressed_slider;
 
     //last time the window was clicked, used to know which is top most window
     double time_last_press;
     bool held_down;
 
+    static UISlider* find_slider_on_cursor(UIWindow* p_ui_window, float& x, float& y);
     static UIWindow* find_uiwindow_on_cursor(std::vector<UIWindow*>& ui_windows, float& x, float& y);
+    static UISlider* find_if_on_slider(UIWindow* p_ui_window, UISlider& slider, float& x, float& y);
+    static UISlider* find_if_on_slider_tick(UIWindow* p_ui_window, UISlider& slider, float& x, float& y);
     static void uiwindow_mouse_move_callback(int& mouse_state, std::vector<UIWindow*>& ui_windows, float& xoffset, float& yoffset, float& x, float& y);
     static void uiwindow_click_callback(int& mouse_state, std::vector<UIWindow*>& ui_windows, float& x,float& y);
 
