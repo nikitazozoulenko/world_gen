@@ -4,7 +4,8 @@
 #include <algorithm>
 
 
-UISlider::UISlider(float min, float max, glm::vec2 coords, float width, float height, float tick_width, float line_height):
+UISlider::UISlider(float min, float max, glm::vec2 coords, float width, float height, float tick_width, float line_height, 
+                    std::function<void()>& fun):
     min(min),
     max(max),
     value((min+max)/2.0),
@@ -13,7 +14,8 @@ UISlider::UISlider(float min, float max, glm::vec2 coords, float width, float he
     width(width),
     height(height),
     tick_width(tick_width),
-    line_height(line_height)
+    line_height(line_height),
+    fun(fun)
 {
 
 }
@@ -26,28 +28,10 @@ UIWindow::UIWindow(glm::vec2 coords, float width, float height, glm::vec3 color)
     height(height),
     color(color),
     time_last_press(glfwGetTime()),
-    held_down(false)
+    held_down(false),
+    p_pressed_slider(nullptr)
 {
-    //how big a slider is
-    float w = 0.44;
-    float off_x = (1-2*w)/3.0;
-    float h = 0.25;
-    float off_y = (1-3*h)/4.0;
 
-    float tick_w = 0.3;
-    float line_h = 0.2;
-
-    float min_val = 10;
-    float max_val = 20;
-
-    sliders.push_back(UISlider(min_val, max_val, glm::vec2(off_x, off_y), w, h, tick_w, line_h));
-    sliders.push_back(UISlider(min_val, max_val, glm::vec2(off_x*2 + w, off_y), w, h, tick_w, line_h));
-
-    sliders.push_back(UISlider(min_val, max_val, glm::vec2(off_x, off_y*2+h), w, h, tick_w, line_h));
-    sliders.push_back(UISlider(min_val, max_val, glm::vec2(off_x*2 + w, off_y*2+h), w, h, tick_w, line_h));
-
-    sliders.push_back(UISlider(min_val, max_val, glm::vec2(off_x, off_y*3 +h+h), w, h, tick_w, line_h));
-    sliders.push_back(UISlider(min_val, max_val, glm::vec2(off_x*2 + w, off_y*3 +h+h), w, h, tick_w, line_h));
 }
 
 
@@ -174,15 +158,20 @@ void UIWindow::uiwindow_mouse_move_callback(int& mouse_state, std::vector<UIWind
                 UISlider* p_pressed_slider = p_pressed_uiwindow->p_pressed_slider;
                 if(p_pressed_slider){
                     if(find_if_on_slider_tick(p_pressed_uiwindow, *p_pressed_slider, x,y)){
-                    float& min = p_pressed_slider->min;
-                    float& max = p_pressed_slider->max;
-                    float& slider_w = p_pressed_slider->width;
-                    float& tick_w = p_pressed_slider->tick_width;
+                        float& min = p_pressed_slider->min;
+                        float& max = p_pressed_slider->max;
+                        float& slider_w = p_pressed_slider->width;
+                        float& tick_w = p_pressed_slider->tick_width;
 
-                    float change = xoffset/slider_w/window_w/(1-tick_w)*(max-min);
-                    float& val = p_pressed_slider->value;
-                    val += change;
-                    val = std::min(std::max(val, min), max);
+                        float change = xoffset/slider_w/window_w/(1-tick_w)*(max-min);
+                        float val = p_pressed_slider->value;
+
+                        float new_val = val + change;
+                        new_val = std::min(std::max(new_val, min), max);
+                        p_pressed_slider->value=new_val;
+                        if(new_val!=val){
+                            p_pressed_slider->fun();
+                        }
                     }
                 }
                 else{

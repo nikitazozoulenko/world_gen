@@ -8,6 +8,7 @@
 
 #include <shaderprogram.h>
 #include <fontRenderer.h>
+#include <settings.h>
 
 #include <vector>
 #include <unordered_map>
@@ -19,7 +20,7 @@ class UISlider;
 class UIRenderer
 {
 public:
-    UIRenderer();
+    UIRenderer(Settings& settings);
     void render(std::vector<UIWindow*>& ui_windows);
     void render_window(UIWindow* p_ui_window);
     void render_window_slider(UISlider& slider, UIWindow* p_ui_window);
@@ -28,6 +29,7 @@ public:
     // void remove_ui_window(UIWindow* p_ui_window);
     
 private:
+    Settings& settings;
     Shaderprogram ui_shaderprogram;
     unsigned int vao_quad;
     unsigned int vbo_quad;

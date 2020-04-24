@@ -5,7 +5,8 @@
 #include <iostream>
 #include <algorithm>
 
-UIRenderer::UIRenderer():
+UIRenderer::UIRenderer(Settings& settings):
+    settings(settings),
     fontDrawer(FontDrawer("/home/nikita/Code/world_gen/resources/KratosTrueType.ttf"))
 {
     createShaders();

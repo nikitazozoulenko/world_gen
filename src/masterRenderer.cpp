@@ -5,7 +5,8 @@
 MasterRenderer::MasterRenderer(GLFWwindow* window, Settings& settings) :
     window(window),
     settings(settings),
-    block_renderer(BlockRenderer(settings))
+    block_renderer(BlockRenderer(settings)),
+    ui_renderer(UIRenderer(settings))
 {
     glEnable(GL_DEPTH_TEST);
     //glEnable(GL_CULL_FACE);

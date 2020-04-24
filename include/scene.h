@@ -11,6 +11,7 @@
 #include <settings.h>
 #include <uiWindow.h>
 #include <uiRenderer.h>
+#include <ui.h>
 
 
 class Scene 
@@ -47,13 +48,10 @@ public:
     MainMenu(Settings& settings, GLFWwindow* window, MasterRenderer& masterRenderer);
     void render();
     void scene_logic(float delta_time);
-    void createUIWindow(glm::vec2 coords, float width, float height, glm::vec3 color);
-    void removeUIWindow(UIWindow* p_ui_window);
+    static void test();
+    UI_MainMenu ui;
 protected:
 private:
-    std::vector<UIWindow*> ui_windows;
-
-    void createUI();
 };
 
 

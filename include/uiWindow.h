@@ -7,20 +7,20 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <vector>
+#include <functional>
 
 #include <shaderprogram.h>
-
-class UIRenderer;
 
 class UISlider
 {
 public:
-    UISlider(float min, float max, glm::vec2 coords, float width, float height, float tick_width=0.3, float line_height=0.5);
+    UISlider(float min, float max, glm::vec2 coords, float width, float height, float tick_width, float line_height, std::function<void()>& fun);
 
     float min;
     float max;
     float value;
-    bool held_down; 
+    bool held_down;
+    std::function<void()> fun;
 
     // all from [0,1] w.r.t. the size of the box its in.
     glm::vec2 coords;

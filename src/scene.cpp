@@ -51,39 +51,22 @@ void FreeCamWorld::scene_logic(float delta_time)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 MainMenu::MainMenu(Settings& settings, GLFWwindow* window, MasterRenderer& masterRenderer):
-    Scene(settings, window, new MainMenuInputScheme(settings, window, camera, ui_windows), masterRenderer)
+    Scene(settings, window, new MainMenuInputScheme(settings, window, camera, this), masterRenderer),
+    ui(UI_MainMenu(this))
 {
-    createUI();
+    ui.createUI();
 }
 
 
-void MainMenu::createUI()
+void MainMenu::test()
 {
-    createUIWindow(glm::vec2(0.1, 0.1), 0.3, 0.2, glm::vec3(54/255.0, 54/255.0, 99/255.0));
-    //createUIWindow(glm::vec2(0.2, 0.6), 0.7, 0.3, glm::vec3(0.8,0.3,0.2));
-}
-
-
-void MainMenu::createUIWindow(glm::vec2 coords, float width, float height, glm::vec3 color)
-{
-    //add to list
-    UIWindow* p_ui_window = new UIWindow(coords, width, height, color);
-    ui_windows.push_back(p_ui_window);
-}
-
-
-void MainMenu::removeUIWindow(UIWindow* p_ui_window)
-{
-    //remove from list
-    auto position = std::find(ui_windows.begin(), ui_windows.end(), p_ui_window);
-    ui_windows.erase(position);
-    delete p_ui_window;
+    print_float("sliding", 0);
 }
 
 
 void MainMenu::render()
 {
-    masterRenderer.render_mainmenu(ui_windows, camera);
+    masterRenderer.render_mainmenu(ui.windows, camera);
 }
 
 
