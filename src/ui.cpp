@@ -52,7 +52,7 @@ void UI_MainMenu::createUI()
     float min_val = 10;
     float max_val = 20;
     
-    std::function<void()> fun = p_scene->test;
+    std::function<void()> fun = std::bind(&MainMenu::test, p_scene);
 
     sliders.push_back(UISlider(min_val, max_val, glm::vec2(off_x, off_y), w, h, tick_w, line_h, fun));
     sliders.push_back(UISlider(min_val, max_val, glm::vec2(off_x*2 + w, off_y), w, h, tick_w, line_h, fun));

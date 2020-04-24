@@ -48,7 +48,7 @@ public:
     MainMenu(Settings& settings, GLFWwindow* window, MasterRenderer& masterRenderer);
     void render();
     void scene_logic(float delta_time);
-    static void test();
+    void test();
     UI_MainMenu ui;
 protected:
 private:
