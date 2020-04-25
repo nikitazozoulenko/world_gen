@@ -17,9 +17,9 @@ ChunkManager::ChunkManager(Settings& settings, ChunkMapivec2& chunk_map):
     createMarchComputeTexture();
     createComputeShader();
 
-    for(int i=0; i<2; i++)
+    for(int i=0; i<1; i++)
     {
-        for(int j=0; j<2; j++)
+        for(int j=0; j<1; j++)
         {
             createChunk(glm::ivec2(i,j));
         }
@@ -62,6 +62,7 @@ void ChunkManager::createComputeShader()
 
 void ChunkManager::createChunk(glm::ivec2 pos)
 {
+    print_float("creating chunk", 0);
     int ch_width = settings.getChunkWidth();
     int ch_height = settings.getChunkHeight();
     int ch_depth = settings.getChunkDepth();

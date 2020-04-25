@@ -30,8 +30,10 @@ void InputScheme::framebuffer_size_callback(GLFWwindow* window, int width, int h
 ///////////////////////////////////////////////////////////// FreeCamWorld InputScheme //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-FreeCamWorldInputScheme::FreeCamWorldInputScheme(Settings& settings, GLFWwindow* window, Camera& camera) :
-    InputScheme(settings, window, camera)
+FreeCamWorldInputScheme::FreeCamWorldInputScheme(Settings& settings, GLFWwindow* window, Camera& camera, FreeCamWorld* p_scene) :
+    InputScheme(settings, window, camera),
+    p_scene(p_scene),
+    mode(CAMMOVE)
 {
 
 }
@@ -39,17 +41,15 @@ FreeCamWorldInputScheme::FreeCamWorldInputScheme(Settings& settings, GLFWwindow*
 
 void FreeCamWorldInputScheme::init()
 {   
-    //disable cursor
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);//disable cursor
-
     //set user defined pointer for mouse callbacks
     glfwSetWindowUserPointer(window, this);
 
     //other callbacks
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-    glfwSetScrollCallback(window, scroll_callback);
-    glfwSetCursorPosCallback(window, cursor_pos_callback);
-    glfwSetKeyCallback(window, change_scene_key_callback);
+    if(mode==CAMMOVE)
+        start_CAMMOVE_mode();
+    else if(mode==MOUSEMOVE)
+        start_MOUSEMOVE_mode();
 }
 
 
@@ -59,6 +59,31 @@ void FreeCamWorldInputScheme::remove()
     glfwSetScrollCallback(window, NULL);
     glfwSetCursorPosCallback(window, NULL);
     glfwSetKeyCallback(window, NULL);
+}
+
+
+void FreeCamWorldInputScheme::start_MOUSEMOVE_mode()
+{
+    mode=MOUSEMOVE;
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);//undisable cursor
+
+    glfwSetScrollCallback(window, NULL);
+    glfwSetCursorPosCallback(window, cursor_pos_callback_MOUSEMOVE);
+    glfwSetKeyCallback(window, change_scene_key_callback);
+    glfwSetMouseButtonCallback(window, mouse_click_callback_MOUSEMOVE);
+}
+
+
+void FreeCamWorldInputScheme::start_CAMMOVE_mode()
+{   
+    mode=CAMMOVE;
+    firstmouse=true;
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);//disable cursor
+
+    glfwSetScrollCallback(window, scroll_callback_CAMMOVE);
+    glfwSetCursorPosCallback(window, cursor_pos_callback_CAMMOVE);
+    glfwSetKeyCallback(window, change_scene_key_callback);
+    glfwSetMouseButtonCallback(window, NULL);
 }
 
 
@@ -85,16 +110,24 @@ void FreeCamWorldInputScheme::processInput(float delta_time)
 {   
     glfwPollEvents();
 
-    //escape exit window
+    if(mode==CAMMOVE)
+        freeCamMovementInput(window, delta_time, camera);
+
+        //escape exit window
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
-
-    freeCamMovementInput(window, delta_time, camera);
+    if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS){
+        if(mode==CAMMOVE){
+            start_MOUSEMOVE_mode();
+        }else if(mode==MOUSEMOVE){
+            start_CAMMOVE_mode();
+        }
+    }
 }
 
 
 // glfw: whenever the mouse scroll wheel scrolls, this callback is called
-void FreeCamWorldInputScheme::scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+void FreeCamWorldInputScheme::scroll_callback_CAMMOVE(GLFWwindow* window, double xoffset, double yoffset)
 {
     FreeCamWorldInputScheme* p_input_scheme = (FreeCamWorldInputScheme*)glfwGetWindowUserPointer(window);
     p_input_scheme->camera.ProcessMouseScroll(yoffset);
@@ -102,7 +135,7 @@ void FreeCamWorldInputScheme::scroll_callback(GLFWwindow* window, double xoffset
 
 
 // glfw: whenever the mouse moves, this callback is called
-void FreeCamWorldInputScheme::cursor_pos_callback(GLFWwindow* window, double xpos, double ypos)
+void FreeCamWorldInputScheme::cursor_pos_callback_CAMMOVE(GLFWwindow* window, double xpos, double ypos)
 {   
     FreeCamWorldInputScheme* p_input_scheme = (FreeCamWorldInputScheme*)glfwGetWindowUserPointer(window);
     if (p_input_scheme->firstmouse)
@@ -131,6 +164,47 @@ void FreeCamWorldInputScheme::change_scene_key_callback(GLFWwindow* window, int 
 }
 
 
+// glfw: whenever the mouse scroll wheel scrolls, this callback is called
+void FreeCamWorldInputScheme::mouse_click_callback_MOUSEMOVE(GLFWwindow* window, int button, int action, int mods)
+{
+    FreeCamWorldInputScheme* p_input_scheme = (FreeCamWorldInputScheme*)glfwGetWindowUserPointer(window);
+    std::vector<UIWindow*>& ui_windows = p_input_scheme->p_scene->ui.windows;
+    p_input_scheme->mouse_state = action;
+    //normalizes [0,1] coords. y from bot to top, x from left to right
+    double xpos, ypos;
+    glfwGetCursorPos(window, &xpos, &ypos);
+    float x =  xpos/p_input_scheme->settings.getWindowWidth();
+    float y =  1.0 - ypos/p_input_scheme->settings.getWindowHeight();
+
+    UIWindow::uiwindow_click_callback(action, ui_windows, x, y);
+}
+
+
+// glfw: whenever the mouse moves, this callback is called
+void FreeCamWorldInputScheme::cursor_pos_callback_MOUSEMOVE(GLFWwindow* window, double xpos, double ypos)
+{   //does logic for moving UIWindows
+    FreeCamWorldInputScheme* p_input_scheme = (FreeCamWorldInputScheme*)glfwGetWindowUserPointer(window);
+    std::vector<UIWindow*>& ui_windows = p_input_scheme->p_scene->ui.windows;
+    //normalizes [0,1] coords. y from bot to top, x from left to right
+    float x =  xpos/p_input_scheme->settings.getWindowWidth();
+    float y =  1.0 - ypos/p_input_scheme->settings.getWindowHeight();
+    int& mouse_state = p_input_scheme->mouse_state;
+
+    //offsets update. special
+    if (p_input_scheme->firstmouse){
+        p_input_scheme->mouse_x = x;
+        p_input_scheme->mouse_y = y;
+        p_input_scheme->firstmouse = false;
+    }
+    float xoffset = x - p_input_scheme->mouse_x;
+    float yoffset = y - p_input_scheme->mouse_y;
+    p_input_scheme->mouse_x = x;
+    p_input_scheme->mouse_y = y;
+
+    UIWindow::uiwindow_mouse_move_callback(mouse_state, ui_windows, xoffset, yoffset, x, y);
+}
+
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////// MainMenu InputScheme //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -148,7 +222,7 @@ MainMenuInputScheme::MainMenuInputScheme(Settings& settings, GLFWwindow* window,
 void MainMenuInputScheme::init()
 {   
     //cursor
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);//disable cursor
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);//undisable cursor
 
     //set user defined pointer for mouse callbacks
     glfwSetWindowUserPointer(window, this);

@@ -37,6 +37,9 @@ public:
     void render();
     void scene_logic(float delta_time);
     World world;
+    UI_FreeCamWorld ui;
+
+    void slider_x_fun();
 protected:
 private:
 };

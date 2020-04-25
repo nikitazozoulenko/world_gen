@@ -5,18 +5,18 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <blockRenderer.h>
-#include <world.h>
-#include <uiWindow.h>
 #include <uiRenderer.h>
 
 #include<vector>
 
+class FreeCamWorld;
+class MainMenu;
 class MasterRenderer
 {
 public:
     MasterRenderer(GLFWwindow* window, Settings& settings);
-    void render_freecamworld(World& world, Camera& camera);
-    void render_mainmenu(std::vector<UIWindow*>& ui_windows, Camera& camera);
+    void render_freecamworld(FreeCamWorld* p_scene);
+    void render_mainmenu(MainMenu* p_scene);
 
     //TODO: remove from public, should be private
     GLFWwindow* window;

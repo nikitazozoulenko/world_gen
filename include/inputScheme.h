@@ -35,18 +35,34 @@ private:
 };
 
 
+class FreeCamWorld;
 class FreeCamWorldInputScheme : public InputScheme
 {
 public:
-    FreeCamWorldInputScheme(Settings& settings, GLFWwindow* window, Camera& camera);
+    FreeCamWorldInputScheme(Settings& settings, GLFWwindow* window, Camera& camera, FreeCamWorld* p_scene);
     void processInput(float delta_time);
     void init();
     void remove();
+
+    enum{CAMMOVE, MOUSEMOVE};
+    int mode;
+
 private:
-    static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
-    static void cursor_pos_callback(GLFWwindow* window, double xpos, double ypos);
+    FreeCamWorld* p_scene;
+    int mouse_state;
+
+    void start_CAMMOVE_mode();
+    void start_MOUSEMOVE_mode();
     static void change_scene_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+
+    static void scroll_callback_CAMMOVE(GLFWwindow* window, double xoffset, double yoffset);
+    static void cursor_pos_callback_CAMMOVE(GLFWwindow* window, double xpos, double ypos);
+
+    static void mouse_click_callback_MOUSEMOVE(GLFWwindow* window, int button, int action, int mods);
+    static void cursor_pos_callback_MOUSEMOVE(GLFWwindow* window, double xpos, double ypos);
 };
+
+
 
 class MainMenu;
 class MainMenuInputScheme : public InputScheme
