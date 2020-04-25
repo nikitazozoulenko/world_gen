@@ -5,7 +5,7 @@
 
 
 UISlider::UISlider(float min, float max, glm::vec2 coords, float width, float height, float tick_width, float line_height, 
-                    std::function<void()>& fun):
+                    std::function<void(float, float)>& fun):
     min(min),
     max(max),
     value((min+max)/2.0),
@@ -17,7 +17,7 @@ UISlider::UISlider(float min, float max, glm::vec2 coords, float width, float he
     line_height(line_height),
     fun(fun)
 {
-
+    fun(value, 0);
 }
 
 
@@ -170,7 +170,7 @@ void UIWindow::uiwindow_mouse_move_callback(int& mouse_state, std::vector<UIWind
                         new_val = std::min(std::max(new_val, min), max);
                         p_pressed_slider->value=new_val;
                         if(new_val!=val){
-                            p_pressed_slider->fun();
+                            p_pressed_slider->fun(new_val, new_val-val);
                         }
                     }
                 }

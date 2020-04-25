@@ -20,6 +20,10 @@ class ChunkManager
 {
 public:
     ChunkManager(Settings& settings, ChunkMapivec2& chunk_map);
+    void createChunk(glm::ivec2 pos);
+
+    float size;
+    float amplitude;
 private:
     Settings& settings;
     ChunkMapivec2& chunk_map;
@@ -28,7 +32,6 @@ private:
 
     void createComputeShader();
     void createMarchComputeTexture();
-    void createChunk(glm::ivec2 pos);
 };
 
 
@@ -37,9 +40,9 @@ class World
 public:
     World(Settings& settings);
     ChunkMapivec2 chunk_map;
+    ChunkManager chunk_manager;
 private:
     Settings& settings;
-    ChunkManager chunk_manager;
 };
 
 

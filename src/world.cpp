@@ -12,7 +12,9 @@ World::World(Settings& settings):
 
 ChunkManager::ChunkManager(Settings& settings, ChunkMapivec2& chunk_map):
     settings(settings),
-    chunk_map(chunk_map)
+    chunk_map(chunk_map),
+    size(20),
+    amplitude(1)
 {
     createMarchComputeTexture();
     createComputeShader();
@@ -53,22 +55,26 @@ void ChunkManager::createComputeShader()
     const char * compute_path =  "/home/nikita/Code/world_gen/src/shaders/generation.comp";
     comp_shaderprogram = Shaderprogram(nullptr, nullptr, nullptr, compute_path);
     comp_shaderprogram.bind();
-    comp_shaderprogram.setUniformFloat("game_time", glfwGetTime());
     comp_shaderprogram.setUniformInt("CH_WIDTH", ch_width);
     comp_shaderprogram.setUniformInt("CH_HEIGHT", ch_height);
     comp_shaderprogram.setUniformInt("CH_DEPTH", ch_depth);
+    comp_shaderprogram.setUniformFloat("game_time", glfwGetTime());
 }
 
 
 void ChunkManager::createChunk(glm::ivec2 pos)
 {
-    print_float("creating chunk", 0);
+    if (chunk_map.count(pos) > 0)
+        chunk_map.erase(pos);
     int ch_width = settings.getChunkWidth();
     int ch_height = settings.getChunkHeight();
     int ch_depth = settings.getChunkDepth();
 
     comp_shaderprogram.bind();
     comp_shaderprogram.setUniformVec2("chunk_pos", pos);
+    comp_shaderprogram.setUniformFloat("size", size);
+    comp_shaderprogram.setUniformFloat("amplitude", amplitude);
+
 
     //run compute shader
     glDispatchCompute(ch_width+1, ch_height, ch_depth+1);

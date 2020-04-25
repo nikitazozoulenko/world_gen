@@ -7,6 +7,8 @@ uniform vec2 chunk_pos;
 uniform int CH_WIDTH;
 uniform int CH_HEIGHT;
 uniform int CH_DEPTH;
+uniform float amplitude;
+uniform float size;
 
 #define PI 3.14159265359
 #define N_OCTAVES 1
@@ -77,7 +79,7 @@ vec3 rotate(vec3 v, vec3 axis, float rad)
 }
 
 
-float simplexNoise2D(float x, float y, float amplitude) //"world" x and y, can be scaled
+float simplexNoise2D(float x, float y) //"world" x and y, can be scaled
 {
     float noise = 0.0;
 
@@ -127,7 +129,7 @@ float simplexNoise2D(float x, float y, float amplitude) //"world" x and y, can b
 }
 
 
-float simplexNoise3D(float x, float y, float z, float amplitude) //"world" x, y and z, can be scaled
+float simplexNoise3D(float x, float y, float z) //"world" x, y and z, can be scaled
 {
     float noise = 0.0;
 
@@ -204,32 +206,32 @@ float simplexNoise3D(float x, float y, float z, float amplitude) //"world" x, y 
 
 
 
-float simplexOctaves2D(float world_x, float world_y, float sizes[N_OCTAVES], float amplitudes[N_OCTAVES])
-{
-    float noise = 0.0;
-    for (int i=0; i<N_OCTAVES; i++)
-    {
-        float size = sizes[i];
-        float amplitude = amplitudes[i];
-        noise += simplexNoise2D(world_x/size, world_y/size, amplitude);
-    }
-    // No bounds checking
-    return noise;
-}
+// float simplexOctaves2D(float world_x, float world_y, float sizes[N_OCTAVES], float amplitudes[N_OCTAVES])
+// {
+//     float noise = 0.0;
+//     for (int i=0; i<N_OCTAVES; i++)
+//     {
+//         float size = sizes[i];
+//         float amplitude = amplitudes[i];
+//         noise += simplexNoise2D(world_x/size, world_y/size, amplitude);
+//     }
+//     // No bounds checking
+//     return noise;
+// }
 
 
-float simplexOctaves3D(float world_x, float world_y, float world_z, float sizes[N_OCTAVES], float amplitudes[N_OCTAVES])
-{
-    float noise = 0.0;
-    for (int i=0; i<N_OCTAVES; i++)
-    {
-        float size = sizes[i];
-        float amplitude = amplitudes[i];
-        noise += simplexNoise3D(world_x/size, world_y/size, world_z/size, amplitude);
-    }
-    // No bounds checking
-    return noise;
-}
+// float simplexOctaves3D(float world_x, float world_y, float world_z, float sizes[N_OCTAVES], float amplitudes[N_OCTAVES])
+// {
+//     float noise = 0.0;
+//     for (int i=0; i<N_OCTAVES; i++)
+//     {
+//         float size = sizes[i];
+//         float amplitude = amplitudes[i];
+//         noise += simplexNoise3D(world_x/size, world_y/size, world_z/size, amplitude);
+//     }
+//     // No bounds checking
+//     return noise;
+// }
 
 
 void main()
@@ -239,16 +241,7 @@ void main()
     int y = xyz.y;
     int z = xyz.z;
 
-    float sizes[N_OCTAVES];
-    float amplitudes[N_OCTAVES];
-    sizes[0] = 20.0;
-    // sizes[1] = 16.0;
-    // sizes[2] = 32.0;
-    amplitudes[0] = 1;
-    // amplitudes[1] = 0.35;
-    // amplitudes[2] = 0.4;
-    float noise = simplexOctaves3D(x+CH_WIDTH*chunk_pos.x, y + game_time, z+CH_DEPTH*chunk_pos.y, sizes, amplitudes);
-
+    float noise = simplexNoise3D((x+CH_WIDTH*chunk_pos.x)/size, (y + game_time)/size, (z+CH_DEPTH*chunk_pos.y)/size);
     //Store sample
     imageStore(img_output, xyz, vec4(noise, noise, noise, noise));
 }

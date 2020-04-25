@@ -43,14 +43,20 @@ void FreeCamWorld::render()
 
 void FreeCamWorld::scene_logic(float delta_time)
 {
-    
+    world.chunk_manager.createChunk(glm::ivec2(0,0));
 }
 
 
-void FreeCamWorld::slider_x_fun()
+void FreeCamWorld::slider_amp_fun(float val, float change)
 {
-    
+    world.chunk_manager.amplitude=val;
 }
+
+void FreeCamWorld::slider_size_fun(float val, float change)
+{
+    world.chunk_manager.size=val;
+}
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////// MainMenu Scene ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -64,7 +70,7 @@ MainMenu::MainMenu(Settings& settings, GLFWwindow* window, MasterRenderer& maste
 }
 
 
-void MainMenu::test()
+void MainMenu::test(float val, float change)
 {
     print_float("sliding", 0);
 }

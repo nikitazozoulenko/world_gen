@@ -321,11 +321,11 @@ Chunk::Chunk(Settings& settings, glm::ivec2 pos) :
 
 Chunk::~Chunk()
 {
-    print_vec2("deleting", pos);
-    if(data)
-    {
-        delete data;
-    }
+    // print_vec2("deleting", pos);
+    // if(data)
+    // {
+    //     delete data;
+    // }
 }
 
 

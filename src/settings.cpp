@@ -5,9 +5,9 @@ Settings::Settings() :
     width(1280),
     height(720),
     window_title("Marching Cubes"),
-    chunk_width(128),
-    chunk_height(32),
-    chunk_depth(128)
+    chunk_width(40),
+    chunk_height(40),
+    chunk_depth(40)
 {
 
 }

@@ -14,13 +14,13 @@
 class UISlider
 {
 public:
-    UISlider(float min, float max, glm::vec2 coords, float width, float height, float tick_width, float line_height, std::function<void()>& fun);
+    UISlider(float min, float max, glm::vec2 coords, float width, float height, float tick_width, float line_height, std::function<void(float, float)>& fun);
 
     float min;
     float max;
     float value;
     bool held_down;
-    std::function<void()> fun;
+    std::function<void(float, float)> fun;
 
     // all from [0,1] w.r.t. the size of the box its in.
     glm::vec2 coords;

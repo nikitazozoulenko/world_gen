@@ -39,7 +39,8 @@ public:
     World world;
     UI_FreeCamWorld ui;
 
-    void slider_x_fun();
+    void slider_amp_fun(float val, float change);
+    void slider_size_fun(float val, float change);
 protected:
 private:
 };
@@ -51,7 +52,7 @@ public:
     MainMenu(Settings& settings, GLFWwindow* window, MasterRenderer& masterRenderer);
     void render();
     void scene_logic(float delta_time);
-    void test();
+    void test(float val, float change);
     UI_MainMenu ui;
 protected:
 private:
