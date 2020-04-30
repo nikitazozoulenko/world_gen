@@ -20,16 +20,7 @@ protected:
 private:
 };
 
-// class FreeCamWorld;
-// class UI_FreeCamWorld: public UI
-// {
-// public:
-//     UI_FreeCamWorld(FreeCamWorld* p_scene);
-//     FreeCamWorld* p_scene;
-//     void createUI();
-// protected:
-// private:
-// };
+
 
 class MainMenu;
 class UI_MainMenu: public UI
@@ -41,6 +32,8 @@ public:
 protected:
 private:
 };
+
+
 
 class FreeCamWorld;
 class UI_FreeCamWorld: public UI

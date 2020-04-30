@@ -185,7 +185,7 @@ void UIWindow::uiwindow_mouse_move_callback(int& mouse_state, std::vector<UIWind
 
 
 
-void UIWindow::uiwindow_click_callback(int& mouse_state, std::vector<UIWindow*>& ui_windows, float& x,float& y)
+void UIWindow::uiwindow_click_callback(int& mouse_state, std::vector<UIWindow*>& ui_windows, float& x,float& y,UIWindow** p_inputscheme_pressed_window)
 {
     if (mouse_state == GLFW_PRESS)
     {   
@@ -193,6 +193,7 @@ void UIWindow::uiwindow_click_callback(int& mouse_state, std::vector<UIWindow*>&
         UIWindow* p_pressed_uiwindow = find_uiwindow_on_cursor(ui_windows, x, y);
         if (p_pressed_uiwindow)
         {   
+            *p_inputscheme_pressed_window = p_pressed_uiwindow;
             float t = glfwGetTime();
             p_pressed_uiwindow->held_down=true;
             p_pressed_uiwindow->time_last_press = t;
@@ -207,6 +208,7 @@ void UIWindow::uiwindow_click_callback(int& mouse_state, std::vector<UIWindow*>&
     }
     else//if mouse_state == GLFW_RELEASE
     {
+        *p_inputscheme_pressed_window = nullptr;
         for (auto& uiwindow : ui_windows)
         {//reset all was pressed last callback for next callback
             uiwindow->held_down = false;

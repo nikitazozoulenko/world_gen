@@ -7,13 +7,14 @@
 #include <scene.h>
 
 
-///////// ABSTRACT INPUT SCHEME //////////////////////////////////////////////////////////////////////////////////
+// ABSTRACT class INPUT SCHEME
 InputScheme::InputScheme(Settings& settings, GLFWwindow* window, Camera& camera) :
     window(window),
     camera(camera),
     settings(settings)
 {
-
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    glfwSetKeyCallback(window, key_map_callback);
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
@@ -26,9 +27,56 @@ void InputScheme::framebuffer_size_callback(GLFWwindow* window, int width, int h
 }
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////// FreeCamWorld InputScheme //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void InputScheme::key_map_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+    InputScheme* p_input_scheme = (InputScheme*)glfwGetWindowUserPointer(window);
+    p_input_scheme->key_map[key]=(bool)action;
+}
+
+
+void InputScheme::clear_key_map()
+{
+    key_map.clear();
+}
+
+
+bool InputScheme::clicked(int key)
+{
+    bool found = false;
+    auto search = key_map.find(key);
+    if(search != key_map.end())
+        found = (search->second == GLFW_PRESS);
+    return found;
+}
+bool InputScheme::held(int key)
+{
+    bool held = false;
+    auto search = key_map.find(key);
+    if(search != key_map.end()){
+        bool& action = search->second;
+        if(action!=GLFW_PRESS && glfwGetKey(window,key)!=GLFW_PRESS)
+            held = true;
+    }
+    return held;
+}
+bool InputScheme::clicked_or_held(int key)
+{
+    return glfwGetKey(window,key) == GLFW_PRESS;
+}
+bool InputScheme::released(int key)
+{
+    bool released = false;
+    auto search = key_map.find(key);
+    if(search != key_map.end())
+    {
+        released = (search->second == GLFW_RELEASE);
+    }
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////// FreeCamWorld InputScheme ////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 FreeCamWorldInputScheme::FreeCamWorldInputScheme(Settings& settings, GLFWwindow* window, Camera& camera, FreeCamWorld* p_scene) :
     InputScheme(settings, window, camera),
@@ -44,8 +92,6 @@ void FreeCamWorldInputScheme::init()
     //set user defined pointer for mouse callbacks
     glfwSetWindowUserPointer(window, this);
 
-    //other callbacks
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     if(mode==CAMMOVE)
         start_CAMMOVE_mode();
     else if(mode==MOUSEMOVE)
@@ -58,7 +104,6 @@ void FreeCamWorldInputScheme::remove()
     glfwSetWindowUserPointer(window, NULL);
     glfwSetScrollCallback(window, NULL);
     glfwSetCursorPosCallback(window, NULL);
-    glfwSetKeyCallback(window, NULL);
 }
 
 
@@ -69,7 +114,6 @@ void FreeCamWorldInputScheme::start_MOUSEMOVE_mode()
 
     glfwSetScrollCallback(window, NULL);
     glfwSetCursorPosCallback(window, cursor_pos_callback_MOUSEMOVE);
-    glfwSetKeyCallback(window, change_scene_key_callback);
     glfwSetMouseButtonCallback(window, mouse_click_callback_MOUSEMOVE);
 }
 
@@ -82,51 +126,52 @@ void FreeCamWorldInputScheme::start_CAMMOVE_mode()
 
     glfwSetScrollCallback(window, scroll_callback_CAMMOVE);
     glfwSetCursorPosCallback(window, cursor_pos_callback_CAMMOVE);
-    glfwSetKeyCallback(window, change_scene_key_callback);
     glfwSetMouseButtonCallback(window, NULL);
 }
 
 
-void freeCamMovementInput(GLFWwindow* window, float delta_time, Camera& camera)
+void FreeCamWorldInputScheme::freeCamMovementInput(float delta_time)
 {
     //movement
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+    if (clicked_or_held(GLFW_KEY_W))
         camera.ProcessKeyboard(Camera::FORWARD, delta_time);
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+    if (clicked_or_held(GLFW_KEY_S))
         camera.ProcessKeyboard(Camera::BACKWARD, delta_time);
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+    if (clicked_or_held(GLFW_KEY_A))
         camera.ProcessKeyboard(Camera::LEFT, delta_time);
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+    if (clicked_or_held(GLFW_KEY_D))
         camera.ProcessKeyboard(Camera::RIGHT, delta_time);
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+    if (clicked_or_held(GLFW_KEY_SPACE))
         camera.ProcessKeyboard(Camera::UP, delta_time);
-    if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
+    if (clicked_or_held(GLFW_KEY_LEFT_CONTROL))
         camera.ProcessKeyboard(Camera::DOWN, delta_time);
 }
 
 
-// process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 void FreeCamWorldInputScheme::processInput(float delta_time)
 {   
     glfwPollEvents();
 
     if(mode==CAMMOVE)
-        freeCamMovementInput(window, delta_time, camera);
+        freeCamMovementInput(delta_time);
 
         //escape exit window
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+    if (clicked(GLFW_KEY_ESCAPE))
         glfwSetWindowShouldClose(window, true);
-    if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS){
+    if (clicked(GLFW_KEY_TAB)){
         if(mode==CAMMOVE){
             start_MOUSEMOVE_mode();
         }else if(mode==MOUSEMOVE){
             start_CAMMOVE_mode();
         }
     }
+    if(clicked(GLFW_KEY_L)){
+        change_scene=SCENE_MainMenu;
+    }
+    clear_key_map();
 }
 
 
-// glfw: whenever the mouse scroll wheel scrolls, this callback is called
 void FreeCamWorldInputScheme::scroll_callback_CAMMOVE(GLFWwindow* window, double xoffset, double yoffset)
 {
     FreeCamWorldInputScheme* p_input_scheme = (FreeCamWorldInputScheme*)glfwGetWindowUserPointer(window);
@@ -134,7 +179,6 @@ void FreeCamWorldInputScheme::scroll_callback_CAMMOVE(GLFWwindow* window, double
 }
 
 
-// glfw: whenever the mouse moves, this callback is called
 void FreeCamWorldInputScheme::cursor_pos_callback_CAMMOVE(GLFWwindow* window, double xpos, double ypos)
 {   
     FreeCamWorldInputScheme* p_input_scheme = (FreeCamWorldInputScheme*)glfwGetWindowUserPointer(window);
@@ -155,16 +199,6 @@ void FreeCamWorldInputScheme::cursor_pos_callback_CAMMOVE(GLFWwindow* window, do
 }
 
 
-// glfw: I required a callback to change scenes so it doesnt get used twice and change back directly
-void FreeCamWorldInputScheme::change_scene_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
-    FreeCamWorldInputScheme* p_input_scheme = (FreeCamWorldInputScheme*)glfwGetWindowUserPointer(window);
-    if (key == GLFW_KEY_L && action == GLFW_PRESS)
-        p_input_scheme->change_scene=SCENE_MainMenu;
-}
-
-
-// glfw: whenever the mouse scroll wheel scrolls, this callback is called
 void FreeCamWorldInputScheme::mouse_click_callback_MOUSEMOVE(GLFWwindow* window, int button, int action, int mods)
 {
     FreeCamWorldInputScheme* p_input_scheme = (FreeCamWorldInputScheme*)glfwGetWindowUserPointer(window);
@@ -176,11 +210,10 @@ void FreeCamWorldInputScheme::mouse_click_callback_MOUSEMOVE(GLFWwindow* window,
     float x =  xpos/p_input_scheme->settings.getWindowWidth();
     float y =  1.0 - ypos/p_input_scheme->settings.getWindowHeight();
 
-    UIWindow::uiwindow_click_callback(action, ui_windows, x, y);
+    //UIWindow::uiwindow_click_callback(action, ui_windows, x, y);
 }
 
 
-// glfw: whenever the mouse moves, this callback is called
 void FreeCamWorldInputScheme::cursor_pos_callback_MOUSEMOVE(GLFWwindow* window, double xpos, double ypos)
 {   //does logic for moving UIWindows
     FreeCamWorldInputScheme* p_input_scheme = (FreeCamWorldInputScheme*)glfwGetWindowUserPointer(window);
@@ -228,7 +261,6 @@ void MainMenuInputScheme::init()
     glfwSetWindowUserPointer(window, this);
 
     //other callbacks
-    glfwSetKeyCallback(window, change_scene_key_callback);
     glfwSetCursorPosCallback(window, cursor_pos_callback);
     glfwSetMouseButtonCallback(window, mouse_click_callback);
 }
@@ -241,27 +273,22 @@ void MainMenuInputScheme::remove()
     glfwSetMouseButtonCallback(window, NULL);
 }
 
-
+#include <iostream>
 void MainMenuInputScheme::processInput(float delta_time)
 {
     glfwPollEvents();
 
+    std::cout << p_pressed_window << std::endl;
+
     //escape exit window
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+    if (clicked(GLFW_KEY_ESCAPE))
         glfwSetWindowShouldClose(window, true);
+    if (clicked(GLFW_KEY_L))
+        change_scene=SCENE_FreeCamWorld;
+    clear_key_map();
 }
 
 
-// glfw: I required a callback to change scenes so it doesnt get used twice and change back directly
-void MainMenuInputScheme::change_scene_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
-    FreeCamWorldInputScheme* p_input_scheme = (FreeCamWorldInputScheme*)glfwGetWindowUserPointer(window);
-    if (key == GLFW_KEY_L && action == GLFW_PRESS)
-        p_input_scheme->change_scene=SCENE_FreeCamWorld;
-}
-
-
-// glfw: whenever the mouse moves, this callback is called
 void MainMenuInputScheme::cursor_pos_callback(GLFWwindow* window, double xpos, double ypos)
 {   //does logic for moving UIWindows
     MainMenuInputScheme* p_input_scheme = (MainMenuInputScheme*)glfwGetWindowUserPointer(window);
@@ -286,7 +313,6 @@ void MainMenuInputScheme::cursor_pos_callback(GLFWwindow* window, double xpos, d
 }
 
 
-// glfw: whenever the mouse is pressed or released, this callback is called (only when state changes)
 void MainMenuInputScheme::mouse_click_callback(GLFWwindow* window, int button, int action, int mods)
 {
     MainMenuInputScheme* p_input_scheme = (MainMenuInputScheme*)glfwGetWindowUserPointer(window);
@@ -298,5 +324,5 @@ void MainMenuInputScheme::mouse_click_callback(GLFWwindow* window, int button, i
     float x =  xpos/p_input_scheme->settings.getWindowWidth();
     float y =  1.0 - ypos/p_input_scheme->settings.getWindowHeight();
 
-    UIWindow::uiwindow_click_callback(action, ui_windows, x, y);
+    UIWindow::uiwindow_click_callback(action, ui_windows, x, y, &p_input_scheme->p_pressed_window);
 }

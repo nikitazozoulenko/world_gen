@@ -9,6 +9,7 @@
 #include <uiWindow.h>
 
 #include <vector>
+#include <unordered_map>
 
 class InputScheme
 {
@@ -29,7 +30,18 @@ protected:
     float mouse_x;
     float mouse_y;
     bool firstmouse = true;
+    UIWindow* p_pressed_window = nullptr;
 
+    //only contains info if clicked this frame. has to be cleared every frame
+    std::unordered_map<int, bool> key_map;
+
+    bool clicked(int key);
+    bool held(int key);
+    bool clicked_or_held(int key);
+    bool released(int key);
+
+    static void key_map_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+    void clear_key_map();
     static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 private:
 };
@@ -53,7 +65,9 @@ private:
 
     void start_CAMMOVE_mode();
     void start_MOUSEMOVE_mode();
-    static void change_scene_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+
+    void freeCamMovementInput(float delta_time);
+
 
     static void scroll_callback_CAMMOVE(GLFWwindow* window, double xoffset, double yoffset);
     static void cursor_pos_callback_CAMMOVE(GLFWwindow* window, double xpos, double ypos);
@@ -74,7 +88,6 @@ public:
     void remove();
 private:
     static void cursor_pos_callback(GLFWwindow* window, double xpos, double ypos);
-    static void change_scene_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
     static void mouse_click_callback(GLFWwindow* window, int button, int action, int mods);
 
     MainMenu* p_scene;

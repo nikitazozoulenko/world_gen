@@ -6,7 +6,7 @@
 
 #include <program.h>
 
-int main()
+int main(int argc, char **argv)
 {
     Program program = Program();
     program.run();

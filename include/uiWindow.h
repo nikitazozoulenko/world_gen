@@ -65,7 +65,7 @@ public:
     static UISlider* find_if_on_slider(UIWindow* p_ui_window, UISlider& slider, float& x, float& y);
     static UISlider* find_if_on_slider_tick(UIWindow* p_ui_window, UISlider& slider, float& x, float& y);
     static void uiwindow_mouse_move_callback(int& mouse_state, std::vector<UIWindow*>& ui_windows, float& xoffset, float& yoffset, float& x, float& y);
-    static void uiwindow_click_callback(int& mouse_state, std::vector<UIWindow*>& ui_windows, float& x,float& y);
+    static void uiwindow_click_callback(int& mouse_state, std::vector<UIWindow*>& ui_windows, float& x,float& y, UIWindow** p_pressed_window);
 
 private:
     void setup();
