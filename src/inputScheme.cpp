@@ -34,11 +34,13 @@ void InputScheme::key_map_callback(GLFWwindow* window, int key, int scancode, in
 }
 
 
-void InputScheme::clear_key_map()
+void InputScheme::clear_frame_input_values()
 {
     key_map.clear();
+    mouse_old_x = mouse_x;
+    mouse_old_y = mouse_y;
+    cursor_moved = false;
 }
-
 
 bool InputScheme::clicked(int key)
 {
@@ -130,7 +132,7 @@ void FreeCamWorldInputScheme::start_CAMMOVE_mode()
 }
 
 
-void FreeCamWorldInputScheme::freeCamMovementInput(float delta_time)
+void FreeCamWorldInputScheme::freeCamMovementInput(double delta_time)
 {
     //movement
     if (clicked_or_held(GLFW_KEY_W))
@@ -148,7 +150,7 @@ void FreeCamWorldInputScheme::freeCamMovementInput(float delta_time)
 }
 
 
-void FreeCamWorldInputScheme::processInput(float delta_time)
+void FreeCamWorldInputScheme::processInput(double delta_time)
 {   
     glfwPollEvents();
 
@@ -168,7 +170,7 @@ void FreeCamWorldInputScheme::processInput(float delta_time)
     if(clicked(GLFW_KEY_L)){
         change_scene=SCENE_MainMenu;
     }
-    clear_key_map();
+    clear_frame_input_values();
 }
 
 
@@ -189,8 +191,8 @@ void FreeCamWorldInputScheme::cursor_pos_callback_CAMMOVE(GLFWwindow* window, do
         p_input_scheme->firstmouse = false;
     }
 
-    float xoffset = xpos - p_input_scheme->mouse_x;
-    float yoffset = p_input_scheme->mouse_y - ypos; // reversed since y-coordinates go from bottom to top
+    double xoffset = xpos - p_input_scheme->mouse_x;
+    double yoffset = p_input_scheme->mouse_y - ypos; // reversed since y-coordinates go from bottom to top
 
     p_input_scheme->mouse_x = xpos;
     p_input_scheme->mouse_y = ypos;
@@ -207,8 +209,8 @@ void FreeCamWorldInputScheme::mouse_click_callback_MOUSEMOVE(GLFWwindow* window,
     //normalizes [0,1] coords. y from bot to top, x from left to right
     double xpos, ypos;
     glfwGetCursorPos(window, &xpos, &ypos);
-    float x =  xpos/p_input_scheme->settings.getWindowWidth();
-    float y =  1.0 - ypos/p_input_scheme->settings.getWindowHeight();
+    double x =  xpos/p_input_scheme->settings.getWindowWidth();
+    double y =  1.0 - ypos/p_input_scheme->settings.getWindowHeight();
 
     //UIWindow::uiwindow_click_callback(action, ui_windows, x, y);
 }
@@ -219,8 +221,8 @@ void FreeCamWorldInputScheme::cursor_pos_callback_MOUSEMOVE(GLFWwindow* window, 
     FreeCamWorldInputScheme* p_input_scheme = (FreeCamWorldInputScheme*)glfwGetWindowUserPointer(window);
     std::vector<UIWindow*>& ui_windows = p_input_scheme->p_scene->ui.windows;
     //normalizes [0,1] coords. y from bot to top, x from left to right
-    float x =  xpos/p_input_scheme->settings.getWindowWidth();
-    float y =  1.0 - ypos/p_input_scheme->settings.getWindowHeight();
+    double x =  xpos/p_input_scheme->settings.getWindowWidth();
+    double y =  1.0 - ypos/p_input_scheme->settings.getWindowHeight();
     int& mouse_state = p_input_scheme->mouse_state;
 
     //offsets update. special
@@ -229,12 +231,12 @@ void FreeCamWorldInputScheme::cursor_pos_callback_MOUSEMOVE(GLFWwindow* window, 
         p_input_scheme->mouse_y = y;
         p_input_scheme->firstmouse = false;
     }
-    float xoffset = x - p_input_scheme->mouse_x;
-    float yoffset = y - p_input_scheme->mouse_y;
+    double xoffset = x - p_input_scheme->mouse_x;
+    double yoffset = y - p_input_scheme->mouse_y;
     p_input_scheme->mouse_x = x;
     p_input_scheme->mouse_y = y;
 
-    UIWindow::uiwindow_mouse_move_callback(mouse_state, ui_windows, xoffset, yoffset, x, y);
+    //UIWindow::uiwindow_mouse_move_callback(mouse_state, ui_windows, xoffset, yoffset, x, y);
 }
 
 
@@ -273,19 +275,31 @@ void MainMenuInputScheme::remove()
     glfwSetMouseButtonCallback(window, NULL);
 }
 
-#include <iostream>
-void MainMenuInputScheme::processInput(float delta_time)
+
+void MainMenuInputScheme::processInput(double delta_time)
 {
     glfwPollEvents();
 
-    std::cout << p_pressed_window << std::endl;
-
-    //escape exit window
+    //keys
     if (clicked(GLFW_KEY_ESCAPE))
         glfwSetWindowShouldClose(window, true);
     if (clicked(GLFW_KEY_L))
         change_scene=SCENE_FreeCamWorld;
-    clear_key_map();
+    
+    // mouse move
+    if(cursor_moved){
+        process_mouse_movement();
+    }
+
+    clear_frame_input_values();
+}
+
+
+void MainMenuInputScheme::process_mouse_movement()
+{
+    if(p_pressed_window){
+        p_pressed_window->process_movement(mouse_x-mouse_old_x, mouse_y-mouse_old_y, mouse_x, mouse_y);
+    }
 }
 
 
@@ -294,22 +308,17 @@ void MainMenuInputScheme::cursor_pos_callback(GLFWwindow* window, double xpos, d
     MainMenuInputScheme* p_input_scheme = (MainMenuInputScheme*)glfwGetWindowUserPointer(window);
     std::vector<UIWindow*>& ui_windows = p_input_scheme->p_scene->ui.windows;
     //normalizes [0,1] coords. y from bot to top, x from left to right
-    float x =  xpos/p_input_scheme->settings.getWindowWidth();
-    float y =  1.0 - ypos/p_input_scheme->settings.getWindowHeight();
+    double x =  xpos/ (double) p_input_scheme->settings.getWindowWidth();
+    double y =  1.0 - ypos/ (double) p_input_scheme->settings.getWindowHeight();
     int& mouse_state = p_input_scheme->mouse_state;
 
-    //offsets update. special
-    if (p_input_scheme->firstmouse){
-        p_input_scheme->mouse_x = x;
-        p_input_scheme->mouse_y = y;
-        p_input_scheme->firstmouse = false;
-    }
-    float xoffset = x - p_input_scheme->mouse_x;
-    float yoffset = y - p_input_scheme->mouse_y;
     p_input_scheme->mouse_x = x;
     p_input_scheme->mouse_y = y;
-
-    UIWindow::uiwindow_mouse_move_callback(mouse_state, ui_windows, xoffset, yoffset, x, y);
+    p_input_scheme->cursor_moved=true;
+    if (p_input_scheme->firstmouse){
+        p_input_scheme->firstmouse = false;
+        p_input_scheme->cursor_moved=false;
+    }
 }
 
 
@@ -319,10 +328,7 @@ void MainMenuInputScheme::mouse_click_callback(GLFWwindow* window, int button, i
     std::vector<UIWindow*>& ui_windows = p_input_scheme->p_scene->ui.windows;
     p_input_scheme->mouse_state = action;
     //normalizes [0,1] coords. y from bot to top, x from left to right
-    double xpos, ypos;
-    glfwGetCursorPos(window, &xpos, &ypos);
-    float x =  xpos/p_input_scheme->settings.getWindowWidth();
-    float y =  1.0 - ypos/p_input_scheme->settings.getWindowHeight();
-
+    double x = p_input_scheme->mouse_old_x;
+    double y = p_input_scheme->mouse_old_y;
     UIWindow::uiwindow_click_callback(action, ui_windows, x, y, &p_input_scheme->p_pressed_window);
 }

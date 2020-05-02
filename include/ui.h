@@ -14,7 +14,7 @@ class UI
 public:
     UI();
     std::vector<UIWindow*> windows;
-    UIWindow* createUIWindow(glm::vec2 coords, float width, float height, glm::vec3 color);
+    UIWindow* createUIWindow(double x0, double y0, double width, double height, glm::vec3 color);
     void removeUIWindow(UIWindow* p_ui_window);
 protected:
 private:

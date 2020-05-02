@@ -15,7 +15,7 @@ class InputScheme
 {
 public:
     InputScheme(Settings& settings, GLFWwindow* window, Camera& camera);
-    virtual void processInput(float delta_time) = 0;
+    virtual void processInput(double delta_time) = 0;
     virtual void init() = 0;
     virtual void remove() = 0;
 
@@ -27,8 +27,11 @@ protected:
     Camera& camera;
     Settings& settings;
 
-    float mouse_x;
-    float mouse_y;
+    double mouse_old_x;
+    double mouse_old_y;
+    double mouse_x;
+    double mouse_y;
+    bool cursor_moved = false;
     bool firstmouse = true;
     UIWindow* p_pressed_window = nullptr;
 
@@ -41,7 +44,7 @@ protected:
     bool released(int key);
 
     static void key_map_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
-    void clear_key_map();
+    void clear_frame_input_values();
     static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 private:
 };
@@ -52,7 +55,7 @@ class FreeCamWorldInputScheme : public InputScheme
 {
 public:
     FreeCamWorldInputScheme(Settings& settings, GLFWwindow* window, Camera& camera, FreeCamWorld* p_scene);
-    void processInput(float delta_time);
+    void processInput(double delta_time);
     void init();
     void remove();
 
@@ -66,7 +69,7 @@ private:
     void start_CAMMOVE_mode();
     void start_MOUSEMOVE_mode();
 
-    void freeCamMovementInput(float delta_time);
+    void freeCamMovementInput(double delta_time);
 
 
     static void scroll_callback_CAMMOVE(GLFWwindow* window, double xoffset, double yoffset);
@@ -83,10 +86,11 @@ class MainMenuInputScheme : public InputScheme
 {
 public:
     MainMenuInputScheme(Settings& settings, GLFWwindow* window, Camera& camera, MainMenu* p_scene);
-    void processInput(float delta_time);
+    void processInput(double delta_time);
     void init();
     void remove();
 private:
+    void process_mouse_movement();
     static void cursor_pos_callback(GLFWwindow* window, double xpos, double ypos);
     static void mouse_click_callback(GLFWwindow* window, int button, int action, int mods);
 

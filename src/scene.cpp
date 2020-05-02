@@ -41,18 +41,18 @@ void FreeCamWorld::render()
 }
 
 
-void FreeCamWorld::scene_logic(float delta_time)
+void FreeCamWorld::scene_logic(double delta_time)
 {
     world.chunk_manager.createChunk(glm::ivec2(0,0));
 }
 
 
-void FreeCamWorld::slider_amp_fun(float val, float change)
+void FreeCamWorld::slider_amp_fun(double val, double change)
 {
     world.chunk_manager.amplitude=val;
 }
 
-void FreeCamWorld::slider_size_fun(float val, float change)
+void FreeCamWorld::slider_size_fun(double val, double change)
 {
     world.chunk_manager.size=val;
 }
@@ -70,7 +70,7 @@ MainMenu::MainMenu(Settings& settings, GLFWwindow* window, MasterRenderer& maste
 }
 
 
-void MainMenu::test(float val, float change)
+void MainMenu::test(double val, double change)
 {
     print_float("sliding", 0);
 }
@@ -82,7 +82,7 @@ void MainMenu::render()
 }
 
 
-void MainMenu::scene_logic(float delta_time)
+void MainMenu::scene_logic(double delta_time)
 {
     
 }

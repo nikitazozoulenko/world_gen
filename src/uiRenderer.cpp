@@ -40,7 +40,7 @@ void UIRenderer::render_window(UIWindow* p_ui_window)
         render_window_slider(slider, p_ui_window);
     }
     //window
-    ui_shaderprogram.setUniformVec4("coords", p_ui_window->coords.x, p_ui_window->coords.y, p_ui_window->width, p_ui_window->height);
+    ui_shaderprogram.setUniformVec4("coords", p_ui_window->x0, p_ui_window->y0, p_ui_window->width, p_ui_window->height);
     ui_shaderprogram.setUniformVec3("color", p_ui_window->color);
     glDrawArrays(GL_TRIANGLES, 0, 6);
 }
@@ -49,45 +49,45 @@ void UIRenderer::render_window(UIWindow* p_ui_window)
 
 void UIRenderer::render_window_slider(UISlider& slider, UIWindow* p_ui_window)
 {
-    glm::vec2& win_coords = p_ui_window->coords;
-    float& win_width = p_ui_window->width;
-    float& win_height = p_ui_window->height;
+    double& win_x0 = p_ui_window->x0;
+    double& win_y0 = p_ui_window->y0;
+    double& win_width = p_ui_window->width;
+    double& win_height = p_ui_window->height;
     glm::vec3& color = p_ui_window->color;
 
     //local (slider space is whole [0,1])
-    float& min = slider.min;
-    float& max = slider.max;
-    float& value = slider.value;
+    double& min = slider.min;
+    double& max = slider.max;
+    double& value = slider.value;
 
-    float tick_w = slider.tick_width;
-    float line_h = slider.line_height;
+    double tick_w = slider.tick_width;
+    double line_h = slider.line_height;
 
-    float c_val_norm = (value-min)/(max-min);
-    float line_y0 = 0.5 - line_h/2.0;
-    float line_x0 = 0;
-    float tick_y0 = 0;
-    float tick_x0 = c_val_norm * (1-tick_w);
+    double c_val_norm = (value-min)/(max-min);
+    double line_y0 = 0.5 - line_h/2.0;
+    double line_x0 = 0;
+    double tick_y0 = 0;
+    double tick_x0 = c_val_norm * (1-tick_w);
 
     //local in window
-    glm::vec2& coords = slider.coords;
-    float& w = slider.width;
-    float& h = slider.height;
-    line_y0 = line_y0*h + coords.y;
-    line_x0 = line_x0*w + coords.x;
+    double& w = slider.width;
+    double& h = slider.height;
+    line_y0 = line_y0*h + slider.y0;
+    line_x0 = line_x0*w + slider.x0;
     line_h = line_h*h;
-    tick_y0 = tick_y0*h + coords.y;
-    tick_x0 = tick_x0*w + coords.x;
+    tick_y0 = tick_y0*h + slider.y0;
+    tick_x0 = tick_x0*w + slider.x0;
     tick_w = tick_w*w;
 
     //global
-    line_y0 = line_y0*win_height + win_coords.y;
-    line_x0 = line_x0*win_width + win_coords.x;
+    line_y0 = line_y0*win_height + win_y0;
+    line_x0 = line_x0*win_width + win_x0;
     line_h = line_h*win_height;
-    float line_w = w * win_width;
-    tick_y0 = tick_y0*win_height + win_coords.y;
-    tick_x0 = tick_x0*win_width + win_coords.x;
+    double line_w = w * win_width;
+    tick_y0 = tick_y0*win_height + win_y0;
+    tick_x0 = tick_x0*win_width + win_x0;
     tick_w = tick_w*win_width;
-    float tick_h = h * win_height;
+    double tick_h = h * win_height;
 
 
     //tick
