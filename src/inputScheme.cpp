@@ -93,8 +93,9 @@ void FreeCamWorldInputScheme::init()
 {   
     //set user defined pointer for mouse callbacks
     glfwSetWindowUserPointer(window, this);
-
+    glfwSetCursorPosCallback(window, cursor_pos_callback);
     if(mode==CAMMOVE)
+
         start_CAMMOVE_mode();
     else if(mode==MOUSEMOVE)
         start_MOUSEMOVE_mode();
@@ -112,10 +113,9 @@ void FreeCamWorldInputScheme::remove()
 void FreeCamWorldInputScheme::start_MOUSEMOVE_mode()
 {
     mode=MOUSEMOVE;
+    firstmouse=true;
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);//undisable cursor
-
     glfwSetScrollCallback(window, NULL);
-    glfwSetCursorPosCallback(window, cursor_pos_callback_MOUSEMOVE);
     glfwSetMouseButtonCallback(window, mouse_click_callback_MOUSEMOVE);
 }
 
@@ -125,16 +125,14 @@ void FreeCamWorldInputScheme::start_CAMMOVE_mode()
     mode=CAMMOVE;
     firstmouse=true;
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);//disable cursor
-
     glfwSetScrollCallback(window, scroll_callback_CAMMOVE);
-    glfwSetCursorPosCallback(window, cursor_pos_callback_CAMMOVE);
     glfwSetMouseButtonCallback(window, NULL);
 }
 
 
 void FreeCamWorldInputScheme::freeCamMovementInput(double delta_time)
 {
-    //movement
+    //keyboard
     if (clicked_or_held(GLFW_KEY_W))
         camera.ProcessKeyboard(Camera::FORWARD, delta_time);
     if (clicked_or_held(GLFW_KEY_S))
@@ -147,8 +145,19 @@ void FreeCamWorldInputScheme::freeCamMovementInput(double delta_time)
         camera.ProcessKeyboard(Camera::UP, delta_time);
     if (clicked_or_held(GLFW_KEY_LEFT_CONTROL))
         camera.ProcessKeyboard(Camera::DOWN, delta_time);
+
+    //mouse
+    if(cursor_moved)
+        camera.ProcessMouseMovement(mouse_x-mouse_old_x, mouse_y-mouse_old_y);
 }
 
+
+void FreeCamWorldInputScheme::mouseMovementInput(double delta_time)
+{
+    if(p_pressed_window){
+        p_pressed_window->process_movement(mouse_x-mouse_old_x, mouse_y-mouse_old_y, mouse_x, mouse_y);
+    }
+}
 
 void FreeCamWorldInputScheme::processInput(double delta_time)
 {   
@@ -156,8 +165,10 @@ void FreeCamWorldInputScheme::processInput(double delta_time)
 
     if(mode==CAMMOVE)
         freeCamMovementInput(delta_time);
+    if(mode==MOUSEMOVE)
+        mouseMovementInput(delta_time);
 
-        //escape exit window
+    //escape exit window
     if (clicked(GLFW_KEY_ESCAPE))
         glfwSetWindowShouldClose(window, true);
     if (clicked(GLFW_KEY_TAB)){
@@ -181,23 +192,24 @@ void FreeCamWorldInputScheme::scroll_callback_CAMMOVE(GLFWwindow* window, double
 }
 
 
-void FreeCamWorldInputScheme::cursor_pos_callback_CAMMOVE(GLFWwindow* window, double xpos, double ypos)
-{   
+void FreeCamWorldInputScheme::cursor_pos_callback(GLFWwindow* window, double xpos, double ypos)
+{   //does logic for moving UIWindows
     FreeCamWorldInputScheme* p_input_scheme = (FreeCamWorldInputScheme*)glfwGetWindowUserPointer(window);
-    if (p_input_scheme->firstmouse)
-    {
-        p_input_scheme->mouse_x = xpos;
-        p_input_scheme->mouse_y = ypos;
+    std::vector<UIWindow*>& ui_windows = p_input_scheme->p_scene->ui.windows;
+    //normalizes [0,1] coords. y from bot to top, x from left to right
+    double x =  xpos/ (double) p_input_scheme->settings.getWindowWidth();
+    double y =  1.0 - ypos/ (double) p_input_scheme->settings.getWindowHeight();
+    int& mouse_state = p_input_scheme->mouse_state;
+
+    p_input_scheme->mouse_x = x;
+    p_input_scheme->mouse_y = y;
+    p_input_scheme->cursor_moved=true;
+    if (p_input_scheme->firstmouse){
+        p_input_scheme->mouse_old_x = x;
+        p_input_scheme->mouse_old_y = y;
         p_input_scheme->firstmouse = false;
+        p_input_scheme->cursor_moved=false;
     }
-
-    double xoffset = xpos - p_input_scheme->mouse_x;
-    double yoffset = p_input_scheme->mouse_y - ypos; // reversed since y-coordinates go from bottom to top
-
-    p_input_scheme->mouse_x = xpos;
-    p_input_scheme->mouse_y = ypos;
-
-    p_input_scheme->camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
 
@@ -207,36 +219,9 @@ void FreeCamWorldInputScheme::mouse_click_callback_MOUSEMOVE(GLFWwindow* window,
     std::vector<UIWindow*>& ui_windows = p_input_scheme->p_scene->ui.windows;
     p_input_scheme->mouse_state = action;
     //normalizes [0,1] coords. y from bot to top, x from left to right
-    double xpos, ypos;
-    glfwGetCursorPos(window, &xpos, &ypos);
-    double x =  xpos/p_input_scheme->settings.getWindowWidth();
-    double y =  1.0 - ypos/p_input_scheme->settings.getWindowHeight();
-
-    //UIWindow::uiwindow_click_callback(action, ui_windows, x, y);
-}
-
-
-void FreeCamWorldInputScheme::cursor_pos_callback_MOUSEMOVE(GLFWwindow* window, double xpos, double ypos)
-{   //does logic for moving UIWindows
-    FreeCamWorldInputScheme* p_input_scheme = (FreeCamWorldInputScheme*)glfwGetWindowUserPointer(window);
-    std::vector<UIWindow*>& ui_windows = p_input_scheme->p_scene->ui.windows;
-    //normalizes [0,1] coords. y from bot to top, x from left to right
-    double x =  xpos/p_input_scheme->settings.getWindowWidth();
-    double y =  1.0 - ypos/p_input_scheme->settings.getWindowHeight();
-    int& mouse_state = p_input_scheme->mouse_state;
-
-    //offsets update. special
-    if (p_input_scheme->firstmouse){
-        p_input_scheme->mouse_x = x;
-        p_input_scheme->mouse_y = y;
-        p_input_scheme->firstmouse = false;
-    }
-    double xoffset = x - p_input_scheme->mouse_x;
-    double yoffset = y - p_input_scheme->mouse_y;
-    p_input_scheme->mouse_x = x;
-    p_input_scheme->mouse_y = y;
-
-    //UIWindow::uiwindow_mouse_move_callback(mouse_state, ui_windows, xoffset, yoffset, x, y);
+    double x = p_input_scheme->mouse_old_x;
+    double y = p_input_scheme->mouse_old_y;
+    UIWindow::uiwindow_click_callback(action, ui_windows, x, y, &p_input_scheme->p_pressed_window);
 }
 
 
@@ -316,6 +301,8 @@ void MainMenuInputScheme::cursor_pos_callback(GLFWwindow* window, double xpos, d
     p_input_scheme->mouse_y = y;
     p_input_scheme->cursor_moved=true;
     if (p_input_scheme->firstmouse){
+        p_input_scheme->mouse_old_x = x;
+        p_input_scheme->mouse_old_y = y;
         p_input_scheme->firstmouse = false;
         p_input_scheme->cursor_moved=false;
     }

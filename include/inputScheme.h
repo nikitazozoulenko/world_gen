@@ -70,13 +70,12 @@ private:
     void start_MOUSEMOVE_mode();
 
     void freeCamMovementInput(double delta_time);
+    void mouseMovementInput(double delta_time);
 
 
     static void scroll_callback_CAMMOVE(GLFWwindow* window, double xoffset, double yoffset);
-    static void cursor_pos_callback_CAMMOVE(GLFWwindow* window, double xpos, double ypos);
-
     static void mouse_click_callback_MOUSEMOVE(GLFWwindow* window, int button, int action, int mods);
-    static void cursor_pos_callback_MOUSEMOVE(GLFWwindow* window, double xpos, double ypos);
+    static void cursor_pos_callback(GLFWwindow* window, double xpos, double ypos);
 };
 
 
