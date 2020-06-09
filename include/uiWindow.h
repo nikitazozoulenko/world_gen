@@ -68,8 +68,8 @@ public:
     static UIWindow* find_uiwindow_on_cursor(std::vector<UIWindow*>& ui_windows, double& x, double& y);
     static UISlider* find_if_on_slider(UIWindow* p_ui_window, UISlider& slider, double& x, double& y);
     static UISlider* find_if_on_slider_tick(UIWindow* p_ui_window, UISlider& slider, double& x, double& y);
-    static void uiwindow_mouse_move_callback(int& mouse_state, std::vector<UIWindow*>& ui_windows, double xoffset, double yoffset, double& x, double& y);
-    static void uiwindow_click_callback(int& mouse_state, std::vector<UIWindow*>& ui_windows, double& x,double& y, UIWindow** p_pressed_window);
+    static void uiwindow_click(std::vector<UIWindow*>& ui_windows, double& x,double& y, UIWindow** p_pressed_window);
+    static void uiwindow_release(UIWindow** p_inputscheme_pressed_window);
 
 private:
     void setup();

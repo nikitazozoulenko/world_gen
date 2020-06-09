@@ -27,10 +27,10 @@ protected:
     Camera& camera;
     Settings& settings;
 
-    double mouse_old_x;
-    double mouse_old_y;
-    double mouse_x;
-    double mouse_y;
+    double mouse_old_x=0;
+    double mouse_old_y=0;
+    double mouse_x=0;
+    double mouse_y=0;
     bool cursor_moved = false;
     bool firstmouse = true;
     UIWindow* p_pressed_window = nullptr;
@@ -40,12 +40,15 @@ protected:
 
     bool clicked(int key);
     bool held(int key);
-    bool clicked_or_held(int key);
     bool released(int key);
 
+    void clear_frame_input();
+
+    void init_shared_callbacks();
     static void key_map_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
-    void clear_frame_input_values();
+    static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
     static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+    static void cursor_pos_callback(GLFWwindow* window, double xpos, double ypos);
 private:
 };
 
@@ -64,7 +67,6 @@ public:
 
 private:
     FreeCamWorld* p_scene;
-    int mouse_state;
 
     void start_CAMMOVE_mode();
     void start_MOUSEMOVE_mode();
@@ -72,10 +74,7 @@ private:
     void freeCamMovementInput(double delta_time);
     void mouseMovementInput(double delta_time);
 
-
     static void scroll_callback_CAMMOVE(GLFWwindow* window, double xoffset, double yoffset);
-    static void mouse_click_callback_MOUSEMOVE(GLFWwindow* window, int button, int action, int mods);
-    static void cursor_pos_callback(GLFWwindow* window, double xpos, double ypos);
 };
 
 
@@ -90,11 +89,8 @@ public:
     void remove();
 private:
     void process_mouse_movement();
-    static void cursor_pos_callback(GLFWwindow* window, double xpos, double ypos);
-    static void mouse_click_callback(GLFWwindow* window, int button, int action, int mods);
 
     MainMenu* p_scene;
-    int mouse_state;
 };
 
 

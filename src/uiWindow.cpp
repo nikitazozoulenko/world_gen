@@ -185,86 +185,38 @@ UISlider* UIWindow::find_slider_on_cursor(UIWindow* p_ui_window, double& x, doub
 }
 
 
-
-void UIWindow::uiwindow_mouse_move_callback(int& mouse_state, std::vector<UIWindow*>& ui_windows, double xoffset, double yoffset, double& x, double& y)
+void UIWindow::uiwindow_click(std::vector<UIWindow*>& ui_windows, double& x,double& y,UIWindow** p_inputscheme_pressed_window)
 {
-    // //if mouse pressed (state is either PRESS or RELEASE)
-    // if (mouse_state == GLFW_PRESS)
-    // {
-    //     UIWindow* p_pressed_uiwindow = find_uiwindow_on_cursor(ui_windows, x, y);
-    //     if (p_pressed_uiwindow)
-    //     {
-    //         bool& held_down = p_pressed_uiwindow->held_down;
-    //         double& x0 = p_pressed_uiwindow->x0;
-    //         double& y0 = p_pressed_uiwindow->y0;
-    //         double& window_w = p_pressed_uiwindow->width;
-    //         double& window_h = p_pressed_uiwindow->height;
+    //find window
+    UIWindow* p_pressed_uiwindow = find_uiwindow_on_cursor(ui_windows, x, y);
+    if (p_pressed_uiwindow)
+    {   
+        *p_inputscheme_pressed_window = p_pressed_uiwindow;
+        p_pressed_uiwindow->time_last_press = glfwGetTime();
 
-    //         //MOUSE HOLD LOGIC
-    //         if(held_down)
-    //         {
-    //             UISlider* p_pressed_slider = p_pressed_uiwindow->p_pressed_slider;
-    //             if(p_pressed_slider){
-    //                 if(find_if_on_slider_tick(p_pressed_uiwindow, *p_pressed_slider, x,y)){
-    //                     double& min = p_pressed_slider->min;
-    //                     double& max = p_pressed_slider->max;
-    //                     double& slider_w = p_pressed_slider->width;
-    //                     double& tick_w = p_pressed_slider->tick_width;
+        //find slider
+        UISlider* p_slider = find_slider_on_cursor(p_pressed_uiwindow, x, y);
+        if(p_slider){
+            p_pressed_uiwindow->p_pressed_slider = p_slider;
+            if(p_slider->x_on_tick(x, p_pressed_uiwindow->x0, p_pressed_uiwindow->width)){
+                p_slider->tick_held_down = true;
+            }
+        }
+    }
 
-    //                     double change = xoffset/slider_w/window_w/(1-tick_w)*(max-min);
-    //                     double val = p_pressed_slider->value;
-
-    //                     double new_val = val + change;
-    //                     new_val = std::min(std::max(new_val, min), max);
-    //                     p_pressed_slider->value=new_val;
-    //                     if(new_val!=val){
-    //                         p_pressed_slider->fun(new_val, new_val-val);
-    //                     }
-    //                 }
-    //             }
-    //             else{
-    //                 x0 += xoffset;
-    //                 y0 += yoffset;
-    //             }
-    //         }
-    //     }
-    // }
 }
 
 
-
-void UIWindow::uiwindow_click_callback(int& mouse_state, std::vector<UIWindow*>& ui_windows, double& x,double& y,UIWindow** p_inputscheme_pressed_window)
+void UIWindow::uiwindow_release(UIWindow** p_inputscheme_pressed_window)
 {
-    if (mouse_state == GLFW_PRESS)
-    {   
-        //find window
-        UIWindow* p_pressed_uiwindow = find_uiwindow_on_cursor(ui_windows, x, y);
-        if (p_pressed_uiwindow)
-        {   
-            *p_inputscheme_pressed_window = p_pressed_uiwindow;
-            p_pressed_uiwindow->time_last_press = glfwGetTime();
-
-            //find slider
-            UISlider* p_slider = find_slider_on_cursor(p_pressed_uiwindow, x, y);
-            if(p_slider){
-                p_pressed_uiwindow->p_pressed_slider = p_slider;
-                if(p_slider->x_on_tick(x, p_pressed_uiwindow->x0, p_pressed_uiwindow->width)){
-                    p_slider->tick_held_down = true;
-                }
-            }
+    UIWindow* p_pressed_window = *p_inputscheme_pressed_window;
+    if(p_pressed_window){
+        if(p_pressed_window->p_pressed_slider){
+            p_pressed_window->p_pressed_slider->tick_held_down=false;
         }
+        p_pressed_window->p_pressed_slider = nullptr;
     }
-    else//if mouse_state == GLFW_RELEASE
-    {
-        UIWindow* p_pressed_window = *p_inputscheme_pressed_window;
-        if(p_pressed_window){
-            p_pressed_window->p_pressed_slider = nullptr;
-            if(p_pressed_window->p_pressed_slider){
-                p_pressed_window->p_pressed_slider->tick_held_down=false;
-            }
-        }
-        *p_inputscheme_pressed_window = nullptr;
-    }
+    *p_inputscheme_pressed_window = nullptr;
 }
 
 
