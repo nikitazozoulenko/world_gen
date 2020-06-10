@@ -40,7 +40,13 @@ void UIRenderer::render_window(UIWindow* p_ui_window)
         render_window_slider(slider, p_ui_window);
     }
     //window
-    ui_shaderprogram.setUniformVec4("coords", p_ui_window->x0, p_ui_window->y0, p_ui_window->width, p_ui_window->height);
+    double screen_w = settings.getWindowWidth();
+    double screen_h = settings.getWindowHeight();
+    double x = p_ui_window->x0/screen_w;
+    double y = p_ui_window->y0/screen_h;
+    double w = p_ui_window->w/screen_w;
+    double h = p_ui_window->h/screen_h;
+    ui_shaderprogram.setUniformVec4("coords", x,y,w,h);
     ui_shaderprogram.setUniformVec3("color", p_ui_window->color);
     glDrawArrays(GL_TRIANGLES, 0, 6);
 }
@@ -48,54 +54,33 @@ void UIRenderer::render_window(UIWindow* p_ui_window)
 
 
 void UIRenderer::render_window_slider(UISlider& slider, UIWindow* p_ui_window)
-{
+{   //sizes in pixels
     double& win_x0 = p_ui_window->x0;
     double& win_y0 = p_ui_window->y0;
-    double& win_width = p_ui_window->width;
-    double& win_height = p_ui_window->height;
+    double& win_w = p_ui_window->w;
+    double& win_h = p_ui_window->h;
     glm::vec3& color = p_ui_window->color;
-
-    //local (slider space is whole [0,1])
     double& min = slider.min;
     double& max = slider.max;
     double& value = slider.value;
-
-    double tick_w = slider.tick_width;
-    double line_h = slider.line_height;
-
-    double c_val_norm = (value-min)/(max-min);
-    double line_y0 = 0.5 - line_h/2.0;
-    double line_x0 = 0;
-    double tick_y0 = 0;
-    double tick_x0 = c_val_norm * (1-tick_w);
-
-    //local in window
-    double& w = slider.width;
-    double& h = slider.height;
-    line_y0 = line_y0*h + slider.y0;
-    line_x0 = line_x0*w + slider.x0;
-    line_h = line_h*h;
-    tick_y0 = tick_y0*h + slider.y0;
-    tick_x0 = tick_x0*w + slider.x0;
-    tick_w = tick_w*w;
-
-    //global
-    line_y0 = line_y0*win_height + win_y0;
-    line_x0 = line_x0*win_width + win_x0;
-    line_h = line_h*win_height;
-    double line_w = w * win_width;
-    tick_y0 = tick_y0*win_height + win_y0;
-    tick_x0 = tick_x0*win_width + win_x0;
-    tick_w = tick_w*win_width;
-    double tick_h = h * win_height;
-
+    double screen_w = settings.getWindowWidth();
+    double screen_h = settings.getWindowHeight();
 
     //tick
+    double c_val_norm = (value-min)/(max-min);
+    double tick_x0 = (win_x0 + slider.x0 + c_val_norm*(slider.w-slider.tick_w)) / screen_w;
+    double tick_y0 = (win_y0 + slider.y0)/screen_h;
+    double tick_w = slider.tick_w/screen_w;
+    double tick_h = slider.h/screen_h;
     ui_shaderprogram.setUniformVec4("coords", tick_x0, tick_y0, tick_w, tick_h);
     ui_shaderprogram.setUniformVec3("color", color*0.5f);
     glDrawArrays(GL_TRIANGLES, 0, 6);
 
     //line
+    double line_x0 = (win_x0 + slider.x0)/screen_w;
+    double line_y0 = (win_y0 + slider.y0 + 0.5*(slider.h - slider.line_h)) / screen_h;
+    double line_w = slider.w/screen_w;
+    double line_h = slider.line_h/screen_h;
     ui_shaderprogram.setUniformVec4("coords", line_x0, line_y0, line_w, line_h);
     ui_shaderprogram.setUniformVec3("color", color*0.75f);
     glDrawArrays(GL_TRIANGLES, 0, 6);

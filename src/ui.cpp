@@ -32,22 +32,25 @@ void UI::removeUIWindow(UIWindow* p_ui_window)
 UI_FreeCamWorld::UI_FreeCamWorld(FreeCamWorld* p_scene) :
     p_scene(p_scene)
 {
-
 }
+
+
 
 void UI_FreeCamWorld::createUI()
 {
-    UIWindow* p_window = createUIWindow(0.1, 0.1, 0.3, 0.2, glm::vec3(54/255.0, 54/255.0, 99/255.0));
+    double win_w = 300;
+    double win_h = 300;
+    UIWindow* p_window = createUIWindow(100, 100, win_w, win_h, glm::vec3(54/255.0, 54/255.0, 99/255.0));
     std::vector<UISlider>& sliders = p_window->sliders;
 
     //how big a slider is
-    double w = 0.44;
-    double off_x = (1-1*w)/2.0;
-    double h = 0.25;
-    double off_y = (1-2*h)/3.0;
+    double w = 200;
+    double off_x = (win_w-w)/2.0;
+    double h = 100;
+    double off_y = (win_h-2*h)/3.0;
 
-    double tick_w = 0.3;
-    double line_h = 0.2;
+    double tick_w = 50;
+    double line_h = 40;
 
     double m_size = 2;
     double M_size = 100;
@@ -73,17 +76,19 @@ UI_MainMenu::UI_MainMenu(MainMenu* p_scene) :
 
 void UI_MainMenu::createUI()
 {
-    UIWindow* p_window = createUIWindow(0.1, 0.1, 0.6, 0.4, glm::vec3(54/255.0, 54/255.0, 99/255.0));
+    double win_w = 700;
+    double win_h = 400;
+    UIWindow* p_window = createUIWindow(200, 100, win_w, win_h, glm::vec3(54/255.0, 54/255.0, 99/255.0));
     std::vector<UISlider>& sliders = p_window->sliders;
 
     //how big a slider is
-    double w = 0.44;
-    double off_x = (1-2*w)/3.0;
-    double h = 0.25;
-    double off_y = (1-3*h)/4.0;
+    double w = 300;
+    double off_x = (win_w-2*w)/3.0;
+    double h = 100;
+    double off_y = (win_h-3*h)/4.0;
 
-    double tick_w = 0.3;
-    double line_h = 0.2;
+    double tick_w = 50;
+    double line_h = 20;
 
     double min_val = 10;
     double max_val = 20;

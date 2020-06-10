@@ -42,8 +42,8 @@ void InputScheme::cursor_pos_callback(GLFWwindow* window, double xpos, double yp
 {   //records cursor movement
     InputScheme* p_input_scheme = (InputScheme*)glfwGetWindowUserPointer(window);
     //normalizes [0,1] coords. y from bot to top, x from left to right
-    double x =  xpos/ (double) p_input_scheme->settings.getWindowWidth();
-    double y =  1.0 - ypos/ (double) p_input_scheme->settings.getWindowHeight();
+    double x = xpos;
+    double y = p_input_scheme->settings.getWindowHeight() - ypos;
 
     p_input_scheme->mouse_x = x;
     p_input_scheme->mouse_y = y;
@@ -254,12 +254,9 @@ void MainMenuInputScheme::processInput(double delta_time)
 {
     glfwPollEvents();
     if(clicked(GLFW_MOUSE_BUTTON_LEFT))
-        print_float("click", 0);
         UIWindow::uiwindow_click(p_scene->ui.windows, mouse_x, mouse_y, &p_pressed_window);
-    if(released(GLFW_MOUSE_BUTTON_LEFT)){
-        print_float("release", 0);
+    if(released(GLFW_MOUSE_BUTTON_LEFT))
         UIWindow::uiwindow_release(&p_pressed_window);
-    }
 
 
     //keys

@@ -50,6 +50,7 @@ void FreeCamWorld::scene_logic(double delta_time)
 void FreeCamWorld::slider_amp_fun(double val, double change)
 {
     world.chunk_manager.amplitude=val;
+    print_float("dostuff", 0);
 }
 
 void FreeCamWorld::slider_size_fun(double val, double change)

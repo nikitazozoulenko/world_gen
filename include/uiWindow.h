@@ -11,10 +11,11 @@
 
 #include <shaderprogram.h>
 
+class UIWindow; //forward declare
 class UISlider
 {
 public:
-    UISlider(double min, double max, double x0, double y0, double width, double height, double tick_width, double line_height, 
+    UISlider(double min, double max, double x0, double y0, double w, double h, double tick_w, double line_h, 
         std::function<void(double, double)>& fun);
 
     double min;
@@ -23,17 +24,18 @@ public:
     std::function<void(double, double)> fun;
     bool tick_held_down;
 
-    // all from [0,1] w.r.t. the size of the box its in.
+    // sizes in pixels
     double x0;
     double y0;
-    double width;
-    double height;
-    double tick_width;  //wrt to width
-    double line_height; //wrt to height
+    double w;
+    double h;
+    double tick_w;
+    double line_h;
 
     void update_value(double xoff, double win_width);
-    bool x_on_tick(double x, double win_x0, double win_width);
-    bool x_on_slider(double x, double win_x0, double win_width);
+    bool x_on_tick(double x, double win_x0);
+    bool x_on_slider(double x, double win_x0);
+    bool find_if_on_slider(UIWindow* p_ui_window, double& x, double& y);
 private:
 };
 
@@ -42,15 +44,15 @@ private:
 class UIWindow
 {
 public:
-    UIWindow(double x0, double y0, double width, double height, glm::vec3 color);
+    UIWindow(double x0, double y0, double w, double h, glm::vec3 color);
 
     void draw(Shaderprogram& shaderprogram);
 
-    //(x0, y0, x0+width, y0+height) normalized [0,1].
+    //(x0, y0, x0+w, y0+h) size in pixels
     double x0;
     double y0;
-    double width;
-    double height;
+    double w;
+    double h;
 
     //color in [0,1]^3
     glm::vec3 color;
@@ -66,8 +68,6 @@ public:
 
     static UISlider* find_slider_on_cursor(UIWindow* p_ui_window, double& x, double& y);
     static UIWindow* find_uiwindow_on_cursor(std::vector<UIWindow*>& ui_windows, double& x, double& y);
-    static UISlider* find_if_on_slider(UIWindow* p_ui_window, UISlider& slider, double& x, double& y);
-    static UISlider* find_if_on_slider_tick(UIWindow* p_ui_window, UISlider& slider, double& x, double& y);
     static void uiwindow_click(std::vector<UIWindow*>& ui_windows, double& x,double& y, UIWindow** p_pressed_window);
     static void uiwindow_release(UIWindow** p_inputscheme_pressed_window);
 
