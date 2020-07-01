@@ -16,7 +16,8 @@ class Shaderprogram
 {
 public:
     Shaderprogram() = default;
-    Shaderprogram(const char * vertex_path, const char * geometry_path, const char * fragment_path, const char * compute_path);
+    Shaderprogram(const char * vertex_path, const char * geometry_path, const char * fragment_path, const char * compute_path, std::unordered_map<std::string, std::string> variable_map={});
+    //example variable_map = {"MAX_OCTAVES" : "const float MAX_OCTAVES = 8"}
     void checkProgramError(unsigned int flag, const std::string& error_message);
     void setUniformMat4(const char * name, glm::mat4 matrix);
     void setUniformVec4(const char * name, glm::vec4 vector);

@@ -321,12 +321,32 @@ Chunk::Chunk(Settings& settings, glm::ivec2 pos) :
 
 Chunk::~Chunk()
 {
-    // print_vec2("deleting", pos);
-    // if(data)
-    // {
-    //     delete data;
-    // }
+    print_vec2("deleting chunk ", pos);
+    if(data)
+    {
+        delete data;
+    }
+    glDeleteBuffers(1, &vertex_VBO);
+    glDeleteBuffers(1, &normal_VBO);
+    glDeleteVertexArrays(1, &VAO);
 }
+
+Chunk::Chunk(const Chunk& source) : Chunk(source.settings, source.pos)
+{
+    print_vec2("copy", pos);
+} //copy TODO
+
+
+Chunk& Chunk::operator=(const Chunk& source)
+{
+    print_vec2("assign", pos);
+} //assign TODO
+    
+    
+Chunk& Chunk::operator=(Chunk&& source)
+{
+    print_vec2("move", pos);
+} // move TODO
 
 
 void Chunk::setUp()

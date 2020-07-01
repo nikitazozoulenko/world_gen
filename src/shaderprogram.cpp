@@ -13,7 +13,7 @@
 
 
 
-Shaderprogram::Shaderprogram(const char * vertex_path, const char * geometry_path, const char * fragment_path, const char * compute_path)
+Shaderprogram::Shaderprogram(const char * vertex_path, const char * geometry_path, const char * fragment_path, const char * compute_path, std::unordered_map<std::string, std::string> variable_map)
 {
     std::vector<Shader> shaders;
     std::unordered_map<GLenum, const char *> paths;
@@ -29,7 +29,7 @@ Shaderprogram::Shaderprogram(const char * vertex_path, const char * geometry_pat
         GLenum shader_mode = pair.first;
         if (path)
         {
-            Shader shader = Shader(path, shader_mode);
+            Shader shader = Shader(path, shader_mode, variable_map);
             shaders.push_back(shader);
             glAttachShader(ID, shader.ID);
         }

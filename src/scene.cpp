@@ -1,7 +1,6 @@
 #include <scene.h>
 #include <misc.h>
 
-#include <algorithm>
 
 //////////// SCENE ///////////////////////////////////////////////////////////
 
@@ -43,19 +42,21 @@ void FreeCamWorld::render()
 
 void FreeCamWorld::scene_logic(double delta_time)
 {
-    world.chunk_manager.createChunk(glm::ivec2(0,0));
+    world.chunk_manager.remove_far_chunks(camera.pos);
+    world.chunk_manager.gen_new_nearby_chunks(camera.pos);
 }
 
 
 void FreeCamWorld::slider_amp_fun(double val, double change)
 {
-    world.chunk_manager.amplitude=val;
-    print_float("dostuff", 0);
+    print_float("slider",0);
+    // world.chunk_manager.amplitude=val;
 }
 
 void FreeCamWorld::slider_size_fun(double val, double change)
 {
-    world.chunk_manager.size=val;
+    print_float("slider",1);
+    // world.chunk_manager.size=val;
 }
 
 

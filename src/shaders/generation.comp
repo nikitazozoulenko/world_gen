@@ -10,6 +10,9 @@ uniform int CH_DEPTH;
 uniform float amplitude;
 uniform float size;
 
+createvar MAX_OCTAVES;
+uniform vec2 octaves[MAX_OCTAVES];
+
 #define PI 3.14159265359
 #define N_OCTAVES 1
 
@@ -79,7 +82,7 @@ vec3 rotate(vec3 v, vec3 axis, float rad)
 }
 
 
-float simplexNoise2D(float x, float y) //"world" x and y, can be scaled
+float simplexNoise2D(float x, float y, float amplitude) //"world" x and y, can be scaled
 {
     float noise = 0.0;
 
@@ -129,7 +132,7 @@ float simplexNoise2D(float x, float y) //"world" x and y, can be scaled
 }
 
 
-float simplexNoise3D(float x, float y, float z) //"world" x, y and z, can be scaled
+float simplexNoise3D(float x, float y, float z, float amplitude) //"world" x, y and z, can be scaled
 {
     float noise = 0.0;
 
@@ -241,7 +244,14 @@ void main()
     int y = xyz.y;
     int z = xyz.z;
 
-    float noise = simplexNoise3D((x+CH_WIDTH*chunk_pos.x)/size, (y + game_time)/size, (z+CH_DEPTH*chunk_pos.y)/size);
+    float noise = simplexNoise2D((x+CH_WIDTH*chunk_pos.x)/size, (z+CH_DEPTH*chunk_pos.y)/size, amplitude);
+    float d = y/32.0;
+    if(noise>d){
+        noise = 1;
+    }else{
+        noise = 0;
+    }
+
     //Store sample
     imageStore(img_output, xyz, vec4(noise, noise, noise, noise));
 }

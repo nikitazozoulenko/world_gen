@@ -24,6 +24,8 @@ public:
     InputScheme* p_input_scheme;
     MasterRenderer& masterRenderer;
     Camera camera;
+
+    unsigned int frame=0;
 protected:
     Settings& settings;
 private:

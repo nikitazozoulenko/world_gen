@@ -99,12 +99,13 @@ void Program::run()
     while (!glfwWindowShouldClose(window))
     {
         changeSceneIfNeeded();
-
         // per-frame time logic
         float delta_time = timer.update_delta_time();
         p_scene->p_input_scheme->processInput(delta_time);
         p_scene->scene_logic(delta_time);
         //render
         p_scene->render();
+        p_scene->frame +=1;
     }
+    glfwTerminate();
 }

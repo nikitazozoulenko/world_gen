@@ -2,15 +2,16 @@
 
 #include <iostream>
 #include <fstream>
+#include <regex>
 
-Shader::Shader(const std::string& filename, GLenum shadertype)
+Shader::Shader(const std::string& filename, GLenum shadertype, std::unordered_map<std::string, std::string> variable_map)
 {
-	std::string shader_string = ParseShaderFile(filename);
+	std::string shader_string = ParseShaderFile(filename, variable_map);
 	CreateShader(shader_string, shadertype);
 }
 
 
-std::string Shader::ParseShaderFile(const std::string& filename)
+std::string Shader::ParseShaderFile(const std::string& filename, std::unordered_map<std::string, std::string> variable_map)
 {
 	std::ifstream file;
 	file.open(filename);
@@ -29,6 +30,12 @@ std::string Shader::ParseShaderFile(const std::string& filename)
 	else 
 	{
 		std::cerr << "Unable to load shader with file name: " << filename << std::endl;
+	}
+
+	//replace all createvar with real variable
+	for(auto& pair : variable_map)
+	{
+		output = std::regex_replace(output, std::regex("createvar "+pair.first), pair.second);
 	}
 	return output;
 }

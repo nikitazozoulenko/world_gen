@@ -7,6 +7,7 @@
 
 #include <string>
 
+
 #define SCENE_FreeCamWorld  18823
 #define SCENE_MainMenu      24354
 
@@ -22,6 +23,9 @@ public:
     int getChunkWidth();
     int getChunkHeight();
     int getChunkDepth();
+    int getRenderDistance();
+
+    int MAX_OCTAVES;
 protected:
 private:
     int width;
@@ -31,6 +35,8 @@ private:
     int chunk_width;
     int chunk_height;
     int chunk_depth;
+
+    int render_distance_chunks;
 };
 
 #endif // MY_SETTINGS_THING_H

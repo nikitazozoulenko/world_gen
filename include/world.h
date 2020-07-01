@@ -15,12 +15,15 @@
 
 typedef std::unordered_map<glm::ivec2, Chunk, std::hash<glm::ivec2>> ChunkMapivec2; 
 
-
 class ChunkManager
 {
 public:
     ChunkManager(Settings& settings, ChunkMapivec2& chunk_map);
     void createChunk(glm::ivec2 pos);
+    void removeChunk(glm::ivec2 pos);
+
+    void gen_new_nearby_chunks(glm::vec3& center_pos);
+    void remove_far_chunks(glm::vec3& center_pos);
 
     float size;
     float amplitude;

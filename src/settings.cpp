@@ -7,7 +7,9 @@ Settings::Settings() :
     window_title("Marching Cubes"),
     chunk_width(32),
     chunk_height(32),
-    chunk_depth(32)
+    chunk_depth(32),
+    render_distance_chunks(12),
+    MAX_OCTAVES(8)
 {
 
 }
@@ -52,4 +54,9 @@ int Settings::getChunkHeight()
 int Settings::getChunkDepth()
 {
     return chunk_depth;
+}
+
+int Settings::getRenderDistance()
+{
+    return render_distance_chunks;
 }

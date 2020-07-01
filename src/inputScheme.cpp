@@ -50,7 +50,7 @@ void InputScheme::cursor_pos_callback(GLFWwindow* window, double xpos, double yp
     p_input_scheme->cursor_moved=true;
     if (p_input_scheme->firstmouse){
         p_input_scheme->mouse_old_x = x;
-        p_input_scheme->mouse_old_y = y;
+        
         p_input_scheme->firstmouse = false;
         p_input_scheme->cursor_moved=false;
     }
@@ -85,7 +85,7 @@ void InputScheme::clear_frame_input()
 
 
 bool InputScheme::clicked(int key)
-{
+{   //NOTE: WARNING: not working properly when held down ("keyboard repeat"). might work on windows
     bool found = false;
     auto search = key_map.find(key);
     if(search != key_map.end())

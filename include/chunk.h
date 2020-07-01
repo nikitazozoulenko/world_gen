@@ -14,7 +14,11 @@ class Chunk
 {
 public:
     Chunk(Settings& settings, glm::ivec2 pos);
-    ~Chunk();
+    ~Chunk();   //destructor
+    Chunk(const Chunk& source); //copy
+    Chunk& operator=(const Chunk& source); //assign operator
+    Chunk& operator=(Chunk&& source); // move assignment
+
     void render();
     glm::vec4 getData(int x, int y, int z);
     glm::vec4 getData(glm::ivec3 v);
