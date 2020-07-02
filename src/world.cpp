@@ -16,7 +16,7 @@ World::World(Settings& settings):
 ChunkManager::ChunkManager(Settings& settings, ChunkMapivec2& chunk_map):
     settings(settings),
     chunk_map(chunk_map),
-    size(20),
+    size(60),
     amplitude(1)
 {
     createMarchComputeTexture();
