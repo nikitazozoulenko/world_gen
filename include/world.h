@@ -25,6 +25,10 @@ public:
     void gen_new_nearby_chunks(glm::vec3& center_pos);
     void remove_far_chunks(glm::vec3& center_pos);
 
+    void updateEdges(glm::ivec2& pos);
+    void updateBlockVisEdge(Chunk& chunk1, int face1, Chunk& chunk2, int face2);
+    unsigned int& getBlockGlobal(glm::vec3 p);
+
     float size;
     float amplitude;
 private:
@@ -35,6 +39,8 @@ private:
 
     void createComputeShader();
     void createMarchComputeTexture();
+
+    
 };
 
 

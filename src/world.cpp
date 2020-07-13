@@ -17,7 +17,7 @@ ChunkManager::ChunkManager(Settings& settings, ChunkMapivec2& chunk_map):
     settings(settings),
     chunk_map(chunk_map),
     size(60),
-    amplitude(1)
+    amplitude(20)
 {
     createMarchComputeTexture();
     createComputeShader();
@@ -39,12 +39,12 @@ void ChunkManager::createMarchComputeTexture()
     int ch_depth = settings.getChunkDepth();
 
     glGenTextures(1, &comp_texture);
-    glBindTexture(GL_TEXTURE_3D, comp_texture);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA32F, ch_width+1, ch_height, ch_depth+1, 0, GL_RGBA, GL_FLOAT, NULL);
+    glBindTexture(GL_TEXTURE_2D, comp_texture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, ch_width, ch_depth, 0, GL_RGBA, GL_FLOAT, NULL);
     glBindImageTexture(0, comp_texture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
 }
 
@@ -78,7 +78,8 @@ void ChunkManager::createChunk(glm::ivec2 pos)
     comp_shaderprogram.setUniformFloat("amplitude", amplitude);
 
     //run compute shader
-    glDispatchCompute(ch_width+1, ch_height, ch_depth+1);
+    glBindTexture(GL_TEXTURE_2D, comp_texture);
+    glDispatchCompute(ch_width, 1, ch_depth);
     //wait for the compute shader to be done before reading textures
     glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 
@@ -86,6 +87,9 @@ void ChunkManager::createChunk(glm::ivec2 pos)
     chunk_map.emplace(std::piecewise_construct,
                       std::forward_as_tuple(pos),
                       std::forward_as_tuple(settings, pos));
+
+    //update visibility on edge
+    updateEdges(pos);
 }
 
 
@@ -150,4 +154,81 @@ void ChunkManager::remove_far_chunks(glm::vec3& center_pos) //in world coords
             break; //only one per frame, also for loop is broken by removing an element from chunkmap
         }
     }
+}
+
+void ChunkManager::updateEdges(glm::ivec2& pos)
+{
+    glm::ivec2 pos_east = glm::ivec2(pos.x+1, pos.y);
+    glm::ivec2 pos_west = glm::ivec2(pos.x-1, pos.y);
+    glm::ivec2 pos_north = glm::ivec2(pos.x, pos.y+1);
+    glm::ivec2 pos_south = glm::ivec2(pos.x, pos.y-1);
+
+    if(chunk_map.count(pos_west) != 0)
+        updateBlockVisEdge(chunk_map.at(pos_west), BlockModel::WEST, chunk_map.at(pos), BlockModel::EAST);
+    if(chunk_map.count(pos_east) != 0)
+        updateBlockVisEdge(chunk_map.at(pos), BlockModel::WEST, chunk_map.at(pos_east), BlockModel::EAST);
+    if(chunk_map.count(pos_south) != 0)
+        updateBlockVisEdge(chunk_map.at(pos_south), BlockModel::SOUTH, chunk_map.at(pos), BlockModel::NORTH);
+    if(chunk_map.count(pos_north) != 0)
+        updateBlockVisEdge(chunk_map.at(pos), BlockModel::SOUTH, chunk_map.at(pos_north), BlockModel::NORTH);
+}
+
+
+void ChunkManager::updateBlockVisEdge(Chunk& chunk1, int face1, Chunk& chunk2, int face2)
+{   
+    int ch_width = settings.getChunkWidth();
+    int ch_depth = settings.getChunkDepth();
+    int ch_height = settings.getChunkHeight();
+    glm::vec3 side;
+    glm::vec3 k;
+    int W;
+    if(face2==BlockModel::EAST)
+    {
+        side = glm::vec3(0,0,1);
+        k = glm::vec3(1,0,0);
+        W = ch_depth;
+    }
+    else
+    {
+        side = glm::vec3(1,0,0);
+        k = glm::vec3(0,0,1);
+        W = ch_width;
+    }
+    
+    glm::vec3 corner = glm::vec3(chunk2.pos.x*ch_width, 0, chunk2.pos.y*ch_depth);
+    for(int y=0; y<ch_height; y++)
+        for(int i=0; i<W; i++)
+        {
+            glm::vec3 pos1 = glm::vec3(corner + glm::vec3(0,y,0) + glm::vec3(side.x*i, 0, side.z*i));
+            glm::vec3 pos2 = pos1-k;
+            unsigned int& block1 = getBlockGlobal(pos1);
+            unsigned int& block2 = getBlockGlobal(pos2);
+
+            if(block1==0 && block2!=0)
+            {
+                chunk1.addToRenderMap(block2, face2, pos2);
+                chunk1.re_init_vaos = true;
+            }
+
+            if(block1!=0 && block2==0)
+            {
+                chunk2.addToRenderMap(block1, face1, pos1);
+                chunk2.re_init_vaos = true;
+            }
+        }
+}
+
+
+unsigned int& ChunkManager::getBlockGlobal(glm::vec3 p)
+{
+    int ch_width = settings.getChunkWidth();
+    int ch_depth = settings.getChunkDepth();
+    //WARNING check if in bounds outside of this function
+    int chunk_x = std::floor(p.x / (float)ch_width);
+    int chunk_z = std::floor(p.z / (float)ch_depth);
+    int local_x = p.x - chunk_x*ch_width;
+    int local_y = p.y;
+    int local_z = p.z - chunk_z*ch_depth;
+    unsigned int& block = chunk_map.at(glm::ivec2(chunk_x, chunk_z)).getBlock(local_x, local_y, local_z);
+    return block;
 }

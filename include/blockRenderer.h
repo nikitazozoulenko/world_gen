@@ -1,5 +1,5 @@
-#ifndef BLOCKRENDERER_H
-#define BLOCKRENDERER_H
+#ifndef MY_BLOCKRENDERER_H
+#define MY_BLOCKRENDERER_H
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -20,9 +20,16 @@ public:
     
 private:
     Settings& settings;
-    Shaderprogram march_cube_draw_shaderprogram;
-    unsigned int comp_texture;
+    Shaderprogram block_shaderprogram;
+    unsigned int block_texture;
+    std::array<std::unordered_map<int, int>,6> texArrayIDLookup;
 
+    void createModelMap();
     void createShaders();
+    void setup_block_texture();
+    void setupTexArrayIDLookup(int n_blocks);
+
+    void setProjectionMatrix(Camera& camera);
+    void setViewMatrix(Camera& camera);
 };
-#endif // BLOCKRENDERER_H
+#endif // MY_BLOCKRENDERER_H

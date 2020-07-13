@@ -170,7 +170,14 @@ void FreeCamWorldInputScheme::freeCamMovementInput(double delta_time)
         camera.ProcessKeyboard(Camera::UP, delta_time);
     if (held(GLFW_KEY_LEFT_CONTROL))
         camera.ProcessKeyboard(Camera::DOWN, delta_time);
-
+    if(clicked(GLFW_KEY_LEFT_SHIFT))
+    {
+        camera.movementSpeed /= 10;
+    }
+    if(released(GLFW_KEY_LEFT_SHIFT))
+    {
+        camera.movementSpeed *= 10;
+    }
     //mouse
     if(cursor_moved)
         camera.ProcessMouseMovement(mouse_x-mouse_old_x, mouse_y-mouse_old_y);

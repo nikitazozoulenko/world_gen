@@ -1,6 +1,6 @@
 #version 430
 layout(local_size_x=1, local_size_y=1, local_size_z=1) in;
-layout(rgba32f, binding = 0) uniform image3D img_output;
+layout(rgba32f, binding = 0) uniform image2D img_output;
 
 uniform float game_time;
 uniform vec2 chunk_pos;
@@ -229,7 +229,7 @@ vec3 permute(vec3 x) {
 
 // Cellular noise, returning F1 and F2 in a vec2.
 // Standard 3x3 search window for good F1 and F2 values
-vec2 cellular(vec2 P) {
+vec2 cellular(vec2 P, float amplitude) {
 #define K 0.142857142857 // 1/7
 #define Ko 0.428571428571 // 3/7
 #define jitter 1.0 // Less gives more regular pattern
@@ -267,7 +267,7 @@ vec2 cellular(vec2 P) {
 	d1.yz = min(d1.yz, d2.yz); // F2 is now not in d2.yz
 	d1.y = min(d1.y, d1.z); // nor in  d1.z
 	d1.y = min(d1.y, d2.x); // F2 is in d1.y, we're done.
-	return sqrt(d1.xy);
+	return sqrt(d1.xy)*amplitude;
 }
 
 
@@ -307,15 +307,9 @@ void main()
     int z = xyz.z;
 
     //float noise = simplexNoise2D((x+CH_WIDTH*chunk_pos.x)/size, (z+CH_DEPTH*chunk_pos.y)/size, amplitude);
-    vec2 F = cellular(vec2((x+CH_WIDTH*chunk_pos.x)/size, (z+CH_DEPTH*chunk_pos.y)/size));
+    vec2 F = cellular(vec2((x+CH_WIDTH*chunk_pos.x)/size, (z+CH_DEPTH*chunk_pos.y)/size), amplitude);
     float noise = F.x;
-    float d = y/32.0;
-    if(noise>d){
-        noise = 1;
-    }else{
-        noise = 0;
-    }
 
     //Store sample
-    imageStore(img_output, xyz, vec4(noise, noise, noise, noise));
+    imageStore(img_output, xyz.xz, vec4(noise, noise, noise, noise));
 }
