@@ -9,7 +9,8 @@ Settings::Settings() :
     chunk_height(32),
     chunk_depth(32),
     render_distance_chunks(10),
-    MAX_OCTAVES(8)
+    MAX_OCTAVES(8),
+    reach(6)
 {
 
 }

@@ -33,7 +33,6 @@ Chunk::Chunk(Settings& settings, glm::ivec2 pos) :
                 else if (y<= height-4)
                     blockID = 3; //stone
                 setBlock(x, y, z, blockID);
-                //print_float("h", height_map[row + col]);
             }
         }
     }
@@ -83,6 +82,8 @@ unsigned int& Chunk::getBlock(glm::vec3 v)
 {
     return getBlock(glm::ivec3(v));
 }
+
+
 void Chunk::setBlock(int x, int y, int z, unsigned int block)
 {
     int ch_width = settings.getChunkWidth();

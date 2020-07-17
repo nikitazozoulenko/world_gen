@@ -1,0 +1,8 @@
+{
+
+      "variants": {
+	"": [ { "model": "block/oak_sapling" }, { "model": "block/oak_sapling1" }, { "model": "block/oak_sapling2" }
+ ]
+     }
+
+}

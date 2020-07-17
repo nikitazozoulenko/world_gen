@@ -1,0 +1,8 @@
+{
+
+      "variants": {
+	"": [ { "model": "block/jungle_sapling" }, { "model": "block/jungle_sapling1" }, { "model": "block/jungle_sapling2" }
+ ]
+     }
+
+}

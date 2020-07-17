@@ -62,6 +62,11 @@ void UI_FreeCamWorld::createUI()
 
     sliders.push_back(UISlider(m_size, M_size, off_x, off_y, w, h, tick_w, line_h, fun_size));
     sliders.push_back(UISlider(m_amp, M_amp, off_x, off_y*2+h, w, h, tick_w, line_h, fun_amp));
+
+
+
+    //cursor fake
+    createUIWindow(1280/2-1, 720/2-1, 2, 2, glm::vec3(1,1,1));
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

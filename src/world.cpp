@@ -4,13 +4,107 @@
 
 #include <algorithm>
 
-World::World(Settings& settings):
+World::World(Settings& settings, Camera& camera):
     settings(settings),
-    chunk_manager(ChunkManager(settings, chunk_map))
+    chunk_manager(ChunkManager(settings, chunk_map)),
+    block_is_targeted(false),
+    player(camera)
 {
 
 }
 
+
+void World::gameLogic(double delta_time)
+{
+    glm::vec3& player_pos = player.camera.pos;
+    chunk_manager.remove_far_chunks(player_pos);
+    chunk_manager.gen_new_nearby_chunks(player_pos);
+    targetBlockRay(player_pos);
+}
+
+
+double rayProjectionHelperFun(double& x, double& dir)
+{
+    double len = x - std::floor(x);
+    if(dir>0){
+        if(len==0)
+            len=1;
+        else
+            len = 1-len;
+    }
+    else{//dir_x>0 or 0, but then we return inf and thats fine, since all dir_xyz wont be 0
+        if(len==0)
+            len=-1;
+        else
+            len = -len;
+    }
+    return len/dir;
+}
+void World::targetBlockRay(glm::vec3 v, glm::vec3 enter_direction, int step){targetBlockRay(v.x, v.y, v.z, enter_direction, step);}
+void World::targetBlockRay(double x, double y, double z, glm::vec3 enter_direction, int step) //warning for stack overflow segfault
+{
+    block_is_targeted = false;
+    double dir_x = player.camera.front.x;
+    double dir_y = player.camera.front.y;
+    double dir_z = player.camera.front.z;
+    if(player.distanceTo(x,y,z) < settings.reach)
+    {
+        if(step==0){
+            target_pos = glm::vec3(std::floor(x), std::floor(y), std::floor(z));
+        }
+        else{
+            target_pos += enter_direction;
+        }
+        if(isInBounds(target_pos))
+        {
+            unsigned int block = getBlock(target_pos);
+            if(block != 0)
+            {
+                block_is_targeted = true;
+                target_facing = -enter_direction;
+                return;
+            }
+        }
+
+        //projection on cube sides
+        double tx = rayProjectionHelperFun(x, dir_x);
+        double ty = rayProjectionHelperFun(y, dir_y);
+        double tz = rayProjectionHelperFun(z, dir_z);
+        if(tx<ty && tx<tz)
+            targetBlockRay(std::nearbyint(x+tx*dir_x), y+tx*dir_y, z+tx*dir_z, glm::vec3(sign(dir_x),0,0), step+1);
+        else if(ty<tx && ty<tz)
+            targetBlockRay(x+ty*dir_x, std::nearbyint(y+ty*dir_y), z+ty*dir_z, glm::vec3(0,sign(dir_y),0), step+1);
+        else
+            targetBlockRay(x+tz*dir_x, y+tz*dir_y, std::nearbyint(z+tz*dir_z), glm::vec3(0,0,sign(dir_z)), step+1);
+    }
+}
+
+
+void World::placeBlockOnCursor(unsigned int block)
+{
+    if(block_is_targeted){
+        setBlock(target_pos+target_facing, block);
+    }
+}
+void World::destroyBlockOnCursor()
+{
+    if(block_is_targeted){
+        setBlock(target_pos, 0);
+    }
+}
+
+
+unsigned int& World::getBlock(glm::vec3 p){return chunk_manager.getBlock(p.x, p.y, p.z);}
+unsigned int& World::getBlock(int x, int y, int z){return chunk_manager.getBlock(x, y, z);}
+bool World::isInBounds(glm::vec3 p){return chunk_manager.isInBounds(p);}
+bool World::isInBounds(int x, int y, int z){return chunk_manager.isInBounds(x, y, z);}
+void World::setBlock(glm::vec3 v, int blockID){return chunk_manager.setBlock(v, blockID);}
+void World::setBlock(int x, int y, int z, int blockID){return chunk_manager.setBlock(x,y,z, blockID);}
+
+
+////////////////////////////////////
+///////////CHUNKMANAGER/////////////
+////////////////////////////////////
 
 
 ChunkManager::ChunkManager(Settings& settings, ChunkMapivec2& chunk_map):
@@ -19,20 +113,12 @@ ChunkManager::ChunkManager(Settings& settings, ChunkMapivec2& chunk_map):
     size(60),
     amplitude(20)
 {
-    createMarchComputeTexture();
+    createComputeTexture();
     createComputeShader();
-
-    for(int i=0; i<1; i++)
-    {
-        for(int j=0; j<1; j++)
-        {
-            createChunk(glm::ivec2(i,j));
-        }
-    }
 }
 
 
-void ChunkManager::createMarchComputeTexture()
+void ChunkManager::createComputeTexture()
 {   
     int ch_width = settings.getChunkWidth();
     int ch_height = settings.getChunkHeight();
@@ -67,7 +153,7 @@ void ChunkManager::createComputeShader()
 
 void ChunkManager::createChunk(glm::ivec2 pos)
 {
-    removeChunk(pos);
+    //removeChunk(pos);
     int ch_width = settings.getChunkWidth();
     int ch_height = settings.getChunkHeight();
     int ch_depth = settings.getChunkDepth();
@@ -137,10 +223,8 @@ void ChunkManager::gen_new_nearby_chunks(glm::vec3& center_pos) //in world coord
 void ChunkManager::remove_far_chunks(glm::vec3& center_pos) //in world coords
 {
     float& x = center_pos.x;
-    float& y = center_pos.y;
     float& z = center_pos.z;
     int x_ch = std::floor(x / (float)settings.getChunkWidth());
-    int y_ch = std::floor(y / (float)settings.getChunkHeight());
     int z_ch = std::floor(z / (float)settings.getChunkDepth());
     // given R, make a square with sidelength 2R. then filter out dist. then sort dist
     int R = settings.getRenderDistance();
@@ -201,8 +285,8 @@ void ChunkManager::updateBlockVisEdge(Chunk& chunk1, int face1, Chunk& chunk2, i
         {
             glm::vec3 pos1 = glm::vec3(corner + glm::vec3(0,y,0) + glm::vec3(side.x*i, 0, side.z*i));
             glm::vec3 pos2 = pos1-k;
-            unsigned int& block1 = getBlockGlobal(pos1);
-            unsigned int& block2 = getBlockGlobal(pos2);
+            unsigned int& block1 = getBlock(pos1);
+            unsigned int& block2 = getBlock(pos2);
 
             if(block1==0 && block2!=0)
             {
@@ -219,16 +303,115 @@ void ChunkManager::updateBlockVisEdge(Chunk& chunk1, int face1, Chunk& chunk2, i
 }
 
 
-unsigned int& ChunkManager::getBlockGlobal(glm::vec3 p)
+std::pair<glm::ivec2, glm::vec3> ChunkManager::findChunkPos(int x, int y, int z)
 {
     int ch_width = settings.getChunkWidth();
     int ch_depth = settings.getChunkDepth();
-    //WARNING check if in bounds outside of this function
-    int chunk_x = std::floor(p.x / (float)ch_width);
-    int chunk_z = std::floor(p.z / (float)ch_depth);
-    int local_x = p.x - chunk_x*ch_width;
-    int local_y = p.y;
-    int local_z = p.z - chunk_z*ch_depth;
-    unsigned int& block = chunk_map.at(glm::ivec2(chunk_x, chunk_z)).getBlock(local_x, local_y, local_z);
+    int chunk_x = std::floor(x / (float)ch_width);
+    int chunk_z = std::floor(z / (float)ch_depth);
+    int local_x = x - chunk_x*ch_width;
+    int local_z = z - chunk_z*ch_depth;
+    return std::pair<glm::ivec2, glm::vec3>(glm::ivec2(chunk_x, chunk_z), glm::vec3(local_x,y,local_z));
+}
+std::pair<glm::ivec2, glm::vec3> ChunkManager::findChunkPos(glm::vec3 v)
+{
+    return findChunkPos(v.x, v.y, v.z);
+}
+
+
+unsigned int& ChunkManager::getBlock(int x, int y, int z)
+{
+    glm::ivec2 chunk_pos;
+    glm::vec3 local_pos;
+    std::tie(chunk_pos, local_pos) = findChunkPos(x,y,z);
+    unsigned int& block = chunk_map.at(chunk_pos).getBlock(local_pos);
     return block;
+}
+unsigned int& ChunkManager::getBlock(glm::vec3 p)
+{
+    return getBlock(p.x, p.y, p.z);
+}
+
+
+bool ChunkManager::isInBounds(glm::vec3 v)
+{
+    return isInBounds(v.x, v.y, v.z);
+}
+bool ChunkManager::isInBounds(int x, int y, int z)
+{
+    int ch_width = settings.getChunkWidth();
+    int ch_depth = settings.getChunkDepth();
+    int ch_height = settings.getChunkHeight();
+
+    int chunk_x = std::floor(x / (float)ch_width);
+    int chunk_z = std::floor(z / (float) ch_depth);
+    glm::ivec2 pos = glm::ivec2(chunk_x, chunk_z);
+    if (y>=0 && y<ch_height)
+        if(chunk_map.find(pos)!=chunk_map.end())
+            return true;
+    return false;
+}
+
+
+void ChunkManager::setBlock(glm::vec3 v, int blockID)
+{
+    setBlock(v.x, v.y, v.z, blockID);
+}
+void ChunkManager::setBlock(int x, int y, int z, int blockID)
+{
+    glm::ivec2 chunk_pos;
+    glm::vec3 local_pos;
+    std::tie(chunk_pos, local_pos) = findChunkPos(x,y,z);
+
+    chunk_map.at(chunk_pos).setBlock(local_pos, blockID);
+    updateVisible(x, y, z); //100 ish
+    updateVisible(x+1, y, z);
+    updateVisible(x-1, y, z);
+    updateVisible(x, y+1, z);
+    updateVisible(x, y-1, z);
+    updateVisible(x, y, z+1);
+    updateVisible(x, y, z-1);
+}
+
+void ChunkManager::updateVisible(int x, int y, int z)
+{
+    //adds sides of block at positions x y z if needed. first removes all faces then adds if needed. do this for all 7 blocks.
+    if(isInBounds(x, y, z))
+    {
+        unsigned int first_block = getBlock(x,y,z);
+        glm::vec3 first_block_pos = glm::vec3(x,y,z);
+        //loop over 6 sides
+        std::unordered_map<int, glm::vec3> positions = {{BlockModel::EAST,  glm::vec3(x+1, y,   z  )},
+                                                        {BlockModel::WEST,  glm::vec3(x-1, y,   z  )},
+                                                        {BlockModel::TOP,   glm::vec3(x  , y+1, z  )},
+                                                        {BlockModel::BOTTOM,glm::vec3(x  , y-1, z  )},
+                                                        {BlockModel::NORTH, glm::vec3(x  , y,   z+1)},
+                                                        {BlockModel::SOUTH, glm::vec3(x  , y,   z-1)}};
+        int faces[6] = {BlockModel::EAST, BlockModel::WEST, BlockModel::TOP, BlockModel::BOTTOM, BlockModel::NORTH, BlockModel::SOUTH};
+        glm::ivec2 chunk_pos;
+        glm::vec3 local_pos;
+        std::tie(chunk_pos, local_pos) = findChunkPos(x,y,z);
+        for(int& face : faces)
+        {
+            //remove current face
+            Chunk& chunk = chunk_map.at(chunk_pos);
+            chunk.removeFromRenderMap(face, first_block_pos);
+            chunk.re_init_vaos = true;
+
+            glm::vec3 p = positions[face];
+            if(isInBounds(p))
+            {
+                unsigned int block = getBlock(p);
+                if(block == 0 && first_block != 0)  //TODO change to visible/nonvisible blocks?? (fence)
+                {
+                    //add face if checked block isnt air
+                    chunk.addToRenderMap(first_block, face, first_block_pos);
+                }
+            }
+            else if(p.y == settings.getChunkHeight() && first_block != 0)
+            {
+                chunk.addToRenderMap(first_block, face, first_block_pos);  //TODO change lighting
+            }
+        }
+    }
 }

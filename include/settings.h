@@ -26,6 +26,7 @@ public:
     int getRenderDistance();
 
     int MAX_OCTAVES;
+    int reach;
 protected:
 private:
     int width;

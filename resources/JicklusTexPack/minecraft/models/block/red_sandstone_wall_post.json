@@ -1,0 +1,24 @@
+{
+	"credit": "Made with Blockbench",
+	"textures": {
+		"particle": "block/red_sandstone",
+		"2": "block/red_sandstone_bottom",
+		"3": "block/red_sandstone_top",
+		"4": "block/red_sandstone"
+	},
+	"elements": [
+		{
+			"name": "Center post",
+			"from": [4, 0, 4],
+			"to": [12, 16, 12],
+			"faces": {
+				"north": {"uv": [4, 0, 12, 16], "texture": "#4"},
+				"east": {"uv": [4, 0, 12, 16], "texture": "#4"},
+				"south": {"uv": [4, 0, 12, 16], "texture": "#4"},
+				"west": {"uv": [4, 0, 12, 16], "texture": "#4"},
+				"up": {"uv": [4, 4, 12, 12], "texture": "#3"},
+				"down": {"uv": [4, 4, 12, 12], "texture": "#2"}
+			}
+		}
+	]
+}

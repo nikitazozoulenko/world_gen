@@ -172,15 +172,19 @@ void FreeCamWorldInputScheme::freeCamMovementInput(double delta_time)
         camera.ProcessKeyboard(Camera::DOWN, delta_time);
     if(clicked(GLFW_KEY_LEFT_SHIFT))
     {
-        camera.movementSpeed /= 10;
+        camera.movementSpeed /= 50;
     }
     if(released(GLFW_KEY_LEFT_SHIFT))
     {
-        camera.movementSpeed *= 10;
+        camera.movementSpeed *= 50;
     }
     //mouse
     if(cursor_moved)
         camera.ProcessMouseMovement(mouse_x-mouse_old_x, mouse_y-mouse_old_y);
+    if(released(GLFW_MOUSE_BUTTON_RIGHT))
+        p_scene->world.placeBlockOnCursor(2);
+    if(clicked(GLFW_MOUSE_BUTTON_LEFT))
+        p_scene->world.destroyBlockOnCursor();
 }
 
 

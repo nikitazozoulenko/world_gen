@@ -13,6 +13,6 @@ double Timer::update_delta_time()
     float currentFrame = glfwGetTime();
     delta_time = currentFrame - current_time;
     current_time = currentFrame;
-    // std::cout << 1/delta_time << std::endl;
+    //std::cout << 1/delta_time << std::endl;
     return delta_time;
 }

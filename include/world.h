@@ -12,6 +12,7 @@
 #include <settings.h>
 #include <shaderprogram.h>
 #include <camera.h>
+#include <player.h>
 
 typedef std::unordered_map<glm::ivec2, Chunk, std::hash<glm::ivec2>> ChunkMapivec2; 
 
@@ -27,7 +28,17 @@ public:
 
     void updateEdges(glm::ivec2& pos);
     void updateBlockVisEdge(Chunk& chunk1, int face1, Chunk& chunk2, int face2);
-    unsigned int& getBlockGlobal(glm::vec3 p);
+
+    unsigned int& getBlock(glm::vec3 v);
+    unsigned int& getBlock(int x, int y, int z);
+    bool isInBounds(glm::vec3 v);
+    bool isInBounds(int x, int y, int z);
+    void setBlock(glm::vec3 v, int blockID);
+    void setBlock(int x, int y, int z, int blockID);
+    std::pair<glm::ivec2, glm::vec3> findChunkPos(int x, int y, int z);
+    std::pair<glm::ivec2, glm::vec3> findChunkPos(glm::vec3 v);
+
+    void updateVisible(int x, int y, int z);
 
     float size;
     float amplitude;
@@ -38,7 +49,7 @@ private:
     unsigned int comp_texture;
 
     void createComputeShader();
-    void createMarchComputeTexture();
+    void createComputeTexture();
 
     
 };
@@ -47,9 +58,27 @@ private:
 class World
 {
 public:
-    World(Settings& settings);
+    World(Settings& settings, Camera& camera);
     ChunkMapivec2 chunk_map;
     ChunkManager chunk_manager;
+    Player player;
+
+    bool block_is_targeted;
+    glm::vec3 target_pos;
+    glm::vec3 target_facing;
+    void targetBlockRay(double x, double y, double z, glm::vec3 enter_direction = glm::vec3(0,0,0), int step=0);
+    void targetBlockRay(glm::vec3 v, glm::vec3 enter_direction = glm::vec3(0,0,0), int step=0);
+    unsigned int& getBlock(glm::vec3 v);
+    unsigned int& getBlock(int x, int y, int z);
+    bool isInBounds(glm::vec3 v);
+    bool isInBounds(int x, int y, int z);
+    void setBlock(glm::vec3 v, int blockID);
+    void setBlock(int x, int y, int z, int blockID);
+
+    void placeBlockOnCursor(unsigned int block);
+    void destroyBlockOnCursor();
+
+    void gameLogic(double delta_time);
 private:
     Settings& settings;
 };

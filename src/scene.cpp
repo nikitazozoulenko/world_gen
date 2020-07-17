@@ -28,7 +28,7 @@ Scene::~Scene()
 FreeCamWorld::FreeCamWorld(Settings& settings, GLFWwindow* window, MasterRenderer& masterRenderer):
     Scene(settings, window, new FreeCamWorldInputScheme(settings, window, camera, this), masterRenderer),
     ui(UI_FreeCamWorld(this)),
-    world(World(settings))
+    world(World(settings, camera))
 {
     ui.createUI();
 }
@@ -42,8 +42,7 @@ void FreeCamWorld::render()
 
 void FreeCamWorld::scene_logic(double delta_time)
 {
-    world.chunk_manager.remove_far_chunks(camera.pos);
-    world.chunk_manager.gen_new_nearby_chunks(camera.pos);
+    world.gameLogic(delta_time);
 }
 
 
