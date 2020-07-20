@@ -28,7 +28,7 @@ Scene::~Scene()
 FreeCamWorld::FreeCamWorld(Settings& settings, GLFWwindow* window, MasterRenderer& masterRenderer):
     Scene(settings, window, new FreeCamWorldInputScheme(settings, window, camera, this), masterRenderer),
     ui(UI_FreeCamWorld(this)),
-    world(World(settings, camera))
+    world(World(settings, camera, masterRenderer.block_renderer.blockIDMap))
 {
     ui.createUI();
 }

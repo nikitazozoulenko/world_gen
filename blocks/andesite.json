@@ -1,0 +1,7 @@
+{
+    "name": "Andesite",
+    "parent": "cube",
+    "textures": {
+        "side": "block/andesite.png"
+    }
+}

@@ -1,0 +1,7 @@
+{
+    "name": "Dirt",
+    "parent": "cube",
+    "textures": {
+        "side": "block/dirt.png"
+    }
+}

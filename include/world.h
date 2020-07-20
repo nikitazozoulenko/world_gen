@@ -7,6 +7,7 @@
 #include <glm/gtx/hash.hpp>
 
 #include <unordered_map>
+#include <string>
 
 #include <chunk.h>
 #include <settings.h>
@@ -19,7 +20,7 @@ typedef std::unordered_map<glm::ivec2, Chunk, std::hash<glm::ivec2>> ChunkMapive
 class ChunkManager
 {
 public:
-    ChunkManager(Settings& settings, ChunkMapivec2& chunk_map);
+    ChunkManager(Settings& settings, ChunkMapivec2& chunk_map, std::unordered_map<std::string, unsigned int>& blockIDMap);
     void createChunk(glm::ivec2 pos);
     void removeChunk(glm::ivec2 pos);
 
@@ -42,6 +43,7 @@ public:
 
     float size;
     float amplitude;
+    std::unordered_map<std::string, unsigned int>& blockIDMap;
 private:
     Settings& settings;
     ChunkMapivec2& chunk_map;
@@ -58,10 +60,11 @@ private:
 class World
 {
 public:
-    World(Settings& settings, Camera& camera);
+    World(Settings& settings, Camera& camera, std::unordered_map<std::string, unsigned int>& blockIDMap);
     ChunkMapivec2 chunk_map;
     ChunkManager chunk_manager;
     Player player;
+    std::unordered_map<std::string, unsigned int>& blockIDMap;
 
     bool block_is_targeted;
     glm::vec3 target_pos;
@@ -75,7 +78,7 @@ public:
     void setBlock(glm::vec3 v, int blockID);
     void setBlock(int x, int y, int z, int blockID);
 
-    void placeBlockOnCursor(unsigned int block);
+    void placeBlockOnCursor();
     void destroyBlockOnCursor();
 
     void gameLogic(double delta_time);

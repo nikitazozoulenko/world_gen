@@ -1,0 +1,7 @@
+{
+    "name": "Granite",
+    "parent": "cube",
+    "textures": {
+        "side": "block/granite.png"
+    }
+}

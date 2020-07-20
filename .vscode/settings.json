@@ -89,6 +89,7 @@
         "stack": "cpp",
         "tensor": "cpp",
         "*.inc": "cpp",
-        "regex": "cpp"
+        "regex": "cpp",
+        "cfenv": "cpp"
     }
 }

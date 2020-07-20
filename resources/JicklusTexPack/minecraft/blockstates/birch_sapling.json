@@ -1,8 +1,0 @@
-{
-
-      "variants": {
-	"": [ { "model": "block/birch_sapling" }, { "model": "block/birch_sapling1" }, { "model": "block/birch_sapling2" }
- ]
-     }
-
-}

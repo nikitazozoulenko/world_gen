@@ -1,0 +1,8 @@
+{
+    "name": "Oak Log",
+    "parent": "column",
+    "textures": {
+        "end": "block/oak_log_top.png",
+        "side": "block/oak_log.png"
+    }
+}

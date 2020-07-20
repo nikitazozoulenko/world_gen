@@ -17,7 +17,7 @@
 class Chunk
 {
 public:
-    Chunk(Settings& settings, glm::ivec2 pos);
+    Chunk(Settings& settings, glm::ivec2 pos, std::unordered_map<std::string, unsigned int>& blockIDMap);
     ~Chunk();   //destructor
     // Chunk(const Chunk& source); //copy
     // Chunk& operator=(const Chunk& source); //assign operator

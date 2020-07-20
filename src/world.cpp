@@ -4,11 +4,12 @@
 
 #include <algorithm>
 
-World::World(Settings& settings, Camera& camera):
+World::World(Settings& settings, Camera& camera, std::unordered_map<std::string, unsigned int>& blockIDMap):
     settings(settings),
-    chunk_manager(ChunkManager(settings, chunk_map)),
+    chunk_manager(ChunkManager(settings, chunk_map, blockIDMap)),
     block_is_targeted(false),
-    player(camera)
+    player(camera),
+    blockIDMap(blockIDMap)
 {
 
 }
@@ -80,10 +81,10 @@ void World::targetBlockRay(double x, double y, double z, glm::vec3 enter_directi
 }
 
 
-void World::placeBlockOnCursor(unsigned int block)
+void World::placeBlockOnCursor()
 {
     if(block_is_targeted){
-        setBlock(target_pos+target_facing, block);
+        setBlock(target_pos+target_facing, blockIDMap["Granite"]);
     }
 }
 void World::destroyBlockOnCursor()
@@ -107,11 +108,12 @@ void World::setBlock(int x, int y, int z, int blockID){return chunk_manager.setB
 ////////////////////////////////////
 
 
-ChunkManager::ChunkManager(Settings& settings, ChunkMapivec2& chunk_map):
+ChunkManager::ChunkManager(Settings& settings, ChunkMapivec2& chunk_map, std::unordered_map<std::string, unsigned int>& blockIDMap):
     settings(settings),
     chunk_map(chunk_map),
+    blockIDMap(blockIDMap),
     size(60),
-    amplitude(20)
+    amplitude(40)
 {
     createComputeTexture();
     createComputeShader();
@@ -172,7 +174,7 @@ void ChunkManager::createChunk(glm::ivec2 pos)
     //construct in-place
     chunk_map.emplace(std::piecewise_construct,
                       std::forward_as_tuple(pos),
-                      std::forward_as_tuple(settings, pos));
+                      std::forward_as_tuple(settings, pos, blockIDMap));
 
     //update visibility on edge
     updateEdges(pos);

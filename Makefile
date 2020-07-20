@@ -9,7 +9,7 @@ SOURCES := $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
 OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
 CFLAGS := -g 	-O2 # -Wall
 #LIB := -lglfw -pthread -lGL -lrt -lXrandr -lXxf86vm -lXinerama -lX11 -ldl -lassimp -lfreetype
-LIB := -lglfw -ldl -lfreetype
+LIB := -lglfw -ldl -lfreetype -lboost_system -lboost_filesystem
 INC := -I include -I /usr/include/freetype2
 
 $(TARGET): $(OBJECTS)

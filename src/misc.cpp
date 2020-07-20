@@ -1,7 +1,6 @@
 #define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
-
-#include "../include/misc.h"
+#include <stb_image.h>
+#include <misc.h>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -49,51 +48,57 @@ unsigned int loadTexture(char const * path)
 }
 
 
-unsigned int loadTextureArray(char const * path, int img_width, int n_blocks)
+unsigned int loadTextureArray(std::unordered_map<std::string, unsigned int>& pathToIndexMap, int img_width)
 {
-    std::cout << path << std::endl;
     // stbi_set_flip_vertically_on_load(false);
     unsigned int texture;
     glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D_ARRAY, texture);
+    glTexImage3D(GL_TEXTURE_2D_ARRAY,
+                0,                // level
+                GL_RGBA8,         // Internal format
+                img_width, img_width, pathToIndexMap.size(), // width,height,depth
+                0,                // border?
+                GL_RGBA,          // format
+                GL_UNSIGNED_BYTE, // type
+                0);               // pointer to data
 
-    int width, height, nrComponents;
-    unsigned char *data = stbi_load(path, &width, &height, &nrComponents, 0);
-    if (data)
-    {
-        GLenum format;
-        if (nrComponents == 1)
-            format = GL_RED;
-        else if (nrComponents == 3)
-            format = GL_RGB;
-        else if (nrComponents == 4)
-            format = GL_RGBA;
-
-        glBindTexture(GL_TEXTURE_2D_ARRAY, texture);
-        glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, format, img_width, img_width, n_blocks, 0, format, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
-
-        // glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        // glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        // glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        // glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-        glTexParameteri(GL_TEXTURE_2D_ARRAY,
-                        GL_TEXTURE_MIN_FILTER,
-                        GL_NEAREST_MIPMAP_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D_ARRAY,
-                        GL_TEXTURE_MAG_FILTER,
-                        GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAX_LEVEL, 4);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    for(auto& pair : pathToIndexMap){
+        auto& path = pair.first;
+        auto& index = pair.second;
+        int width, height, nrComponents;
+        unsigned char *data = stbi_load(path.c_str(), &width, &height, &nrComponents, 0);
+        if (data)
+        {
+            if(nrComponents != 4){
+                throw "format must be GL_RGBA, ie 4 components";
+            }
+            glTexSubImage3D(GL_TEXTURE_2D_ARRAY,
+                            0,                     //Mipmap number
+                            0,0,index,                 //xoffset, yoffset, zoffset
+                            img_width,img_width,1, //width, height, depth
+                            GL_RGBA,                //format
+                            GL_UNSIGNED_BYTE,      //type
+                            data);                 //pointer to data
+        }
+        else
+        {
+            std::cout << "Texture array failed to load at path: " << path << std::endl;
+        }
+        stbi_image_free(data);
     }
-    else
-    {
-        std::cout << "Texture array failed to load at path: " << path << std::endl;
-    }
-    std::cout << "tex8" << std::endl;
-    stbi_image_free(data);
-    std::cout << "tex9" << std::endl;
+    glTexParameteri(GL_TEXTURE_2D_ARRAY,
+                    GL_TEXTURE_MIN_FILTER,
+                    GL_NEAREST_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY,
+                    GL_TEXTURE_MAG_FILTER,
+                    GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAX_LEVEL, 4);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    glGenerateMipmap(GL_TEXTURE_2D_ARRAY); //maybe this at the end? not for every subImage3D
+
     return texture;
 }
 

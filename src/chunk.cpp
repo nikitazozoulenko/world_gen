@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-Chunk::Chunk(Settings& settings, glm::ivec2 pos) :
+Chunk::Chunk(Settings& settings, glm::ivec2 pos, std::unordered_map<std::string, unsigned int>& blockIDMap) :
     settings(settings),
     pos(pos),
     p_block_model(nullptr),
@@ -27,11 +27,11 @@ Chunk::Chunk(Settings& settings, glm::ivec2 pos) :
                 int height = height_map[row + col];
                 unsigned int blockID = 0;
                 if(y==height)
-                    blockID = 2; //grass
+                    blockID = blockIDMap["Oak Log"]; 
                 else if (y<height && y>height-4)
-                    blockID = 1; //dirt
+                    blockID = blockIDMap["Dirt"];
                 else if (y<= height-4)
-                    blockID = 3; //stone
+                    blockID = blockIDMap["Stone"];
                 setBlock(x, y, z, blockID);
             }
         }

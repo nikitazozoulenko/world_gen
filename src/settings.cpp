@@ -6,7 +6,7 @@ Settings::Settings() :
     height(720),
     window_title("Marching Cubes"),
     chunk_width(32),
-    chunk_height(32),
+    chunk_height(128),
     chunk_depth(32),
     render_distance_chunks(10),
     MAX_OCTAVES(8),

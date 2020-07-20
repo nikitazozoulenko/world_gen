@@ -2,17 +2,18 @@
 #define MY_MISC_FUNCS_H
 
 #include <iostream>
+#include <unordered_map>
+#include <string>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-
 #include <glm/glm.hpp>
-#include <string>
+
 
 // utility function for loading a 2D texture from file
 // ---------------------------------------------------
 unsigned int loadTexture(char const * path);
-unsigned int loadTextureArray(char const * path, int img_width, int n_blocks);
+unsigned int loadTextureArray(std::unordered_map<std::string, unsigned int>& pathToIndexMap, int img_width);
 void print_vec4(std::string text, glm::vec4 vec);
 void print_vec3(std::string text, glm::vec3 vec);
 void print_vec2(std::string text, glm::vec2 vec);
