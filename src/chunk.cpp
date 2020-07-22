@@ -17,6 +17,7 @@ Chunk::Chunk(Settings& settings, glm::ivec2 pos, std::unordered_map<std::string,
     height_map = new float[ch_width*ch_depth*4]; //since we output vec4s, not floats......
     glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_FLOAT, height_map);
 
+    int water_level = 16;
     //populate blocks
     blocks = new unsigned int[ch_width*ch_height*ch_depth];
     for(int x=0; x<ch_width; x++){
@@ -26,8 +27,14 @@ Chunk::Chunk(Settings& settings, glm::ivec2 pos, std::unordered_map<std::string,
                 size_t col = x * 4;
                 int height = height_map[row + col];
                 unsigned int blockID = 0;
-                if(y==height)
-                    blockID = blockIDMap["Grass"]; 
+                if(y<=water_level)
+                    blockID = blockIDMap["Water"];
+                if(y==height){
+                    if(y<water_level)
+                        blockID = blockIDMap["Dirt"];
+                    else
+                        blockID = blockIDMap["Grass"]; 
+                }
                 else if (y<height && y>height-4)
                     blockID = blockIDMap["Dirt"];
                 else if (y<= height-4)
