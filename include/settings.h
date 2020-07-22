@@ -27,6 +27,9 @@ public:
 
     int MAX_OCTAVES;
     int reach;
+
+    float zNear;
+    float zFar;
 protected:
 private:
     int width;

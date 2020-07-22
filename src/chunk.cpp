@@ -27,7 +27,7 @@ Chunk::Chunk(Settings& settings, glm::ivec2 pos, std::unordered_map<std::string,
                 int height = height_map[row + col];
                 unsigned int blockID = 0;
                 if(y==height)
-                    blockID = blockIDMap["Oak Log"]; 
+                    blockID = blockIDMap["Grass"]; 
                 else if (y<height && y>height-4)
                     blockID = blockIDMap["Dirt"];
                 else if (y<= height-4)

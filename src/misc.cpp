@@ -71,6 +71,7 @@ unsigned int loadTextureArray(std::unordered_map<std::string, unsigned int>& pat
         if (data)
         {
             if(nrComponents != 4){
+                print_float(path, nrComponents);
                 throw "format must be GL_RGBA, ie 4 components";
             }
             glTexSubImage3D(GL_TEXTURE_2D_ARRAY,

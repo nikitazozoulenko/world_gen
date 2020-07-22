@@ -1,0 +1,9 @@
+{
+    "name": "Grass",
+    "parent": "grass",
+    "textures": {
+        "top": "block/grass_block_top_color.png",
+        "bot": "block/dirt.png",
+        "side": "block/grass_block_side_color.png"
+    }
+}

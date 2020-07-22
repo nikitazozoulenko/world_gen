@@ -36,7 +36,10 @@ private:
     void setupBlockData();
     unsigned int singleFaceBlock(int id, const char * path, std::unordered_map<std::string, unsigned int>& pathToIndexMap);
 
-    void setProjectionMatrix(Camera& camera);
-    void setViewMatrix(Camera& camera);
+    glm::mat4 getProjViewMatrix(Camera& camera);
+    void setProjViewMatrix(glm::mat4& projView);
+
+    std::array<glm::vec4, 4> getFrustumPlanes(glm::mat4& projView);
+    bool frustrumCulling(glm::ivec2& chunk_pos, std::array<glm::vec4, 4>& planes, float& sphere_r);
 };
 #endif // MY_BLOCKRENDERER_H

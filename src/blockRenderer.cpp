@@ -18,38 +18,92 @@ BlockRenderer::BlockRenderer(Settings& settings) :
     setupBlockData();
 }
 
+
+std::array<glm::vec4, 4> BlockRenderer::getFrustumPlanes(glm::mat4& projView)
+{
+    std::array<glm::vec4, 4> planes;
+    // Left Frustum Plane
+    planes[0].x = projView[0][3] + projView[0][0]; 
+    planes[0].y = projView[1][3] + projView[1][0];
+    planes[0].z = projView[2][3] + projView[2][0];
+    planes[0].w = projView[3][3] + projView[3][0];
+
+    // Right Frustum Plane
+    planes[1].x = projView[0][3] - projView[0][0]; 
+    planes[1].y = projView[1][3] - projView[1][0];
+    planes[1].z = projView[2][3] - projView[2][0];
+    planes[1].w = projView[3][3] - projView[3][0];
+
+    // Top Frustum Plane
+    planes[2].x = projView[0][3] - projView[0][1]; 
+    planes[2].y = projView[1][3] - projView[1][1];
+    planes[2].z = projView[2][3] - projView[2][1];
+    planes[2].w = projView[3][3] - projView[3][1];
+
+    // Bottom Frustum Plane
+    planes[3].x = projView[0][3] + projView[0][1];
+    planes[3].y = projView[1][3] + projView[1][1];
+    planes[3].z = projView[2][3] + projView[2][1];
+    planes[3].w = projView[3][3] + projView[3][1];
+    return planes;
+}
+
+
+bool BlockRenderer::frustrumCulling(glm::ivec2& chunk_pos, std::array<glm::vec4, 4>& planes, float& sphere_r)
+{   
+    int ch_width = settings.getChunkWidth();
+    int ch_height = settings.getChunkHeight();
+    int ch_depth = settings.getChunkDepth();
+
+    //second: foreach plane, signed distance
+    for(glm::vec4& plane : planes){
+        glm::vec3 p1 = glm::vec3((chunk_pos.x+0.5)*ch_width, 0, (chunk_pos.y+0.5)*ch_depth);
+        glm::vec3 p2 = glm::vec3(p1.x, p1.y+ch_height, p1.z);
+        float d1 = glm::dot(glm::vec3(plane.x, plane.y, plane.z), p1) + plane.w;
+        float d2 = glm::dot(glm::vec3(plane.x, plane.y, plane.z), p2) + plane.w;
+        float d = glm::max(d1, d2);
+        if(d<-sphere_r){
+            return false;
+        }
+    }
+    return true;
+
+}
+
+
 void BlockRenderer::render(ChunkMapivec2& chunk_map, Camera& camera)
 {
     //bind shaders
     block_shaderprogram.bind();
 
-    //update view matrix every frame   (proj matrix really should NOT be set every frame)
-    setProjectionMatrix(camera);
-    setViewMatrix(camera);
+    //update projview matrix every frame
+    glm::mat4 projView = getProjViewMatrix(camera);
+    setProjViewMatrix(projView);
 
     //render cubes
+    std::array<glm::vec4, 4> planes = getFrustumPlanes(projView);
+    float sphere_r = glm::sqrt(settings.getChunkWidth()*settings.getChunkWidth() + settings.getChunkWidth()*settings.getChunkWidth());
     glBindTexture(GL_TEXTURE_2D_ARRAY, block_texture);
     for (auto& pair : chunk_map)
     {
         //TODO: frustrum culling?
-        pair.second.render(texArrayIDLookup);
+        if(frustrumCulling(pair.second.pos, planes, sphere_r)){
+            pair.second.render(texArrayIDLookup);
+        }
     }
 }
 
-
-void BlockRenderer::setProjectionMatrix(Camera& camera)
+glm::mat4 BlockRenderer::getProjViewMatrix(Camera& camera)
 {
-    glm::mat4 projection = glm::perspective(glm::radians(camera.zoom), (float)settings.getWindowWidth() / (float)settings.getWindowHeight(), 0.1f, 1000.0f);
-    block_shaderprogram.setUniformMat4("projection", projection);
-}
-
-
-void BlockRenderer::setViewMatrix(Camera& camera)
-{
+    glm::mat4 proj = glm::perspective(glm::radians(camera.zoom), (float)settings.getWindowWidth() / (float)settings.getWindowHeight(), settings.zNear, settings.zFar);
     glm::mat4 view = camera.getViewMatrix();
-    block_shaderprogram.setUniformMat4("view", view);
+    return proj*view;
 }
 
+void BlockRenderer::setProjViewMatrix(glm::mat4& projView)
+{
+    block_shaderprogram.setUniformMat4("projView", projView);
+}
 
 void BlockRenderer::createShaders()
 {   
@@ -102,6 +156,15 @@ void BlockRenderer::readBlockJson(nlohmann::json& j, std::unordered_map<std::str
         addFacesWithTexture(j["textures"]["end"], end, pathToIndexMap, tex_dir);
         addFacesWithTexture(j["textures"]["side"],side, pathToIndexMap, tex_dir);
     }
+    else if(j["parent"] == "grass")
+    {
+        std::vector<int> top= {BlockModel::TOP};
+        std::vector<int> side= {BlockModel::EAST, BlockModel::WEST, BlockModel::NORTH, BlockModel::SOUTH};
+        std::vector<int> bot= {BlockModel::BOTTOM};
+        addFacesWithTexture(j["textures"]["top"], top, pathToIndexMap, tex_dir);
+        addFacesWithTexture(j["textures"]["bot"], bot, pathToIndexMap, tex_dir);
+        addFacesWithTexture(j["textures"]["side"],side, pathToIndexMap, tex_dir);
+    }
 }
 
 
@@ -128,7 +191,6 @@ void BlockRenderer::setupBlockData()
     {
         std::cout << ex.what() << std::endl;
     }
-
     int image_width = 16;
     block_texture = loadTextureArray(pathToIndexMap, image_width);
 }

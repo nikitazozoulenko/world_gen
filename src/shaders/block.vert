@@ -10,8 +10,7 @@ out vec2 TexCoords;
 out vec3 Normal;
 flat out int BlockTexID;
 
-uniform mat4 view;
-uniform mat4 projection;
+uniform mat4 projView;
 
 void main()
 {
@@ -19,5 +18,5 @@ void main()
     BlockTexID = aBlockTexID;
     Normal = aNormal;
     
-    gl_Position = projection * view * vec4(aPos+blockPos, 1.0);
+    gl_Position = projView * vec4(aPos+blockPos, 1.0);
 }

@@ -1,0 +1,7 @@
+{
+    "name": "Water",
+    "parent": "cube",
+    "textures": {
+        "side": "block/water_color.png"
+    }
+}

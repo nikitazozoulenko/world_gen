@@ -1,0 +1,7 @@
+{
+    "name": "Oak Leaves",
+    "parent": "cube",
+    "textures": {
+        "side": "block/oak_leaves_color.png"
+    }
+}
