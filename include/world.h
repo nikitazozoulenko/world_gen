@@ -41,8 +41,7 @@ public:
 
     void updateVisible(int x, int y, int z);
 
-    float size;
-    float amplitude;
+    std::vector<glm::vec2> octaves; //(size, amp)
     std::unordered_map<std::string, unsigned int>& blockIDMap;
 private:
     Settings& settings;

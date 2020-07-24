@@ -21,6 +21,7 @@ void World::gameLogic(double delta_time)
     chunk_manager.remove_far_chunks(player_pos);
     chunk_manager.gen_new_nearby_chunks(player_pos);
     targetBlockRay(player_pos);
+    print_vec3("player", player.camera.pos);
 }
 
 
@@ -112,8 +113,7 @@ ChunkManager::ChunkManager(Settings& settings, ChunkMapivec2& chunk_map, std::un
     settings(settings),
     chunk_map(chunk_map),
     blockIDMap(blockIDMap),
-    size(60),
-    amplitude(40)
+    octaves({{200, 50}, {100, 40}, {10, 3}}) //(size, ampl)
 {
     createComputeTexture();
     createComputeShader();
@@ -150,6 +150,17 @@ void ChunkManager::createComputeShader()
     comp_shaderprogram.setUniformInt("CH_HEIGHT", ch_height);
     comp_shaderprogram.setUniformInt("CH_DEPTH", ch_depth);
     comp_shaderprogram.setUniformFloat("game_time", glfwGetTime());
+    comp_shaderprogram.setUniformInt("n_octaves", octaves.size());
+    for(int i=0; i<octaves.size(); i++){
+        std::string s = "sizes[" + std::to_string(i) + "]";
+        std::string a = "amplitudes[" + std::to_string(i) + "]";
+        comp_shaderprogram.setUniformFloat(s.c_str(), octaves[i].x);
+        comp_shaderprogram.setUniformFloat(a.c_str(), octaves[i].y);
+    }
+    if(octaves.size()>settings.MAX_OCTAVES){
+        throw "octaves is > MAX_OCTAVES";
+    }
+
 }
 
 
@@ -162,8 +173,6 @@ void ChunkManager::createChunk(glm::ivec2 pos)
 
     comp_shaderprogram.bind();
     comp_shaderprogram.setUniformVec2("chunk_pos", pos);
-    comp_shaderprogram.setUniformFloat("size", size);
-    comp_shaderprogram.setUniformFloat("amplitude", amplitude);
 
     //run compute shader
     glBindTexture(GL_TEXTURE_2D, comp_texture);

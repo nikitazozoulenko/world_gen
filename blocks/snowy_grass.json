@@ -1,0 +1,9 @@
+{
+    "name": "Snowy Grass",
+    "parent": "grass",
+    "textures": {
+        "top": "block/snow.png",
+        "bot": "block/dirt.png",
+        "side": "block/grass_block_snow.png"
+    }
+}

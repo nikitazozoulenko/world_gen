@@ -2,19 +2,17 @@
 layout(local_size_x=1, local_size_y=1, local_size_z=1) in;
 layout(rgba32f, binding = 0) uniform image2D img_output;
 
+uniform uint seed;
 uniform float game_time;
 uniform vec2 chunk_pos;
 uniform int CH_WIDTH;
 uniform int CH_HEIGHT;
 uniform int CH_DEPTH;
-uniform float amplitude;
-uniform float size;
 
 createvar MAX_OCTAVES;
-uniform vec2 octaves[MAX_OCTAVES];
-
-#define PI 3.14159265359
-#define N_OCTAVES 1
+uniform float[MAX_OCTAVES] sizes;
+uniform float[MAX_OCTAVES] amplitudes;
+uniform int n_octaves;
 
 
 uint wang_hash(uint seed)
@@ -31,9 +29,8 @@ uint wang_hash(uint seed)
 uint randUIntAccumulate(inout uint rand_state)
 {   // wang_hash uint32_t
     // Uniform [0, MAX_UINT32_T]
-    uint seed = int(rand_state);
-    rand_state += 1;
-    return wang_hash(seed);
+    rand_state=wang_hash(rand_state);
+    return rand_state;
 }
 
 
@@ -82,7 +79,7 @@ vec3 rotate(vec3 v, vec3 axis, float rad)
 }
 
 
-float simplexNoise2D(float x, float y, float amplitude) //"world" x and y, can be scaled
+float simplexNoise2D(float x, float y, float amplitude, inout uint count) //"world" x and y, can be scaled
 {
     float noise = 0.0;
 
@@ -121,18 +118,19 @@ float simplexNoise2D(float x, float y, float amplitude) //"world" x and y, can b
         float y_n = y-(vert.y - factor);
 
         float M = max(0, 0.5 - x_n*x_n - y_n*y_n);
-        uint PRNG = ivec2ToUIntPRNG(vert);
+        uint PRNG = ivec2ToUIntPRNG(vert)+count;
         float f0 = randFloatAccumulate(PRNG)*2-1;
         float f1 = randFloatAccumulate(PRNG)*2-1;
         noise += M*M*M*M * dot(vec2(f0, f1), vec2(x_n, y_n));
     }
 
+    count+=1;
     //scale to [0, amplitude]
     return (78.0 * noise +1.0)/2.0 * amplitude;
 }
 
 
-float simplexNoise3D(float x, float y, float z, float amplitude) //"world" x, y and z, can be scaled
+float simplexNoise3D(float x, float y, float z, float amplitude, inout uint count) //"world" x, y and z, can be scaled
 {
     float noise = 0.0;
 
@@ -196,16 +194,18 @@ float simplexNoise3D(float x, float y, float z, float amplitude) //"world" x, y 
         float z_n = z-(vert.z - factor);
 
         float M = max(0, 0.5 - x_n*x_n - y_n*y_n - z_n*z_n);
-        uint PRNG = ivec3ToUIntPRNG(vert);
+        uint PRNG = ivec3ToUIntPRNG(vert)+count;
         float f0 = randFloatAccumulate(PRNG)*2-1;
         float f1 = randFloatAccumulate(PRNG)*2-1;
         float f2 = randFloatAccumulate(PRNG)*2-1;
         noise += M*M*M*M * dot(vec3(f0, f1, f2), vec3(x_n, y_n, z_n));
     }
 
+    count+=1;
     //scale to [0, amplitude]
     return (74.0*noise +1.0)/2.0 * amplitude;
 }
+
 
 
 // Modulo 289 without a division (only multiplications)
@@ -271,18 +271,18 @@ vec2 cellular(vec2 P, float amplitude) {
 }
 
 
-// float simplexOctaves2D(float world_x, float world_y, float sizes[N_OCTAVES], float amplitudes[N_OCTAVES])
-// {
-//     float noise = 0.0;
-//     for (int i=0; i<N_OCTAVES; i++)
-//     {
-//         float size = sizes[i];
-//         float amplitude = amplitudes[i];
-//         noise += simplexNoise2D(world_x/size, world_y/size, amplitude);
-//     }
-//     // No bounds checking
-//     return noise;
-// }
+float simplexOctaves2D(float world_x, float world_y, inout uint count)
+{
+    float noise = 0.0;
+    for (int i=0; i<n_octaves; i++)
+    {
+        float size = sizes[i];
+        float amplitude = amplitudes[i];
+        noise += simplexNoise2D(world_x/size, world_y/size, amplitude, count);
+        //noise += cellular(vec2(world_x, world_y), amplitude).x;
+    }
+    return noise;
+}
 
 
 // float simplexOctaves3D(float world_x, float world_y, float world_z, float sizes[N_OCTAVES], float amplitudes[N_OCTAVES])
@@ -306,10 +306,14 @@ void main()
     int y = xyz.y;
     int z = xyz.z;
 
-    //float noise = simplexNoise2D((x+CH_WIDTH*chunk_pos.x)/size, (z+CH_DEPTH*chunk_pos.y)/size, amplitude);
-    vec2 F = cellular(vec2((x+CH_WIDTH*chunk_pos.x)/size, (z+CH_DEPTH*chunk_pos.y)/size), amplitude);
-    float noise = F.x;
+    uint count=0;
+    float x_world = x+CH_WIDTH*chunk_pos.x;
+    float z_world = z+CH_DEPTH*chunk_pos.y;
+    float noise = simplexOctaves2D(x_world, z_world, count);
 
     //Store sample
-    imageStore(img_output, xyz.xz, vec4(noise, noise, noise, noise));
+    ivec2 pos = ivec2(x_world, z_world);
+    uint MAX = uint(-1);
+    float random_num  = float(double(ivec2ToUIntPRNG(pos))/MAX);
+    imageStore(img_output, xyz.xz, vec4(noise, noise, noise, random_num) );
 }

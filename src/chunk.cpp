@@ -1,5 +1,5 @@
-#include "../include/chunk.h"
-#include "../include/misc.h"
+#include <chunk.h>
+#include <misc.h>
 
 #include <iostream>
 
@@ -17,28 +17,48 @@ Chunk::Chunk(Settings& settings, glm::ivec2 pos, std::unordered_map<std::string,
     height_map = new float[ch_width*ch_depth*4]; //since we output vec4s, not floats......
     glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_FLOAT, height_map);
 
-    int water_level = 16;
+    int water_level = 40;
+    float low_snow_level = 55;
+    float high_snow_level=75;
     //populate blocks
     blocks = new unsigned int[ch_width*ch_height*ch_depth];
     for(int x=0; x<ch_width; x++){
-        for(int y=0; y<ch_height; y++){
-            for(int z=0; z<ch_depth; z++){
-                size_t row = z * (ch_width)*4;
-                size_t col = x * 4;
-                int height = height_map[row + col];
+        for(int z=0; z<ch_depth; z++){
+            size_t row = z * (ch_width)*4;
+            size_t col = x * 4;
+            int height = height_map[row + col];
+            float prng = height_map[row + col+3];
+            print_float("prng", prng);
+            //int rng1 = (int)(prng*10);
+            for(int y=0; y<ch_height; y++){
                 unsigned int blockID = 0;
+
+                //filler block above height
                 if(y<=water_level)
                     blockID = blockIDMap["Water"];
-                if(y==height){
-                    if(y<water_level)
-                        blockID = blockIDMap["Dirt"];
-                    else
-                        blockID = blockIDMap["Grass"]; 
+
+                if(y<=height){
+                    if(height<water_level+2){
+                        if(height-3<y)
+                            blockID=blockIDMap["Sand"];
+                        else
+                            blockID=blockIDMap["Stone"];
+                    }
+                    else{
+                        if(height==y){
+                            float val = (y-low_snow_level)/(high_snow_level-low_snow_level);
+                            if(val>prng)
+                                blockID=blockIDMap["Snowy Grass"];
+                            else
+                                blockID=blockIDMap["Grass"];
+                        }
+                        else if(height-3<y)
+                            blockID=blockIDMap["Dirt"];
+                        else
+                            blockID=blockIDMap["Stone"];
+                    }
                 }
-                else if (y<height && y>height-4)
-                    blockID = blockIDMap["Dirt"];
-                else if (y<= height-4)
-                    blockID = blockIDMap["Stone"];
+
                 setBlock(x, y, z, blockID);
             }
         }

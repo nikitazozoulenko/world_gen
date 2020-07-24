@@ -90,6 +90,7 @@
         "tensor": "cpp",
         "*.inc": "cpp",
         "regex": "cpp",
-        "cfenv": "cpp"
+        "cfenv": "cpp",
+        "*.ipp": "cpp"
     }
 }

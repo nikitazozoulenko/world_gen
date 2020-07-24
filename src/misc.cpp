@@ -142,14 +142,3 @@ void print_text(std::string text)
 // auto stop = std::chrono::high_resolution_clock::now();
 // auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
 // std::cout << "Time taken by the tested function: "<< duration.count() << " microseconds" << std::endl; 
-
-
-uint32_t wang_hash(uint32_t seed)
-{
-    seed = (seed ^ 61) ^ (seed >> 16);
-    seed *= 9;
-    seed = seed ^ (seed >> 4);
-    seed *= 0x27d4eb2d;
-    seed = seed ^ (seed >> 15);
-    return seed;
-}
