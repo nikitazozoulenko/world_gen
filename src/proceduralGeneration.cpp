@@ -43,8 +43,6 @@ float randFloatAccumulate(unsigned int& rand_state)
 float simplexNoise2D(float x, float y, float& amplitude, unsigned int& count) //"world" x and y, can be scaled
 {
     float noise = 0.0;
-    x+=randFloatAccumulate(count)*10000;
-    y+=randFloatAccumulate(count)*10000;
 
     //scewed coordinates 
     float NNN = 2.0f;
@@ -80,12 +78,13 @@ float simplexNoise2D(float x, float y, float& amplitude, unsigned int& count) //
         float y_n = y-(vert.y - factor);
 
         float M = glm::max(0.0f, 0.5f - x_n*x_n - y_n*y_n);
-        unsigned int PRNG = ivec2ToUIntPRNG(vert);
+        unsigned int PRNG = ivec2ToUIntPRNG(vert)+count;
         float f0 = randFloatAccumulate(PRNG)*2-1;
         float f1 = randFloatAccumulate(PRNG)*2-1;
         noise += M*M*M*M * glm::dot(glm::vec2(f0, f1), glm::vec2(x_n, y_n));
     }
 
+    count+=1;
     //scale to [0, amplitude]
     return (78.0 * noise +1.0)/2.0 * amplitude;
 }
@@ -94,9 +93,6 @@ float simplexNoise2D(float x, float y, float& amplitude, unsigned int& count) //
 float simplexNoise3D(float x, float y, float z, float& amplitude, unsigned int& count) //"world" x, y and z, can be scaled
 {
     float noise = 0.0;
-    x+=randFloatAccumulate(count)*10000;
-    y+=randFloatAccumulate(count)*10000;
-    z+=randFloatAccumulate(count)*10000;
 
     //scewed coordinates 
     float NNN = 3.0;
@@ -157,13 +153,14 @@ float simplexNoise3D(float x, float y, float z, float& amplitude, unsigned int& 
         float z_n = z-(vert.z - factor);
 
         float M = glm::max(0.0f, 0.5f - x_n*x_n - y_n*y_n - z_n*z_n);
-        unsigned int PRNG = ivec3ToUIntPRNG(vert);
+        unsigned int PRNG = ivec3ToUIntPRNG(vert)+count;
         float f0 = randFloatAccumulate(PRNG)*2-1;
         float f1 = randFloatAccumulate(PRNG)*2-1;
         float f2 = randFloatAccumulate(PRNG)*2-1;
         noise += M*M*M*M * glm::dot(glm::vec3(f0, f1, f2), glm::vec3(x_n, y_n, z_n));
     }
 
+    count +=1;
     //scale to [0, amplitude]
     return (74.0*noise +1.0)/2.0 * amplitude;
 }

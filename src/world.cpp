@@ -375,7 +375,7 @@ void ChunkManager::setBlock(int x, int y, int z, int blockID)
     std::tie(chunk_pos, local_pos) = findChunkPos(x,y,z);
 
     chunk_map.at(chunk_pos).setBlock(local_pos, blockID);
-    updateVisible(x, y, z); //100 ish
+    updateVisible(x, y, z);
     updateVisible(x+1, y, z);
     updateVisible(x-1, y, z);
     updateVisible(x, y+1, z);

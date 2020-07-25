@@ -3,6 +3,57 @@
 
 #include <iostream>
 
+
+#include <proceduralGeneration.h>
+std::vector<glm::vec2> find_points(float x, float y, float w, float h, float G, float p, float obj_w, float obj_h) //note: grid size G>1
+{   
+    std::vector<glm::vec2> points;
+    float start_x = std::ceil((x-p-obj_w/2.0)/G)*G;
+    float start_y = std::ceil((y-p-obj_h/2.0)/G)*G;
+    for(float i=start_x; i<x+w+p+obj_w/2.0; i+=G){
+        for(float j=start_y; j<y+h+p+obj_h/2.0; j+=G){
+            glm::ivec2 point = glm::ivec2((int)i, (int)j);
+            unsigned int prng = ivec2ToUIntPRNG(point);
+            float f1 = p*(randFloatAccumulate(prng)*2-1);
+            float f2 = p*(randFloatAccumulate(prng)*2-1);
+            points.push_back(glm::vec2(i+f1, j+f2));
+        }
+    }
+
+    return points;
+}
+
+void Chunk::placeTree(int x, int z, float* height_map, std::unordered_map<std::string, unsigned int>& blockIDMap){
+    if(blockIsInChunk(x,0,z)){
+        size_t row = z * settings.getChunkWidth()*4;
+        size_t col = x * 4;
+        int height = height_map[row + col];
+        unsigned int blockID = blockIDMap["Oak Log"];
+        if(height<settings.getChunkHeight()){
+            if(getBlock(x,height,z)==blockIDMap["Grass"]){
+                int r =3;
+                int trunk_h=4;
+                int bush_h=4;
+                for(int i=-r; i<=r; i++){
+                    for(int j=-r; j<=r; j++){
+                        for(int k=0; k<bush_h; k++){
+                            if(blockIsInChunk(x+i, height+trunk_h+1+k, z+j)){
+                                setBlock(x+i, height+trunk_h+1+k, z+j, blockIDMap["Oak Leaves"]);
+                            }
+                        }
+                    }
+                }
+                for(int i=0; i<trunk_h+bush_h/2.0; i++){
+                    if(blockIsInChunk(x, height+i+1, z)){
+                        setBlock(x, height+i+1, z, blockIDMap["Oak Log"]);
+                    }
+                }
+            }           
+        }
+    }
+}
+
+
 Chunk::Chunk(Settings& settings, glm::ivec2 pos, std::unordered_map<std::string, unsigned int>& blockIDMap) :
     settings(settings),
     pos(pos),
@@ -28,8 +79,6 @@ Chunk::Chunk(Settings& settings, glm::ivec2 pos, std::unordered_map<std::string,
             size_t col = x * 4;
             int height = height_map[row + col];
             float prng = height_map[row + col+3];
-            print_float("prng", prng);
-            //int rng1 = (int)(prng*10);
             for(int y=0; y<ch_height; y++){
                 unsigned int blockID = 0;
 
@@ -63,6 +112,19 @@ Chunk::Chunk(Settings& settings, glm::ivec2 pos, std::unordered_map<std::string,
             }
         }
     }
+    //trees
+    float G=16;
+    float p=7;
+    float obj_w=7;
+    float obj_h=7;
+    std::vector<glm::vec2> tree_points = find_points(pos.x*ch_width, pos.y*ch_depth, ch_width, ch_depth, G, p, obj_w, obj_h);
+    for(glm::vec2 point : tree_points) {
+        int x = (int)point.x - pos.x*ch_width;
+        int z = (int)point.y - pos.y*ch_depth;
+        placeTree(x,z,height_map, blockIDMap);
+    }
+
+    //done
     delete height_map;
     visibilityChecking();
 }

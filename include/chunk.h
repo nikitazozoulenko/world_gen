@@ -51,5 +51,7 @@ private:
     std::unordered_map<glm::vec3, unsigned int, std::hash<glm::vec3>> render_faces_map[6];
     bool blockIsInChunk(int local_x, int local_y, int local_z);
     void rebuildVBOs(std::array<std::unordered_map<int, int>,6>& texArrayIDLookup);
+
+    void placeTree(int x, int z, float* height_map, std::unordered_map<std::string, unsigned int>& blockIDMap);
 };
 #endif // WORLD_CHUNK_H
