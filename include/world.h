@@ -5,9 +5,16 @@
 #include <glm/gtc/matrix_transform.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/hash.hpp>
+#include <boost/asio/io_service.hpp>
+#include <boost/bind.hpp>
+#include <boost/thread/thread.hpp>
+
 
 #include <unordered_map>
 #include <string>
+#include <atomic>
+#include <unordered_set>
+#include <queue>
 
 #include <chunk.h>
 #include <settings.h>
@@ -15,17 +22,45 @@
 #include <camera.h>
 #include <player.h>
 
+
 typedef std::unordered_map<glm::ivec2, Chunk, std::hash<glm::ivec2>> ChunkMapivec2; 
+
+struct ChunkGenInfo //multiple threads have access to this
+{
+    int stage;
+    float* height_map;
+    float* rng_map;
+    std::vector<glm::vec2> tree_points;
+    unsigned int* blocks;
+    int num_render_faces[6] = {0,0,0,0,0,0};
+    std::unordered_map<glm::vec3, unsigned int, std::hash<glm::vec3>> render_faces_map[6];
+    bool added_to_queue = false;
+};
+
+
+class ThreadPool{
+public:
+    ThreadPool(int n_workers);
+
+    boost::asio::io_service ioService;
+    boost::thread_group thread_group;
+    boost::asio::io_service::work work;
+    int n_workers;
+
+    void stop();
+private:
+};
+
 
 class ChunkManager
 {
 public:
     ChunkManager(Settings& settings, ChunkMapivec2& chunk_map, std::unordered_map<std::string, unsigned int>& blockIDMap);
-    void createChunk(glm::ivec2 pos);
-    void removeChunk(glm::ivec2 pos);
+    std::vector<glm::ivec2> circle_chunk_positions;
 
-    void gen_new_nearby_chunks(glm::vec3& center_pos);
-    void remove_far_chunks(glm::vec3& center_pos);
+
+
+    void sort_circle(glm::vec3& center_pos);
 
     void updateEdges(glm::ivec2& pos);
     void updateBlockVisEdge(Chunk& chunk1, int face1, Chunk& chunk2, int face2);
@@ -42,7 +77,34 @@ public:
     void updateVisible(int x, int y, int z);
 
     std::vector<glm::vec2> octaves; //(size, amp)
+    std::vector<float> sizes;
+    std::vector<float> amplitudes;
     std::unordered_map<std::string, unsigned int>& blockIDMap;
+
+
+
+    unsigned int determineBlock(int x, int y, int z, int water_level, float low_snow_level, float high_snow_level, float* height, float* prng);
+    void gen(glm::vec3& center_pos);
+    std::unordered_map<glm::ivec2, ChunkGenInfo, std::hash<glm::ivec2>> gen_info_map;
+    void stageOneGen(glm::ivec2& pos);
+    bool isInChunk(glm::ivec2 ch_pos, int x, int y, int z);
+    void setInfoGenBlock(int x, int y, int z, unsigned int blockID);
+    unsigned int getInfoGenBlock(int x, int y, int z);
+    void placeTree(glm::ivec2& pos, int x, int y);
+    void stageTwoDecoration(glm::ivec2& pos);
+    void addToRenderMap(ChunkGenInfo& info, int blockID, int face, glm::vec3 pos);
+    void stageThreeChunkCreation(glm::ivec2& pos);
+    const int n_threads;
+    ThreadPool pool;
+    std::atomic<int> work_queue_size;
+    std::unordered_map<glm::ivec2, std::atomic<bool>, std::hash<glm::ivec2>> busy;
+    boost::shared_mutex shared_mutex;
+    void visibilityInner(ChunkGenInfo& info, glm::ivec2& pos);
+    void visibilityInnerAtPos(ChunkGenInfo& info, glm::ivec2& pos, int face, int x, int y, int z, unsigned int blockID);
+    std::queue<glm::ivec2> finished_positions;
+    void add();
+    void visibilityOuter(ChunkGenInfo& info, glm::ivec2& pos, ChunkGenInfo& info2, int face);
+
 private:
     Settings& settings;
     ChunkMapivec2& chunk_map;

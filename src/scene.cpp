@@ -27,8 +27,8 @@ Scene::~Scene()
 
 FreeCamWorld::FreeCamWorld(Settings& settings, GLFWwindow* window, MasterRenderer& masterRenderer):
     Scene(settings, window, new FreeCamWorldInputScheme(settings, window, camera, this), masterRenderer),
-    ui(UI_FreeCamWorld(this)),
-    world(World(settings, camera, masterRenderer.block_renderer.blockIDMap))
+    ui(this),
+    world(settings, camera, masterRenderer.block_renderer.blockIDMap)
 {
     ui.createUI();
 }
@@ -65,7 +65,7 @@ void FreeCamWorld::slider_size_fun(double val, double change)
 
 MainMenu::MainMenu(Settings& settings, GLFWwindow* window, MasterRenderer& masterRenderer):
     Scene(settings, window, new MainMenuInputScheme(settings, window, camera, this), masterRenderer),
-    ui(UI_MainMenu(this))
+    ui(this)
 {
     ui.createUI();
 }

@@ -17,7 +17,8 @@
 class Chunk
 {
 public:
-    Chunk(Settings& settings, glm::ivec2 pos, std::unordered_map<std::string, unsigned int>& blockIDMap);
+    Chunk(Settings& settings, glm::ivec2 pos, unsigned int* blocks, int num_render_faces[6], 
+        std::unordered_map<glm::vec3, unsigned int, std::hash<glm::vec3>> render_faces_map[6]);
     ~Chunk();   //destructor
     // Chunk(const Chunk& source); //copy
     // Chunk& operator=(const Chunk& source); //assign operator
@@ -34,7 +35,6 @@ public:
     void addToRenderMap(int blockID, int face, glm::vec3 pos);
     void removeFromRenderMap(int face, glm::vec3 pos);
 
-    void visibilityChecking();
     void visibilityCheckingAtPos(int face, int x, int y, int z, unsigned int blockID);
     
     glm::ivec2 pos;
@@ -52,6 +52,5 @@ private:
     bool blockIsInChunk(int local_x, int local_y, int local_z);
     void rebuildVBOs(std::array<std::unordered_map<int, int>,6>& texArrayIDLookup);
 
-    void placeTree(int x, int z, float* height_map, std::unordered_map<std::string, unsigned int>& blockIDMap);
 };
 #endif // WORLD_CHUNK_H

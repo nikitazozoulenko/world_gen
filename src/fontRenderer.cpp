@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include <fontRenderer.h>
+
 #include <ft2build.h>
 #include FT_FREETYPE_H
 

@@ -1,132 +1,19 @@
 #include <chunk.h>
 #include <misc.h>
 
-#include <iostream>
-
-
-#include <proceduralGeneration.h>
-std::vector<glm::vec2> find_points(float x, float y, float w, float h, float G, float p, float obj_w, float obj_h) //note: grid size G>1
-{   
-    std::vector<glm::vec2> points;
-    float start_x = std::ceil((x-p-obj_w/2.0)/G)*G;
-    float start_y = std::ceil((y-p-obj_h/2.0)/G)*G;
-    for(float i=start_x; i<x+w+p+obj_w/2.0; i+=G){
-        for(float j=start_y; j<y+h+p+obj_h/2.0; j+=G){
-            glm::ivec2 point = glm::ivec2((int)i, (int)j);
-            unsigned int prng = ivec2ToUIntPRNG(point);
-            float f1 = p*(randFloatAccumulate(prng)*2-1);
-            float f2 = p*(randFloatAccumulate(prng)*2-1);
-            points.push_back(glm::vec2(i+f1, j+f2));
-        }
-    }
-
-    return points;
-}
-
-void Chunk::placeTree(int x, int z, float* height_map, std::unordered_map<std::string, unsigned int>& blockIDMap){
-    if(blockIsInChunk(x,0,z)){
-        size_t row = z * settings.getChunkWidth()*4;
-        size_t col = x * 4;
-        int height = height_map[row + col];
-        unsigned int blockID = blockIDMap["Oak Log"];
-        if(height<settings.getChunkHeight()){
-            if(getBlock(x,height,z)==blockIDMap["Grass"]){
-                int r =3;
-                int trunk_h=4;
-                int bush_h=4;
-                for(int i=-r; i<=r; i++){
-                    for(int j=-r; j<=r; j++){
-                        for(int k=0; k<bush_h; k++){
-                            if(blockIsInChunk(x+i, height+trunk_h+1+k, z+j)){
-                                setBlock(x+i, height+trunk_h+1+k, z+j, blockIDMap["Oak Leaves"]);
-                            }
-                        }
-                    }
-                }
-                for(int i=0; i<trunk_h+bush_h/2.0; i++){
-                    if(blockIsInChunk(x, height+i+1, z)){
-                        setBlock(x, height+i+1, z, blockIDMap["Oak Log"]);
-                    }
-                }
-            }           
-        }
-    }
-}
-
-
-Chunk::Chunk(Settings& settings, glm::ivec2 pos, std::unordered_map<std::string, unsigned int>& blockIDMap) :
+Chunk::Chunk(Settings& settings, glm::ivec2 pos, unsigned int* blocks, int numRenderFaces[6], 
+        std::unordered_map<glm::vec3, unsigned int, std::hash<glm::vec3>> renderFacesMap[6]) :
     settings(settings),
     pos(pos),
-    p_block_model(nullptr),
+    p_block_model(new BlockModel()),
     first_vbo_init(true),
-    re_init_vaos(true)
+    re_init_vaos(true),
+    blocks(blocks)
 {
-    int ch_width = settings.getChunkWidth();
-    int ch_height = settings.getChunkHeight();
-    int ch_depth = settings.getChunkDepth();
-
-    height_map = new float[ch_width*ch_depth*4]; //since we output vec4s, not floats......
-    glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_FLOAT, height_map);
-
-    int water_level = 40;
-    float low_snow_level = 55;
-    float high_snow_level=75;
-    //populate blocks
-    blocks = new unsigned int[ch_width*ch_height*ch_depth];
-    for(int x=0; x<ch_width; x++){
-        for(int z=0; z<ch_depth; z++){
-            size_t row = z * (ch_width)*4;
-            size_t col = x * 4;
-            int height = height_map[row + col];
-            float prng = height_map[row + col+3];
-            for(int y=0; y<ch_height; y++){
-                unsigned int blockID = 0;
-
-                //filler block above height
-                if(y<=water_level)
-                    blockID = blockIDMap["Water"];
-
-                if(y<=height){
-                    if(height<water_level+2){
-                        if(height-3<y)
-                            blockID=blockIDMap["Sand"];
-                        else
-                            blockID=blockIDMap["Stone"];
-                    }
-                    else{
-                        if(height==y){
-                            float val = (y-low_snow_level)/(high_snow_level-low_snow_level);
-                            if(val>prng)
-                                blockID=blockIDMap["Snowy Grass"];
-                            else
-                                blockID=blockIDMap["Grass"];
-                        }
-                        else if(height-3<y)
-                            blockID=blockIDMap["Dirt"];
-                        else
-                            blockID=blockIDMap["Stone"];
-                    }
-                }
-
-                setBlock(x, y, z, blockID);
-            }
-        }
+    for(int i=0; i<6; i++){
+        num_render_faces[i] = numRenderFaces[i];
+        render_faces_map[i] = renderFacesMap[i];
     }
-    //trees
-    float G=16;
-    float p=7;
-    float obj_w=7;
-    float obj_h=7;
-    std::vector<glm::vec2> tree_points = find_points(pos.x*ch_width, pos.y*ch_depth, ch_width, ch_depth, G, p, obj_w, obj_h);
-    for(glm::vec2 point : tree_points) {
-        int x = (int)point.x - pos.x*ch_width;
-        int z = (int)point.y - pos.y*ch_depth;
-        placeTree(x,z,height_map, blockIDMap);
-    }
-
-    //done
-    delete height_map;
-    visibilityChecking();
 }
 
 
@@ -203,31 +90,6 @@ bool Chunk::blockIsInChunk(int x, int y, int z) //local
 }
 
 
-void Chunk::visibilityChecking()
-{
-    re_init_vaos = true;
-    for(int x=0; x<settings.getChunkWidth(); x++)
-    {
-        for(int z=0; z<settings.getChunkDepth(); z++)
-        {   
-            for(int y=0; y<settings.getChunkHeight(); y++)
-            {
-                unsigned int& block = getBlock(x, y, z);
-                if(block!=0) //not air
-                {
-                    visibilityCheckingAtPos(BlockModel::TOP,    x, y, z, block);
-                    visibilityCheckingAtPos(BlockModel::BOTTOM, x, y, z, block);
-                    visibilityCheckingAtPos(BlockModel::NORTH,  x, y, z, block);
-                    visibilityCheckingAtPos(BlockModel::SOUTH,  x, y, z, block);
-                    visibilityCheckingAtPos(BlockModel::EAST,   x, y, z, block);
-                    visibilityCheckingAtPos(BlockModel::WEST,   x, y, z, block);
-                }
-            }
-        }
-    }
-}
-
-
 void Chunk::visibilityCheckingAtPos(int face, int x, int y, int z, unsigned int blockID) //local coordinates
 {   
     glm::vec3 p;
@@ -274,9 +136,6 @@ void Chunk::removeFromRenderMap(int face, glm::vec3 pos)
 
 void Chunk::rebuildVBOs(std::array<std::unordered_map<int, int>,6>& texArrayIDLookup) //every time it is needed when a chunk is to be drawn
 {
-    if(first_vbo_init)
-        p_block_model = new BlockModel();
-
     int faces[6] = {BlockModel::EAST, BlockModel::WEST, BlockModel::TOP, BlockModel::BOTTOM, BlockModel::NORTH, BlockModel::SOUTH};
     for(int& face : faces)
     {   

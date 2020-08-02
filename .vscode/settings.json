@@ -91,6 +91,8 @@
         "*.inc": "cpp",
         "regex": "cpp",
         "cfenv": "cpp",
-        "*.ipp": "cpp"
+        "*.ipp": "cpp",
+        "codecvt": "cpp",
+        "filesystem": "cpp"
     }
 }

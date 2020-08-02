@@ -15,7 +15,7 @@ unsigned int randUIntAccumulate(unsigned int& rand_state)
 {   // wang_hash uint32_t
     // Uniform [0, MAX_UINT32_T]
     rand_state = wang_hash(rand_state);
-    return rand_state;
+    return rand_state; 
 }
 
 
@@ -46,14 +46,14 @@ float simplexNoise2D(float x, float y, float& amplitude, unsigned int& count) //
 
     //scewed coordinates 
     float NNN = 2.0f;
-    float F = (sqrt(NNN+1)-1)/NNN;
-    float G = (1-1/sqrt(NNN+1))/NNN;
+    float F = (std::sqrt(NNN+1.0)-1.0)/NNN;
+    float G = (1.0-1.0/std::sqrt(NNN+1.0))/NNN;
     float x_scew = x + (x+y)*F;
     float y_scew = y + (x+y)*F;
 
     //which hypercube coordinates 
-    float x_b = floor(x_scew);
-    float y_b = floor(y_scew);
+    float x_b = std::floor(x_scew);
+    float y_b = std::floor(y_scew);
 
     //internal coordinates
     float x_i = x_scew-x_b;
@@ -96,8 +96,8 @@ float simplexNoise3D(float x, float y, float z, float& amplitude, unsigned int& 
 
     //scewed coordinates 
     float NNN = 3.0;
-    float F = (sqrt(NNN+1)-1)/NNN;
-    float G = (1-1/sqrt(NNN+1))/NNN;
+    float F = (sqrt(NNN+1.0)-1.0)/NNN;
+    float G = (1.0-1.0/sqrt(NNN+1.0))/NNN;
     float x_scew = x + (x+y+z)*F;
     float y_scew = y + (x+y+z)*F;
     float z_scew = z + (x+y+z)*F;
