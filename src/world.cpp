@@ -30,9 +30,9 @@ void World::gameLogic(double delta_time)
 {
     glm::vec3& player_pos = player.camera.pos;
     //print_vec3("player", player.camera.pos);
-    chunk_manager.sort_circle(player_pos);
-    chunk_manager.gen(player_pos);
-    chunk_manager.add();
+    chunk_manager.gen_nearby_chunks(player_pos);
+    chunk_manager.add_new_chunks();
+    chunk_manager.remove_far_chunks(player_pos);
     targetBlockRay(player_pos);
 }
 
@@ -130,9 +130,7 @@ ChunkManager::ChunkManager(Settings& settings, ChunkMapivec2& chunk_map, std::un
     pool(n_threads),
     work_queue_size(0)
 {
-
-    createComputeTexture();
-    createComputeShader();
+    sort_circle();
     for(int i=0; i<octaves.size(); i++){
         sizes.push_back(octaves[i].x);
         amplitudes.push_back(octaves[i].y);
@@ -140,58 +138,10 @@ ChunkManager::ChunkManager(Settings& settings, ChunkMapivec2& chunk_map, std::un
 }
 
 
-void ChunkManager::createComputeTexture()
-{   
-    int ch_width = settings.getChunkWidth();
-    int ch_height = settings.getChunkHeight();
-    int ch_depth = settings.getChunkDepth();
-
-    glGenTextures(1, &comp_texture);
-    glBindTexture(GL_TEXTURE_2D, comp_texture);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, ch_width, ch_depth, 0, GL_RGBA, GL_FLOAT, NULL);
-    glBindImageTexture(0, comp_texture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
-}
-
-
-void ChunkManager::createComputeShader()
-{   
-    int ch_width = settings.getChunkWidth();
-    int ch_height = settings.getChunkHeight();
-    int ch_depth = settings.getChunkDepth();
-
-    const char * compute_path =  "/home/nikita/Code/world_gen/src/shaders/generation.comp";
-    comp_shaderprogram = Shaderprogram(nullptr, nullptr, nullptr, compute_path, {{"MAX_OCTAVES","const int MAX_OCTAVES="+std::to_string(settings.MAX_OCTAVES)}});
-    comp_shaderprogram.bind();
-    comp_shaderprogram.setUniformInt("CH_WIDTH", ch_width);
-    comp_shaderprogram.setUniformInt("CH_HEIGHT", ch_height);
-    comp_shaderprogram.setUniformInt("CH_DEPTH", ch_depth);
-    comp_shaderprogram.setUniformFloat("game_time", glfwGetTime());
-    comp_shaderprogram.setUniformInt("n_octaves", octaves.size());
-    for(int i=0; i<octaves.size(); i++){
-        std::string s = "sizes[" + std::to_string(i) + "]";
-        std::string a = "amplitudes[" + std::to_string(i) + "]";
-        comp_shaderprogram.setUniformFloat(s.c_str(), octaves[i].x);
-        comp_shaderprogram.setUniformFloat(a.c_str(), octaves[i].y);
-    }
-    if(octaves.size()>settings.MAX_OCTAVES){
-        throw "octaves is > MAX_OCTAVES";
-    }
-
-}
-
-void ChunkManager::sort_circle(glm::vec3& center_pos) //in world coords
+void ChunkManager::sort_circle() //in world coords
 {
-    float& x = center_pos.x;
-    float& z = center_pos.z;
-    int x_ch = std::floor(x / (float)settings.getChunkWidth());
-    int z_ch = std::floor(z / (float)settings.getChunkDepth());
     // given R, make a square with sidelength 2R. then filter out dist. then sort dist
     int R = settings.getRenderDistance();
-    glm::ivec2 player_pos_ch = glm::ivec2(x_ch, z_ch);
     circle_chunk_positions.clear();
     for(int x_r=-R; x_r<=R; x_r++)
     {
@@ -206,68 +156,6 @@ void ChunkManager::sort_circle(glm::vec3& center_pos) //in world coords
     } 
     //now sort based on distance from origin
     std::sort(circle_chunk_positions.begin(), circle_chunk_positions.end(), dist_from_origin);
-}
-
-void ChunkManager::updateEdges(glm::ivec2& pos)
-{
-    glm::ivec2 pos_east = glm::ivec2(pos.x+1, pos.y);
-    glm::ivec2 pos_west = glm::ivec2(pos.x-1, pos.y);
-    glm::ivec2 pos_north = glm::ivec2(pos.x, pos.y+1);
-    glm::ivec2 pos_south = glm::ivec2(pos.x, pos.y-1);
-
-    if(chunk_map.count(pos_west) != 0)
-        updateBlockVisEdge(chunk_map.at(pos_west), BlockModel::WEST, chunk_map.at(pos), BlockModel::EAST);
-    if(chunk_map.count(pos_east) != 0)
-        updateBlockVisEdge(chunk_map.at(pos), BlockModel::WEST, chunk_map.at(pos_east), BlockModel::EAST);
-    if(chunk_map.count(pos_south) != 0)
-        updateBlockVisEdge(chunk_map.at(pos_south), BlockModel::SOUTH, chunk_map.at(pos), BlockModel::NORTH);
-    if(chunk_map.count(pos_north) != 0)
-        updateBlockVisEdge(chunk_map.at(pos), BlockModel::SOUTH, chunk_map.at(pos_north), BlockModel::NORTH);
-}
-
-
-void ChunkManager::updateBlockVisEdge(Chunk& chunk1, int face1, Chunk& chunk2, int face2)
-{   
-    int ch_width = settings.getChunkWidth();
-    int ch_depth = settings.getChunkDepth();
-    int ch_height = settings.getChunkHeight();
-    glm::vec3 side;
-    glm::vec3 k;
-    int W;
-    if(face2==BlockModel::EAST)
-    {
-        side = glm::vec3(0,0,1);
-        k = glm::vec3(1,0,0);
-        W = ch_depth;
-    }
-    else
-    {
-        side = glm::vec3(1,0,0);
-        k = glm::vec3(0,0,1);
-        W = ch_width;
-    }
-    
-    glm::vec3 corner = glm::vec3(chunk2.pos.x*ch_width, 0, chunk2.pos.y*ch_depth);
-    for(int y=0; y<ch_height; y++)
-        for(int i=0; i<W; i++)
-        {
-            glm::vec3 pos1 = glm::vec3(corner + glm::vec3(0,y,0) + glm::vec3(side.x*i, 0, side.z*i));
-            glm::vec3 pos2 = pos1-k;
-            unsigned int& block1 = getBlock(pos1);
-            unsigned int& block2 = getBlock(pos2);
-
-            if(block1==0 && block2!=0)
-            {
-                chunk1.addToRenderMap(block2, face2, pos2);
-                chunk1.re_init_vaos = true;
-            }
-
-            if(block1!=0 && block2==0)
-            {
-                chunk2.addToRenderMap(block1, face1, pos1);
-                chunk2.re_init_vaos = true;
-            }
-        }
 }
 
 
@@ -730,7 +618,7 @@ void ChunkManager::stageThreeChunkCreation(glm::ivec2& pos) //dont actually need
     work_queue_size.fetch_sub(1);
 }
 
-void ChunkManager::gen(glm::vec3& center_pos)
+void ChunkManager::gen_nearby_chunks(glm::vec3& center_pos)
 {
     int x_ch = std::floor(center_pos.x / (float)settings.getChunkWidth());
     int z_ch = std::floor(center_pos.z / (float)settings.getChunkDepth());
@@ -783,9 +671,9 @@ void ChunkManager::gen(glm::vec3& center_pos)
 }
 
 
-void ChunkManager::add()
+void ChunkManager::add_new_chunks()
 {
-    int max_per_frame = 1;
+    int max_per_frame = 3;
     int size = finished_positions.size();
     for(int i=0; i<max_per_frame && i<size; i++){
         //construct in-place
@@ -795,5 +683,70 @@ void ChunkManager::add()
                           std::forward_as_tuple(pos),
                           std::forward_as_tuple(settings, pos, info.blocks, info.num_render_faces, info.render_faces_map));
         finished_positions.pop();
+    }
+}
+
+
+void ChunkManager::remove_far_chunks(glm::vec3& center_pos)
+{
+    int max_per_frame = 100;
+    float& x = center_pos.x;
+    float& z = center_pos.z;
+    int x_ch = std::floor(x / (float)settings.getChunkWidth());
+    int z_ch = std::floor(z / (float)settings.getChunkDepth());
+    // given R, make a square with sidelength 2R. then filter out dist. then sort dist
+    int R = settings.getRenderDistance();
+    glm::ivec2 player_pos_ch = glm::ivec2(x_ch, z_ch);
+    int count=0;
+    std::vector<glm::ivec2> remove_chunk_positions;
+    std::vector<glm::ivec2> remove_only_info_positions;
+    for(auto& pair : gen_info_map)
+    {
+        if(count<max_per_frame){
+            glm::ivec2 pos = pair.first;
+            if(glm::length(glm::vec2(pos-player_pos_ch))>=R)
+            {   
+                bool ready=true;
+                for(int ch_x=-1; ch_x<=1; ch_x++){
+                    for(int ch_y=-1; ch_y<=1; ch_y++){
+                        glm::ivec2 iter_pos(pos.x+ch_x, pos.y+ch_y);
+                        if(busy.count(iter_pos)>0){
+                            if(busy.at(iter_pos).load()){
+                                ready=false;
+                            }
+                        }
+                    }
+                }
+                if(ready){
+                    int stage = gen_info_map.at(pos).stage;
+                    if(stage==3 && chunk_map.count(pos)>0 ){
+                        remove_chunk_positions.push_back(pos);
+                    }
+                    else{
+                        remove_only_info_positions.push_back(pos);
+                    }
+                    count++;
+                }
+            }
+        } else{
+            break;
+        }
+    }
+
+    for(auto& pos : remove_chunk_positions){
+        ChunkGenInfo& info = gen_info_map.at(pos);
+        delete info.rng_map;
+        delete info.height_map;
+        chunk_map.erase(pos);
+        gen_info_map.erase(pos);
+        busy.erase(pos);
+    }
+    for(auto& pos : remove_only_info_positions){
+        ChunkGenInfo& info = gen_info_map.at(pos);
+        delete info.rng_map;
+        delete info.height_map;
+        delete info.blocks;
+        gen_info_map.erase(pos);
+        busy.erase(pos);
     }
 }

@@ -60,10 +60,7 @@ public:
 
 
 
-    void sort_circle(glm::vec3& center_pos);
-
-    void updateEdges(glm::ivec2& pos);
-    void updateBlockVisEdge(Chunk& chunk1, int face1, Chunk& chunk2, int face2);
+    void sort_circle();
 
     unsigned int& getBlock(glm::vec3 v);
     unsigned int& getBlock(int x, int y, int z);
@@ -73,6 +70,7 @@ public:
     void setBlock(int x, int y, int z, int blockID);
     std::pair<glm::ivec2, glm::vec3> findChunkPos(int x, int y, int z);
     std::pair<glm::ivec2, glm::vec3> findChunkPos(glm::vec3 v);
+    bool isInChunk(glm::ivec2 ch_pos, int x, int y, int z);
 
     void updateVisible(int x, int y, int z);
 
@@ -82,12 +80,10 @@ public:
     std::unordered_map<std::string, unsigned int>& blockIDMap;
 
 
-
     unsigned int determineBlock(int x, int y, int z, int water_level, float low_snow_level, float high_snow_level, float* height, float* prng);
-    void gen(glm::vec3& center_pos);
+    void gen_nearby_chunks(glm::vec3& center_pos);
     std::unordered_map<glm::ivec2, ChunkGenInfo, std::hash<glm::ivec2>> gen_info_map;
     void stageOneGen(glm::ivec2& pos);
-    bool isInChunk(glm::ivec2 ch_pos, int x, int y, int z);
     void setInfoGenBlock(int x, int y, int z, unsigned int blockID);
     unsigned int getInfoGenBlock(int x, int y, int z);
     void placeTree(glm::ivec2& pos, int x, int y);
@@ -102,19 +98,13 @@ public:
     void visibilityInner(ChunkGenInfo& info, glm::ivec2& pos);
     void visibilityInnerAtPos(ChunkGenInfo& info, glm::ivec2& pos, int face, int x, int y, int z, unsigned int blockID);
     std::queue<glm::ivec2> finished_positions;
-    void add();
+    void add_new_chunks();
     void visibilityOuter(ChunkGenInfo& info, glm::ivec2& pos, ChunkGenInfo& info2, int face);
+    void remove_far_chunks(glm::vec3& camera_pos);
 
 private:
     Settings& settings;
     ChunkMapivec2& chunk_map;
-    Shaderprogram comp_shaderprogram;
-    unsigned int comp_texture;
-
-    void createComputeShader();
-    void createComputeTexture();
-
-    
 };
 
 
