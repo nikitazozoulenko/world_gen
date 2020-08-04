@@ -18,9 +18,10 @@ class Scene
 {
 public:
     Scene(Settings& settings, GLFWwindow* window, InputScheme* p_input_scheme, MasterRenderer& masterRenderer);
-    ~Scene();
+    virtual ~Scene();
     virtual void render() = 0;
     virtual void scene_logic(double delta_time) = 0;
+    virtual void end_scene();
     InputScheme* p_input_scheme;
     MasterRenderer& masterRenderer;
     Camera camera;
@@ -36,8 +37,10 @@ class FreeCamWorld: public Scene
 {
 public:
     FreeCamWorld(Settings& settings, GLFWwindow* window, MasterRenderer& masterRenderer);
+    ~FreeCamWorld();
     void render();
     void scene_logic(double delta_time);
+    void end_scene();
     World world;
     UI_FreeCamWorld ui;
 
@@ -52,8 +55,10 @@ class MainMenu: public Scene
 {
 public:
     MainMenu(Settings& settings, GLFWwindow* window, MasterRenderer& masterRenderer);
+    ~MainMenu();
     void render();
     void scene_logic(double delta_time);
+    void end_scene();
     void test(double val, double change);
     UI_MainMenu ui;
 protected:

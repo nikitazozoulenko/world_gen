@@ -17,7 +17,6 @@ InputScheme::InputScheme(Settings& settings, GLFWwindow* window, Camera& camera)
 }
 
 
-
 void InputScheme::init_shared_callbacks()
 {
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);

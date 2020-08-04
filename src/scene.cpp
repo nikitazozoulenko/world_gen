@@ -15,11 +15,18 @@ Scene::Scene(Settings& settings, GLFWwindow* window, InputScheme* p_input_scheme
 
 Scene::~Scene()
 {
+    end_scene();
     if(p_input_scheme)
     {
         delete p_input_scheme;
     }
 }
+
+void Scene::end_scene()
+{
+    print_float("base end", 0);
+}
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////// Free Cam Scene ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -33,6 +40,10 @@ FreeCamWorld::FreeCamWorld(Settings& settings, GLFWwindow* window, MasterRendere
     ui.createUI();
 }
 
+FreeCamWorld::~FreeCamWorld()
+{
+    end_scene();
+}
 
 void FreeCamWorld::render()
 {
@@ -45,6 +56,11 @@ void FreeCamWorld::scene_logic(double delta_time)
     world.gameLogic(delta_time);
 }
 
+void FreeCamWorld::end_scene()
+{
+    print_float("end scene", 0);
+    world.end();
+}
 
 void FreeCamWorld::slider_amp_fun(double val, double change)
 {
@@ -70,6 +86,10 @@ MainMenu::MainMenu(Settings& settings, GLFWwindow* window, MasterRenderer& maste
     ui.createUI();
 }
 
+MainMenu::~MainMenu()
+{
+    end_scene();
+}
 
 void MainMenu::test(double val, double change)
 {
@@ -80,6 +100,11 @@ void MainMenu::test(double val, double change)
 void MainMenu::render()
 {
     masterRenderer.render_mainmenu(this);
+}
+
+void MainMenu::end_scene()
+{
+    
 }
 
 

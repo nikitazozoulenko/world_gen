@@ -102,6 +102,8 @@ public:
     void visibilityOuter(ChunkGenInfo& info, glm::ivec2& pos, ChunkGenInfo& info2, int face);
     void remove_far_chunks(glm::vec3& camera_pos);
 
+    void end();
+
 private:
     Settings& settings;
     ChunkMapivec2& chunk_map;
@@ -133,6 +135,7 @@ public:
     void destroyBlockOnCursor();
 
     void gameLogic(double delta_time);
+    void end();
 private:
     Settings& settings;
 };

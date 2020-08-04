@@ -23,6 +23,7 @@ public:
         NORTH,
         SOUTH,
     };
+    bool first_vbo_init=true;
     std::array<unsigned int, 6> VAOs; 
     std::array<unsigned int, 6> VBOs;
     std::array<unsigned int, 6> pos_VBOs;

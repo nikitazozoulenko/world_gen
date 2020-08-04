@@ -12,7 +12,13 @@ ThreadPool::ThreadPool(int n_workers) : n_workers(n_workers), ioService(), threa
     for(int i=0; i<n_workers; i++){
         thread_group.create_thread(boost::bind(&boost::asio::io_service::run, &ioService));
     }
-};
+}
+
+void ThreadPool::stop()
+{   
+    ioService.stop();
+    thread_group.join_all();
+}
 
 
 World::World(Settings& settings, Camera& camera, std::unordered_map<std::string, unsigned int>& blockIDMap):
@@ -105,6 +111,12 @@ void World::destroyBlockOnCursor()
     if(block_is_targeted){
         setBlock(target_pos, 0);
     }
+}
+
+
+void World::end()
+{
+    chunk_manager.end();
 }
 
 
@@ -614,6 +626,8 @@ void ChunkManager::stageThreeChunkCreation(glm::ivec2& pos) //dont actually need
 
     //done
     info.stage = 3;
+    delete info.height_map;
+    delete info.rng_map;
     busy[pos].store(false);
     work_queue_size.fetch_sub(1);
 }
@@ -735,18 +749,35 @@ void ChunkManager::remove_far_chunks(glm::vec3& center_pos)
 
     for(auto& pos : remove_chunk_positions){
         ChunkGenInfo& info = gen_info_map.at(pos);
-        delete info.rng_map;
-        delete info.height_map;
         chunk_map.erase(pos);
         gen_info_map.erase(pos);
         busy.erase(pos);
     }
     for(auto& pos : remove_only_info_positions){
         ChunkGenInfo& info = gen_info_map.at(pos);
-        delete info.rng_map;
-        delete info.height_map;
+        if(info.stage!=3){
+            delete info.rng_map;
+            delete info.height_map;
+        }
         delete info.blocks;
         gen_info_map.erase(pos);
         busy.erase(pos);
+    }
+}
+
+
+void ChunkManager::end()
+{
+    pool.stop();
+    for(auto& pair : gen_info_map){
+        glm::ivec2 pos = pair.first;
+        ChunkGenInfo& info = pair.second;
+        if(chunk_map.count(pos)==0){
+            delete info.blocks;
+            if(info.stage!=3){
+                delete info.rng_map;
+                delete info.height_map;
+            }
+        }
     }
 }

@@ -39,7 +39,6 @@ public:
     
     glm::ivec2 pos;
     bool re_init_vaos;
-    bool first_vbo_init;
 private:
     Settings& settings;
 

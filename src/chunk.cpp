@@ -6,7 +6,6 @@ Chunk::Chunk(Settings& settings, glm::ivec2 pos, unsigned int* blocks, int numRe
     settings(settings),
     pos(pos),
     p_block_model(new BlockModel()),
-    first_vbo_init(true),
     re_init_vaos(true),
     blocks(blocks)
 {
@@ -20,9 +19,11 @@ Chunk::Chunk(Settings& settings, glm::ivec2 pos, unsigned int* blocks, int numRe
 Chunk::~Chunk()
 {
     print_vec2("deleting chunk ", pos);
-    if(blocks)
-    {
+    if(blocks){
         delete blocks;
+    }
+    if(p_block_model){
+        delete p_block_model;
     }
 }
 
@@ -140,7 +141,7 @@ void Chunk::rebuildVBOs(std::array<std::unordered_map<int, int>,6>& texArrayIDLo
     for(int& face : faces)
     {   
         //remove old vbos
-        if(!first_vbo_init)
+        if(!p_block_model->first_vbo_init)
         {
             glDeleteBuffers(1, &p_block_model->pos_VBOs[face]);
             glDeleteBuffers(1, &p_block_model->texArrayID_VBOs[face]);
@@ -180,7 +181,7 @@ void Chunk::rebuildVBOs(std::array<std::unordered_map<int, int>,6>& texArrayIDLo
         glVertexAttribDivisor(3, 1);
         glVertexAttribDivisor(4, 1);
     }
-    first_vbo_init = false;
+    p_block_model->first_vbo_init = false;
 }
 
 
