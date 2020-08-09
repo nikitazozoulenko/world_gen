@@ -22,7 +22,7 @@ public:
     void mouse_release();
     void process_movement(double xoff, double yoff, double x, double y);
     static UIElement* find_element_on_cursor(std::vector<UIElement*>& ui_windows, double x, double y);
-    void create_ui();
+    virtual void create_ui()=0;
 
     UIElement* p_clicked_ele; //smallest element, "inner most"
     Scene* p_scene;
@@ -32,29 +32,31 @@ private:
 
 
 
-// class MainMenu;
-// class UI_MainMenu: public UI
-// {
-// public:
-//     UI_MainMenu(MainMenu* p_scene);
-//     MainMenu* p_scene;
-//     void createUI();
-// protected:
-// private:
-// };
+class MainMenu;
+
+class UI_MainMenu: public UI
+{
+public:
+    UI_MainMenu(Settings& settings, MainMenu* p_scene);
+    ~UI_MainMenu();
+    void create_ui();
+protected:
+private:
+};
 
 
 
-// class FreeCamWorld;
-// class UI_FreeCamWorld: public UI
-// {
-// public:
-//     UI_FreeCamWorld(FreeCamWorld* p_scene);
-//     FreeCamWorld* p_scene;
-//     void createUI();
-// protected:
-// private:
-// };
+class FreeCamWorld;
+
+class UI_FreeCamWorld: public UI
+{
+public:
+    UI_FreeCamWorld(Settings& settings, FreeCamWorld* p_scene);
+    ~UI_FreeCamWorld();
+    void create_ui();
+protected:
+private:
+};
 
 
 #endif // WORLDGEN_NIKITA_UI_H

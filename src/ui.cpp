@@ -8,39 +8,6 @@ UI::UI(Settings& settings, Scene* p_scene) : settings(settings), p_scene(p_scene
 {
 }
 
-void UI::create_ui() //WARNING: need to create p_scene->slider_functions first
-{
-    double win_w = 300;
-    double win_h = 300;
-    UIElement* p_frame = new UIFrame(settings, 100, 100, win_w, win_h, glm::vec3(54/255.0, 54/255.0, 99/255.0), true);
-    elements.push_back(p_frame);
-
-
-    //how big a slider is
-    double w = 200;
-    double off_x = (win_w-w)/2.0;
-    double h = 100;
-    double off_y = (win_h-2*h)/3.0;
-
-    double tick_w = 50;
-    double line_h = 40;
-
-    double m = 30;
-    double M = 200;
-
-    UIElement* p_child1 = new UISlider(settings, off_x, off_y, w, h, glm::vec3(54/255.0, 54/255.0, 99/255.0), 
-                                        tick_w, line_h, m, M, p_scene->slider_functions.at("test"), p_frame);
-    UIElement* p_child2 = new UISlider(settings, off_x, off_y*2+h, w, h, glm::vec3(54/255.0, 54/255.0, 99/255.0),
-                                        tick_w, line_h, m, M, p_scene->slider_functions.at("test"), p_frame);
-
-    // UIFrame* p_child1 = new UIFrame(settings, 50, 50, 200, 200, 0.75f*glm::vec3(54/255.0, 54/255.0, 99/255.0), true, p_frame);
-    // UIFrame* p_child2 = new UIFrame(settings, 25, 25, 150, 150, 0.5f*glm::vec3(54/255.0, 54/255.0, 99/255.0), true, p_child1);
-
-    //cursor fake
-    UIFrame* p_cursor = new UIFrame(settings, 1280/2-1, 720/2-1, 2, 2, glm::vec3(1,1,1), true);
-    elements.push_back(p_cursor);
-}
-
 
 UI::~UI()
 {
@@ -129,83 +96,78 @@ void UI::process_movement(double xoff, double yoff, double x, double y)
 ///////////////////////////////////////////////////////////// FreeCamWorld //////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// UI_FreeCamWorld::UI_FreeCamWorld(FreeCamWorld* p_scene) :
-//     p_scene(p_scene)
-// {
-// }
+UI_FreeCamWorld::UI_FreeCamWorld(Settings& settings, FreeCamWorld* p_scene) : UI(settings, p_scene)
+{
+}
+UI_FreeCamWorld::~UI_FreeCamWorld()
+{
+}
+
+void UI_FreeCamWorld::create_ui() //WARNING: need to create p_scene->slider_functions first
+{
+    double win_w = 300;
+    double win_h = 300;
+    UIElement* p_frame = new UIFrame(settings, 100, 100, win_w, win_h, glm::vec3(54/255.0, 54/255.0, 99/255.0), true);
+    elements.push_back(p_frame);
 
 
+    //how big a slider is
+    double w = 200;
+    double off_x = (win_w-w)/2.0;
+    double h = 100;
+    double off_y = (win_h-2*h)/3.0;
 
-// void UI_FreeCamWorld::createUI()
-// {
-//     double win_w = 300;
-//     double win_h = 300;
-//     UIWindow* p_window = createUIWindow(100, 100, win_w, win_h, glm::vec3(54/255.0, 54/255.0, 99/255.0));
-//     std::vector<UISlider>& sliders = p_window->sliders;
+    double tick_w = 50;
+    double line_h = 40;
 
-//     //how big a slider is
-//     double w = 200;
-//     double off_x = (win_w-w)/2.0;
-//     double h = 100;
-//     double off_y = (win_h-2*h)/3.0;
+    double m = 30;
+    double M = 200;
 
-//     double tick_w = 50;
-//     double line_h = 40;
+    UIElement* p_child1 = new UISlider(settings, off_x, off_y, w, h, glm::vec3(54/255.0, 54/255.0, 99/255.0), 
+                                        tick_w, line_h, m, M, p_scene->slider_functions.at("test"), p_frame);
+    UIElement* p_child2 = new UISlider(settings, off_x, off_y*2+h, w, h, glm::vec3(54/255.0, 54/255.0, 99/255.0),
+                                        tick_w, line_h, m, M, p_scene->slider_functions.at("test"), p_frame);
 
-//     double m_size = 2;
-//     double M_size = 100;
-//     double m_amp = 0;
-//     double M_amp = 2;
-    
-//     std::function<void(double, double)> fun_amp = std::bind(&FreeCamWorld::slider_amp_fun, p_scene, std::placeholders::_1, std::placeholders::_2);
-//     std::function<void(double, double)> fun_size = std::bind(&FreeCamWorld::slider_size_fun, p_scene, std::placeholders::_1, std::placeholders::_2);
+    // UIFrame* p_child1 = new UIFrame(settings, 50, 50, 200, 200, 0.75f*glm::vec3(54/255.0, 54/255.0, 99/255.0), true, p_frame);
+    // UIFrame* p_child2 = new UIFrame(settings, 25, 25, 150, 150, 0.5f*glm::vec3(54/255.0, 54/255.0, 99/255.0), true, p_child1);
 
-//     sliders.push_back(UISlider(m_size, M_size, off_x, off_y, w, h, tick_w, line_h, fun_size));
-//     sliders.push_back(UISlider(m_amp, M_amp, off_x, off_y*2+h, w, h, tick_w, line_h, fun_amp));
+    //cursor fake
+    UIFrame* p_cursor = new UIFrame(settings, 1280/2-1, 720/2-1, 2, 2, glm::vec3(1,1,1), true);
+    elements.push_back(p_cursor);
+}
 
-
-
-//     //cursor fake
-//     createUIWindow(1280/2-1, 720/2-1, 2, 2, glm::vec3(1,1,1));
-// }
 
 // /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // ///////////////////////////////////////////////////////////// MainMenu //////////////////////////////////////////////////////////////////
 // /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// UI_MainMenu::UI_MainMenu(MainMenu* p_scene) :
-//     p_scene(p_scene)
-// {
 
-// }
+UI_MainMenu::UI_MainMenu(Settings& settings, MainMenu* p_scene) : UI(settings, p_scene)
+{
+}
+UI_MainMenu::~UI_MainMenu()
+{
+}
 
-// void UI_MainMenu::createUI()
-// {
-//     double win_w = 700;
-//     double win_h = 400;
-//     UIWindow* p_window = createUIWindow(200, 100, win_w, win_h, glm::vec3(54/255.0, 54/255.0, 99/255.0));
-//     std::vector<UISlider>& sliders = p_window->sliders;
+void UI_MainMenu::create_ui() //WARNING: need to create p_scene->slider_functions first
+{
+    int n_buttons=3;
+    double w =400;
+    double h =100;
+    double win_w = settings.getWindowWidth();
+    double win_h = settings.getWindowHeight();
+    glm::vec3 button_color(0.4, 0.8, 0.2);
 
-//     //how big a slider is
-//     double w = 300;
-//     double off_x = (win_w-2*w)/3.0;
-//     double h = 100;
-//     double off_y = (win_h-3*h)/4.0;
+    double off_x = (win_w-w)/2.0;
+    double off_y = (win_h-n_buttons*h)/(n_buttons+1);
 
-//     double tick_w = 50;
-//     double line_h = 20;
-
-//     double min_val = 10;
-//     double max_val = 20;
-    
-//     std::function<void(double, double)> fun = std::bind(&MainMenu::test, p_scene, std::placeholders::_1, std::placeholders::_2);
-
-//     sliders.push_back(UISlider(min_val, max_val, off_x, off_y, w, h, tick_w, line_h, fun));
-//     sliders.push_back(UISlider(min_val, max_val, off_x*2 + w, off_y, w, h, tick_w, line_h, fun));
-
-//     sliders.push_back(UISlider(min_val, max_val, off_x, off_y*2+h, w, h, tick_w, line_h, fun));
-//     sliders.push_back(UISlider(min_val, max_val, off_x*2 + w, off_y*2+h, w, h, tick_w, line_h, fun));
-
-//     sliders.push_back(UISlider(min_val, max_val, off_x, off_y*3 +h+h, w, h, tick_w, line_h, fun));
-//     sliders.push_back(UISlider(min_val, max_val, off_x*2 + w, off_y*3 +h+h, w, h, tick_w, line_h, fun));
-// }
+    UIButton* p_button_world = new UIButton(settings, off_x, off_y*1+h*0, w, h, button_color, 
+                                "Enter World", p_scene->button_functions.at("world"));
+    elements.push_back(p_button_world);
+    UIButton* p_button_editor = new UIButton(settings, off_x, off_y*2+h*1, w, h, button_color, 
+                                "Editor", p_scene->button_functions.at("editor"));
+    elements.push_back(p_button_editor);
+    UIButton* p_button_exit = new UIButton(settings, off_x, off_y*3+h*2, w, h, button_color, 
+                                "Exit", p_scene->button_functions.at("exit"));
+    elements.push_back(p_button_exit);
+}

@@ -19,11 +19,12 @@ class UIRenderer
 {
 public:
     UIRenderer(Settings& settings);
-    void render(UI& ui);
+    void render(UI* p_ui);
 
     void render_element(UIElement* p_ele, double off_x, double off_y);
     void render_frame(UIFrame* p_ele, double off_x, double off_y);
     void render_slider(UISlider* p_ele, double off_x, double off_y);
+    void render_button(UIButton* p_ele, double off_x, double off_y);
     
 private:
     Settings& settings;

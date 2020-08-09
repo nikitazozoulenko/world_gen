@@ -86,9 +86,28 @@ private:
 };
 
 
-    // void update_value(double xoff, double win_width);
-    // bool x_on_tick(double x, double win_x0);
-    // bool x_on_slider(double x, double win_x0);
-    // bool find_if_on_slider(UIWindow* p_ui_window, double& x, double& y);
+class UIButton : public UIElement
+{
+public:
+    UIButton(Settings& settings, double x0, double y0, double w, double h, glm::vec3 color, std::string button_text, std::function<void()>& fun, UIElement* p_parent=nullptr);
+    ~UIButton();
+    void mouse_click(double& x, double& y);
+    void mouse_release();
+    void process_movement(double xoff, double yoff, double x, double y);
+
+
+    // sizes in pixels
+    double tick_w;
+    double line_h;
+
+    //other
+    std::string button_text;
+    std::function<void()> fun;
+
+private:
+};
+
+
+
 
 #endif // UIWINDOW_MOVABLE_H

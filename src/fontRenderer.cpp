@@ -1,11 +1,12 @@
-#include <iostream>
+#include <sstream>
 
 #include <fontRenderer.h>
+#include <misc.h>
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
-FontDrawer::FontDrawer(std::string truetype_file_path)
+FontDrawer::FontDrawer(Settings& settings, std::string truetype_file_path) : settings(settings)
 {
     makeCharacterTextureMap(truetype_file_path);
     setupVAOVBO();
@@ -85,11 +86,9 @@ void FontDrawer::draw(std::string text, float x, float y, float scale, glm::vec3
     glBindVertexArray(VAO);
 
     // Iterate through all characters
-    std::string::const_iterator c;
-    for (c = text.begin(); c != text.end(); c++) 
+    for (char& c : text)
     {
-        Character ch = character_map[*c];
-
+        Character ch = character_map[c];
         float xpos = x + ch.bearing.x * scale;
         float ypos = y - (ch.size.y - ch.bearing.y) * scale;
 
@@ -148,4 +147,53 @@ void FontDrawer::setupCharShader()
     char_shaderprogram.bind();
     glm::mat4 projection = glm::ortho(0.0f, 1280.0f, 0.0f, 720.0f);
     char_shaderprogram.setUniformMat4("projection", projection);
+}
+
+std::vector<std::pair<std::string, double>> FontDrawer::split(std::string text, double w, float scale)
+{
+    //split into words
+    using namespace std;
+    vector< pair<string, float> > words;
+    istringstream ss(text);
+    do{
+        string word;
+        ss >> word;
+        float len=0;
+        for(auto& c : word){
+            Character& ch = character_map[c];
+            len += (ch.advance>>6)*scale;
+        }
+        if(!word.empty()){
+            words.push_back({word, len});
+        }
+    }while(ss);
+
+    //split into sentence lines
+    vector< pair<string, double> > lines;
+    int j=0;
+    float space_advance = character_map.at(' ').advance * scale;
+    float line_len= -space_advance;
+    string line="";
+    for(int i=0; i<words.size(); i++){
+        float word_len = words[i].second + space_advance;
+        line_len += word_len;
+        string word = words[i].first;
+        if(line_len < w){
+            line.append(word+' ');
+            if(j==words.size()-1){
+                lines.push_back({line, line_len});
+            }
+            j++;
+        }else if(j==0){
+            lines.push_back({word, line_len});
+            line_len=-space_advance;
+        }else{
+            i--;
+            lines.push_back({line, line_len-word_len});
+            line="";
+            j=0;
+            line_len= -space_advance;
+        }
+    }
+    return lines;
 }

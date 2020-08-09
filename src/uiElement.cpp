@@ -157,18 +157,29 @@ void UISlider::process_movement(double xoff, double yoff, double x, double y)
 
 
 
-    // double W = settings.getWindowWidth();
-    // double H = settings.getWindowHeight();
-    // double OFFX=0.0;
-    // double OFFY=0.0;
-    // if(p_parent){
-    //     W = p_parent->w;
-    //     H = p_parent->h;
-    //     OFFX=p_parent->x0_at_click;
-    //     OFFY=p_parent->y0_at_click;
-    // }
-    // if(moveable){
-    //     //clamp = std::min( maxval, std::max(minval, val) );
-    //     x0=std::min(W-(x0_at_click+w-x_click), std::max(x_click-x0_at_click, x-OFFX)) - x_click+x0_at_click;
-    //     y0=std::min(H-(y0_at_click+h-y_click), std::max(y_click-y0_at_click, y-OFFY)) - y_click+y0_at_click;
-    // }
+
+////////////////////////////////////////////////
+
+
+UIButton::UIButton(Settings& settings, double x0, double y0, double w, double h, glm::vec3 color, 
+                std::string button_text, std::function<void()>& fun, UIElement* p_parent):
+    UIElement(settings, x0, y0, w, h, color, p_parent, "button"), 
+    button_text(button_text), fun(fun)
+{
+}
+
+UIButton::~UIButton()
+{
+}
+
+
+void UIButton::mouse_click(double& x, double& y)
+{
+    fun();
+}
+void UIButton::mouse_release()
+{
+}
+void UIButton::process_movement(double xoff, double yoff, double x, double y)
+{
+}

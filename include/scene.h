@@ -18,7 +18,7 @@
 class Scene 
 {
 public:
-    Scene(Settings& settings, GLFWwindow* window, InputScheme* p_input_scheme, MasterRenderer& masterRenderer);
+    Scene(Settings& settings, GLFWwindow* window, InputScheme* p_input_scheme, MasterRenderer& masterRenderer, UI* p_ui);
     virtual ~Scene();
     virtual void render() = 0;
     virtual void scene_logic(double delta_time) = 0;
@@ -26,12 +26,12 @@ public:
     InputScheme* p_input_scheme;
     MasterRenderer& masterRenderer;
     Camera camera;
-    UI ui;
+    UI* p_ui;
 
     unsigned int frame=0;
     std::unordered_map<std::string, std::function<void(double, double)>> slider_functions;
+    std::unordered_map<std::string, std::function<void()>> button_functions;
     void test_slider_fun(double val, double change);
-    //std::unordered_map<std::string, std::function<void(void)>> button_functions;
 protected:
     Settings& settings;
 private:
@@ -63,7 +63,10 @@ public:
     void render();
     void scene_logic(double delta_time);
     void end_scene();
-    void test(double val, double change);
+
+    void button_enter_world();
+    void button_enter_editor();
+    void button_exit();
 protected:
 private:
 };

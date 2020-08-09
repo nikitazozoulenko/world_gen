@@ -23,7 +23,7 @@ void MasterRenderer::render_freecamworld(FreeCamWorld* p_scene)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     block_renderer.render(p_scene->world.chunk_map, p_scene->camera);
-    ui_renderer.render(p_scene->ui);
+    ui_renderer.render(p_scene->p_ui);
     glfwSwapBuffers(window);
 }
 
@@ -32,7 +32,6 @@ void MasterRenderer::render_mainmenu(MainMenu* p_scene)
 {
     glClearColor(123/255.0f, 45/255.0f, 67/255.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    //TODO only use new renderer not masterRenderer old ideas
-    ui_renderer.render(p_scene->ui);
+    ui_renderer.render(p_scene->p_ui);
     glfwSwapBuffers(window);
 }

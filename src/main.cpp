@@ -12,10 +12,3 @@ int main(int argc, char **argv)
     program.run();
     return 0;
 }
-
-
-
-
-
-
-

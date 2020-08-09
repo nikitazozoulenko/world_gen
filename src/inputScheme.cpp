@@ -191,13 +191,13 @@ void FreeCamWorldInputScheme::freeCamMovementInput(double delta_time)
 void FreeCamWorldInputScheme::mouseMovementInput(double delta_time)
 {
     if(clicked(GLFW_MOUSE_BUTTON_LEFT)){
-        p_scene->ui.mouse_click(mouse_x, mouse_y);
+        p_scene->p_ui->mouse_click(mouse_x, mouse_y);
     }
     if(released(GLFW_MOUSE_BUTTON_LEFT)){
-        p_scene->ui.mouse_release();
+        p_scene->p_ui->mouse_release();
     }
     if(cursor_moved){
-        p_scene->ui.process_movement(mouse_x-mouse_old_x, mouse_y-mouse_old_y, mouse_x, mouse_y);
+        p_scene->p_ui->process_movement(mouse_x-mouse_old_x, mouse_y-mouse_old_y, mouse_x, mouse_y);
     }
 }
 
@@ -266,13 +266,13 @@ void MainMenuInputScheme::processInput(double delta_time)
     // ui mouse
     glfwPollEvents();
     if(clicked(GLFW_MOUSE_BUTTON_LEFT)){
-        p_scene->ui.mouse_click(mouse_x, mouse_y);
+        p_scene->p_ui->mouse_click(mouse_x, mouse_y);
     }
     if(released(GLFW_MOUSE_BUTTON_LEFT)){
-        p_scene->ui.mouse_release();
+        p_scene->p_ui->mouse_release();
     }
     if(cursor_moved){
-        p_scene->ui.process_movement(mouse_x-mouse_old_x, mouse_y-mouse_old_y, mouse_x, mouse_y);
+        p_scene->p_ui->process_movement(mouse_x-mouse_old_x, mouse_y-mouse_old_y, mouse_x, mouse_y);
     }
 
     //keys

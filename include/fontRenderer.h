@@ -1,7 +1,11 @@
+#ifndef FONTRENDERER_NIKITA_H
+#define FONTRENDERER_NIKITA_H
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <shaderprogram.h>
+#include <settings.h>
 
 #include <vector>
 #include <map>
@@ -19,9 +23,11 @@ struct Character
 class FontDrawer
 {
 public:
-    FontDrawer(std::string truetype_file_path);
+    FontDrawer(Settings& settings, std::string truetype_file_path);
     void draw(std::string text, float x, float y, float scale, glm::vec3 color);
+    std::vector<std::pair<std::string, double>> split(std::string s, double w, float scale);
 private:
+    Settings& settings;
     std::map<char, Character> character_map;
     unsigned int VAO;
     unsigned int VBO;
@@ -31,3 +37,5 @@ private:
     void setupVAOVBO();
     void setupCharShader();
 };
+
+#endif

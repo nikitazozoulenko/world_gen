@@ -6,7 +6,7 @@
 
 UIRenderer::UIRenderer(Settings& settings):
     settings(settings),
-    fontDrawer(FontDrawer("/home/nikita/Code/world_gen/resources/KratosTrueType.ttf"))
+    fontDrawer(FontDrawer(settings, "/home/nikita/Code/world_gen/resources/KratosTrueType.ttf"))
 {
     createShaders();
     create_quad_vao_vbo();
@@ -14,22 +14,20 @@ UIRenderer::UIRenderer(Settings& settings):
 
 
 
-void UIRenderer::render(UI& ui)
+void UIRenderer::render(UI* p_ui)
 {
+    print_float("render ui", 0);
     //bind shaders
     ui_shaderprogram.bind();
     glBindVertexArray(vao_quad);
 
     //render windows in the right order
-    std::vector<UIElement*>& elements = ui.elements;
+    std::vector<UIElement*>& elements = p_ui->elements;
     std::sort(elements.begin(), elements.end(), [](const auto& lhs, const auto& rhs){return lhs->time_last_press > rhs->time_last_press;});
     for (auto& p_ele : elements)
     {
         render_element(p_ele, 0, 0);
     }
-
-    //render text
-    fontDrawer.draw("My Test", 25.0f, 25.0f, 1.0f, glm::vec3(1,1,1));
 }
 
 
@@ -39,6 +37,8 @@ void UIRenderer::render_element(UIElement* p_ele, double off_x, double off_y)
         render_frame(static_cast<UIFrame*>(p_ele), off_x, off_y);
     else if(p_ele->type=="slider")
         render_slider(static_cast<UISlider*>(p_ele), off_x, off_y);
+    else if(p_ele->type=="button")
+        render_button(static_cast<UIButton*>(p_ele), off_x, off_y);
     else
         print_float("failed to render p_ele", 0);
 }
@@ -95,6 +95,28 @@ void UIRenderer::render_slider(UISlider* p_ele, double off_x, double off_y)
     glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
+
+void UIRenderer::render_button(UIButton* p_ele, double off_x, double off_y)
+{
+    double screen_w = settings.getWindowWidth();
+    double screen_h = settings.getWindowHeight();
+    double x = off_x+p_ele->x0;
+    double y = off_y+p_ele->y0;
+    double& w = p_ele->w;
+    double& h = p_ele->h;
+
+    std::vector<std::pair<std::string, double>> lines = fontDrawer.split(p_ele->button_text, w, 1.0f);
+    //TODO check for nonempy text
+    double word_w = lines[0].second;
+    fontDrawer.draw(lines[0].first, x + 0.5*(w-word_w), y, 1.0f, glm::vec3(1,1,1));
+    //TODO find out how high the text is to make it centered
+
+    ui_shaderprogram.bind();
+    glBindVertexArray(vao_quad);
+    ui_shaderprogram.setUniformVec4("coords", x/screen_w,y/screen_h,w/screen_w,h/screen_h);
+    ui_shaderprogram.setUniformVec3("color", p_ele->color);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+}
 
 // void UIRenderer::render_window(UIWindow* p_ui_window)
 // {
