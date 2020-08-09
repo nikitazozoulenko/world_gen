@@ -101,11 +101,17 @@ UISlider::~UISlider()
 
 void UISlider::change_slider_val(double x, double y)
 {
+    double temp_val = value;
+
     //clamp = std::min( maxval, std::max(minval, val) );
     double minval = x_click-tick_x0_at_click;
     double maxval = w-(tick_x0_at_click+tick_w-x_click);
     double X0=std::min(maxval - minval, std::max(0.0, x - x0_at_click - minval));
     value = X0*(max-min)/(maxval-minval) + min;
+
+    if( value!=temp_val ){
+        fun(value, temp_val-value);
+    }
 }
 
 void UISlider::mouse_click(double& x, double& y)

@@ -86,10 +86,6 @@ private:
 };
 
 
-
-
-
-
     // void update_value(double xoff, double win_width);
     // bool x_on_tick(double x, double win_x0);
     // bool x_on_slider(double x, double win_x0);
