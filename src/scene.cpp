@@ -8,9 +8,11 @@ Scene::Scene(Settings& settings, GLFWwindow* window, InputScheme* p_input_scheme
     camera(Camera()),
     settings(settings),
     p_input_scheme(p_input_scheme),
-    masterRenderer(masterRenderer)
+    masterRenderer(masterRenderer),
+    ui(settings, this)
 {
-
+    slider_functions["test"] = std::bind(&Scene::test_slider_fun, this, std::placeholders::_1, std::placeholders::_2);
+    ui.create_ui();
 }
 
 Scene::~Scene()
@@ -28,16 +30,20 @@ void Scene::end_scene()
 }
 
 
+void Scene::test_slider_fun(double val, double change)
+{
+    print_float("sliiiiiide scenetestfun", 0);
+}
+
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////// Free Cam Scene ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 FreeCamWorld::FreeCamWorld(Settings& settings, GLFWwindow* window, MasterRenderer& masterRenderer):
     Scene(settings, window, new FreeCamWorldInputScheme(settings, window, camera, this), masterRenderer),
-    ui(this),
     world(settings, camera, masterRenderer.block_renderer.blockIDMap)
 {
-    ui.createUI();
 }
 
 FreeCamWorld::~FreeCamWorld()
@@ -80,10 +86,8 @@ void FreeCamWorld::slider_size_fun(double val, double change)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 MainMenu::MainMenu(Settings& settings, GLFWwindow* window, MasterRenderer& masterRenderer):
-    Scene(settings, window, new MainMenuInputScheme(settings, window, camera, this), masterRenderer),
-    ui(this)
+    Scene(settings, window, new MainMenuInputScheme(settings, window, camera, this), masterRenderer)
 {
-    ui.createUI();
 }
 
 MainMenu::~MainMenu()
@@ -110,5 +114,5 @@ void MainMenu::end_scene()
 
 void MainMenu::scene_logic(double delta_time)
 {
-    
+    print_float("size", ui.elements.size());
 }

@@ -9,32 +9,27 @@
 #include <shaderprogram.h>
 #include <fontRenderer.h>
 #include <settings.h>
+#include <ui.h>
 
 #include <vector>
 #include <unordered_map>
 
 
-class UIWindow;
-class UISlider;
-
 class UIRenderer
 {
 public:
     UIRenderer(Settings& settings);
-    void render(std::vector<UIWindow*>& ui_windows);
-    void render_window(UIWindow* p_ui_window);
-    void render_window_slider(UISlider& slider, UIWindow* p_ui_window);
+    void render(UI& ui);
 
-    // void add_ui_window(UIWindow* p_ui_window);
-    // void remove_ui_window(UIWindow* p_ui_window);
+    void render_element(UIElement* p_ele, double off_x, double off_y);
+    void render_frame(UIFrame* p_ele, double off_x, double off_y);
+    void render_slider(UISlider* p_ele, double off_x, double off_y);
     
 private:
     Settings& settings;
     Shaderprogram ui_shaderprogram;
     unsigned int vao_quad;
     unsigned int vbo_quad;
-    // std::unordered_map<UIWindow*, unsigned int> VAOS;
-    // std::unordered_map<UIWindow*, unsigned int> VBOS;
     FontDrawer fontDrawer;
     void createShaders();
     void create_quad_vao_vbo();

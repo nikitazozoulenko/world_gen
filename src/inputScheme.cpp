@@ -191,14 +191,14 @@ void FreeCamWorldInputScheme::freeCamMovementInput(double delta_time)
 void FreeCamWorldInputScheme::mouseMovementInput(double delta_time)
 {
     if(clicked(GLFW_MOUSE_BUTTON_LEFT)){
-        UIWindow::uiwindow_click(p_scene->ui.windows, mouse_x, mouse_y, &p_pressed_window);
+        p_scene->ui.mouse_click(mouse_x, mouse_y);
     }
     if(released(GLFW_MOUSE_BUTTON_LEFT)){
-        UIWindow::uiwindow_release(&p_pressed_window);
+        p_scene->ui.mouse_release();
     }
-    if(cursor_moved)
-        if(p_pressed_window)
-            p_pressed_window->process_movement(mouse_x-mouse_old_x, mouse_y-mouse_old_y, mouse_x, mouse_y);
+    if(cursor_moved){
+        p_scene->ui.process_movement(mouse_x-mouse_old_x, mouse_y-mouse_old_y, mouse_x, mouse_y);
+    }
 }
 
 void FreeCamWorldInputScheme::processInput(double delta_time)
@@ -263,12 +263,17 @@ void MainMenuInputScheme::remove()
 
 void MainMenuInputScheme::processInput(double delta_time)
 {
+    // ui mouse
     glfwPollEvents();
-    if(clicked(GLFW_MOUSE_BUTTON_LEFT))
-        UIWindow::uiwindow_click(p_scene->ui.windows, mouse_x, mouse_y, &p_pressed_window);
-    if(released(GLFW_MOUSE_BUTTON_LEFT))
-        UIWindow::uiwindow_release(&p_pressed_window);
-
+    if(clicked(GLFW_MOUSE_BUTTON_LEFT)){
+        p_scene->ui.mouse_click(mouse_x, mouse_y);
+    }
+    if(released(GLFW_MOUSE_BUTTON_LEFT)){
+        p_scene->ui.mouse_release();
+    }
+    if(cursor_moved){
+        p_scene->ui.process_movement(mouse_x-mouse_old_x, mouse_y-mouse_old_y, mouse_x, mouse_y);
+    }
 
     //keys
     if (clicked(GLFW_KEY_ESCAPE))
@@ -276,18 +281,7 @@ void MainMenuInputScheme::processInput(double delta_time)
     if (clicked(GLFW_KEY_L))
         change_scene=SCENE_FreeCamWorld;
     
-    // mouse move
-    if(cursor_moved){
-        process_mouse_movement();
-    }
+
 
     clear_frame_input();
-}
-
-
-void MainMenuInputScheme::process_mouse_movement()
-{
-    if(p_pressed_window){
-        p_pressed_window->process_movement(mouse_x-mouse_old_x, mouse_y-mouse_old_y, mouse_x, mouse_y);
-    }
 }

@@ -9,9 +9,10 @@
 #include <masterRenderer.h>
 #include <inputScheme.h>
 #include <settings.h>
-#include <uiWindow.h>
 #include <uiRenderer.h>
 #include <ui.h>
+#include <unordered_map>
+#include <functional>
 
 
 class Scene 
@@ -25,8 +26,12 @@ public:
     InputScheme* p_input_scheme;
     MasterRenderer& masterRenderer;
     Camera camera;
+    UI ui;
 
     unsigned int frame=0;
+    std::unordered_map<std::string, std::function<void(double, double)>> slider_functions;
+    void test_slider_fun(double val, double change);
+    //std::unordered_map<std::string, std::function<void(void)>> button_functions;
 protected:
     Settings& settings;
 private:
@@ -42,7 +47,6 @@ public:
     void scene_logic(double delta_time);
     void end_scene();
     World world;
-    UI_FreeCamWorld ui;
 
     void slider_amp_fun(double val, double change);
     void slider_size_fun(double val, double change);
@@ -60,7 +64,6 @@ public:
     void scene_logic(double delta_time);
     void end_scene();
     void test(double val, double change);
-    UI_MainMenu ui;
 protected:
 private:
 };

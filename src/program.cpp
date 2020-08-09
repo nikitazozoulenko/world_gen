@@ -107,5 +107,6 @@ void Program::run()
         p_scene->render();
         p_scene->frame +=1;
     }
+    delete p_scene;
     glfwTerminate();
 }

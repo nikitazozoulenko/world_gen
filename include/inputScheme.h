@@ -6,8 +6,6 @@
 
 #include <settings.h>
 #include <camera.h>
-#include <uiWindow.h>
-
 #include <vector>
 #include <unordered_map>
 #include <string>
@@ -34,7 +32,6 @@ protected:
     double mouse_y=0;
     bool cursor_moved = false;
     bool firstmouse = true;
-    UIWindow* p_pressed_window = nullptr;
 
     //only contains info if clicked this frame. has to be cleared every frame
     std::unordered_map<int, bool> key_map;
@@ -89,7 +86,6 @@ public:
     void init();
     void remove();
 private:
-    void process_mouse_movement();
 
     MainMenu* p_scene;
 };
