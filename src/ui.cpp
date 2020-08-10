@@ -123,10 +123,10 @@ void UI_FreeCamWorld::create_ui() //WARNING: need to create p_scene->slider_func
     double m = 30;
     double M = 200;
 
-    UIElement* p_child1 = new UISlider(settings, off_x, off_y, w, h, glm::vec3(54/255.0, 54/255.0, 99/255.0), 
+    UISlider* p_child1 = new UISlider(settings, off_x, off_y, w, h, glm::vec3(54/255.0, 54/255.0, 99/255.0), 
                                         tick_w, line_h, m, M, p_scene->slider_functions.at("test"), p_frame);
-    UIElement* p_child2 = new UISlider(settings, off_x, off_y*2+h, w, h, glm::vec3(54/255.0, 54/255.0, 99/255.0),
-                                        tick_w, line_h, m, M, p_scene->slider_functions.at("test"), p_frame);
+    UIButton* p_child2 = new UIButton(settings, off_x, off_y*2+h, w, h, glm::vec3(66/255.0, 66/255.0, 66/255.0),
+                                        "Menu", p_scene->button_functions.at("mainmenu"), p_frame);
 
     // UIFrame* p_child1 = new UIFrame(settings, 50, 50, 200, 200, 0.75f*glm::vec3(54/255.0, 54/255.0, 99/255.0), true, p_frame);
     // UIFrame* p_child2 = new UIFrame(settings, 25, 25, 150, 150, 0.5f*glm::vec3(54/255.0, 54/255.0, 99/255.0), true, p_child1);
@@ -165,9 +165,9 @@ void UI_MainMenu::create_ui() //WARNING: need to create p_scene->slider_function
                                 "Exit", p_scene->button_functions.at("exit"));
     elements.push_back(p_button_world);
     UIButton* p_button_editor = new UIButton(settings, off_x, off_y*2+h*1, w, h, button_color, 
-                                "Editor", p_scene->button_functions.at("editor"));
+                                "Editor", p_scene->button_functions.at("freecamworld"));
     elements.push_back(p_button_editor);
     UIButton* p_button_exit = new UIButton(settings, off_x, off_y*3+h*2, w, h, button_color, 
-                                "Create World", p_scene->button_functions.at("world"));
+                                "Create World", p_scene->button_functions.at("freecamworld"));
     elements.push_back(p_button_exit);
 }

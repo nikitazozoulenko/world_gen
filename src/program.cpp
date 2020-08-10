@@ -78,12 +78,14 @@ MainMenu* Program::createMainMenu()
 
 void Program::changeSceneIfNeeded()
 {
-    int change_scene = p_scene->p_input_scheme->change_scene;
+    int& change_scene = p_scene->change_scene;
     if(change_scene)
     {
         p_scene->p_input_scheme->remove();
         delete p_scene;
-        if(change_scene == SCENE_MainMenu)
+        if(change_scene == SCENE_ExitGame)
+            return;
+        else if(change_scene == SCENE_MainMenu)
             p_scene = createMainMenu();
         else if(change_scene == SCENE_FreeCamWorld)
             p_scene = createFreeCamWorld();
@@ -107,6 +109,7 @@ void Program::run()
         p_scene->render();
         p_scene->frame +=1;
     }
+    p_scene->p_input_scheme->remove();
     delete p_scene;
     glfwTerminate();
 }

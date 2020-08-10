@@ -18,9 +18,6 @@ public:
     virtual void init() = 0;
     virtual void remove() = 0;
 
-    //use the unique identifer that each scene has
-    int change_scene=0;
-
 protected:
     GLFWwindow* window;
     Camera& camera;

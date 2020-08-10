@@ -12,6 +12,9 @@ Scene::Scene(Settings& settings, GLFWwindow* window, InputScheme* p_input_scheme
     p_ui(p_ui)
 {
     slider_functions["test"] = std::bind(&Scene::test_slider_fun, this, std::placeholders::_1, std::placeholders::_2);
+    button_functions["freecamworld"] = std::bind(&Scene::change_scene_freecamworld, this);
+    button_functions["mainmenu"] = std::bind(&Scene::change_scene_mainmenu, this);
+    button_functions["exit"] = std::bind(&Scene::exit_game, this);
 }
 
 Scene::~Scene()
@@ -32,6 +35,19 @@ void Scene::end_scene()
 void Scene::test_slider_fun(double val, double change)
 {
     print_float("sliiiiiide scenetestfun", 0);
+}
+
+void Scene::change_scene_freecamworld()
+{
+    change_scene=SCENE_FreeCamWorld;
+}
+void Scene::change_scene_mainmenu()
+{
+    change_scene=SCENE_MainMenu;
+}
+void Scene::exit_game()
+{
+    change_scene=SCENE_ExitGame;
 }
 
 
@@ -88,9 +104,6 @@ void FreeCamWorld::slider_size_fun(double val, double change)
 MainMenu::MainMenu(Settings& settings, GLFWwindow* window, MasterRenderer& masterRenderer):
     Scene(settings, window, new MainMenuInputScheme(settings, window, camera, this), masterRenderer, new UI_MainMenu(settings, this))
 {
-    button_functions["world"] = std::bind(&MainMenu::button_enter_world, this);
-    button_functions["editor"] = std::bind(&MainMenu::button_enter_editor, this);
-    button_functions["exit"] = std::bind(&MainMenu::button_exit, this);
     p_ui->create_ui();
 }
 
@@ -113,17 +126,4 @@ void MainMenu::end_scene()
 void MainMenu::scene_logic(double delta_time)
 {
     camera.ProcessMouseMovement(10*delta_time, 0);
-}
-
-void MainMenu::button_enter_world()
-{
-
-}
-void MainMenu::button_enter_editor()
-{
-
-}
-void MainMenu::button_exit()
-{
-
 }

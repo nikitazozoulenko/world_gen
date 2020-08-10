@@ -116,6 +116,8 @@ void UIRenderer::render_button(UIButton* p_ele, double off_x, double off_y)
     double word_w = lines[0].second;
     double word_h = fontDrawer.get_max_char_h(1.0f);
     fontDrawer.draw(lines[0].first, x + 0.5*(w-word_w), y + 0.5*(h-word_h), 1.0f, glm::vec3(1,1,1));
+    ui_shaderprogram.bind();
+    glBindVertexArray(vao_quad);
 }
 
 // void UIRenderer::render_window(UIWindow* p_ui_window)

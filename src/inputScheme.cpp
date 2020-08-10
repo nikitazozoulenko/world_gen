@@ -16,7 +16,6 @@ InputScheme::InputScheme(Settings& settings, GLFWwindow* window, Camera& camera)
     init_shared_callbacks();
 }
 
-
 void InputScheme::init_shared_callbacks()
 {
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
@@ -221,7 +220,7 @@ void FreeCamWorldInputScheme::processInput(double delta_time)
         }
     }
     if(clicked(GLFW_KEY_L)){
-        change_scene=SCENE_MainMenu;
+        p_scene->change_scene_mainmenu();
     }
     clear_frame_input();
 }
@@ -279,7 +278,7 @@ void MainMenuInputScheme::processInput(double delta_time)
     if (clicked(GLFW_KEY_ESCAPE))
         glfwSetWindowShouldClose(window, true);
     if (clicked(GLFW_KEY_L))
-        change_scene=SCENE_FreeCamWorld;
+        p_scene->change_scene_freecamworld();
     
 
 

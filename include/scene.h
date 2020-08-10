@@ -14,6 +14,9 @@
 #include <unordered_map>
 #include <functional>
 
+#define SCENE_FreeCamWorld  18823
+#define SCENE_MainMenu      24354
+#define SCENE_ExitGame      666
 
 class Scene 
 {
@@ -28,10 +31,17 @@ public:
     Camera camera;
     UI* p_ui;
 
+    //use the unique identifer that each scene has
+    int change_scene=0;
+
     unsigned int frame=0;
     std::unordered_map<std::string, std::function<void(double, double)>> slider_functions;
     std::unordered_map<std::string, std::function<void()>> button_functions;
     void test_slider_fun(double val, double change);
+
+    void change_scene_freecamworld();
+    void change_scene_mainmenu();
+    void exit_game();
 protected:
     Settings& settings;
 private:
@@ -64,9 +74,6 @@ public:
     void scene_logic(double delta_time);
     void end_scene();
 
-    void button_enter_world();
-    void button_enter_editor();
-    void button_exit();
 protected:
 private:
 };
