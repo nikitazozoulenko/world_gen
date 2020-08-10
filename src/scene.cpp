@@ -5,7 +5,7 @@
 //////////// SCENE ///////////////////////////////////////////////////////////
 
 Scene::Scene(Settings& settings, GLFWwindow* window, InputScheme* p_input_scheme, MasterRenderer& masterRenderer, UI* p_ui):
-    camera(Camera()),
+    camera(),
     settings(settings),
     p_input_scheme(p_input_scheme),
     masterRenderer(masterRenderer),
@@ -112,7 +112,7 @@ void MainMenu::end_scene()
 
 void MainMenu::scene_logic(double delta_time)
 {
-    print_float("size", p_ui->elements.size());
+    camera.ProcessMouseMovement(10*delta_time, 0);
 }
 
 void MainMenu::button_enter_world()

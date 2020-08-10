@@ -6,6 +6,7 @@
 
 #include <blockRenderer.h>
 #include <uiRenderer.h>
+#include <skyboxRenderer.h>
 
 #include<vector>
 
@@ -23,6 +24,7 @@ public:
 
     BlockRenderer block_renderer;
     UIRenderer ui_renderer;
+    SkyboxRenderer skybox_renderer;
 private:
 
     Settings& settings;

@@ -6,7 +6,7 @@
 
 UIRenderer::UIRenderer(Settings& settings):
     settings(settings),
-    fontDrawer(FontDrawer(settings, "/home/nikita/Code/world_gen/resources/KratosTrueType.ttf"))
+    fontDrawer(FontDrawer(settings, "/home/nikita/Code/world_gen/resources/Bitter.ttf"))
 {
     createShaders();
     create_quad_vao_vbo();
@@ -105,17 +105,17 @@ void UIRenderer::render_button(UIButton* p_ele, double off_x, double off_y)
     double& w = p_ele->w;
     double& h = p_ele->h;
 
-    std::vector<std::pair<std::string, double>> lines = fontDrawer.split(p_ele->button_text, w, 1.0f);
-    //TODO check for nonempy text
-    double word_w = lines[0].second;
-    fontDrawer.draw(lines[0].first, x + 0.5*(w-word_w), y, 1.0f, glm::vec3(1,1,1));
-    //TODO find out how high the text is to make it centered
-
     ui_shaderprogram.bind();
     glBindVertexArray(vao_quad);
     ui_shaderprogram.setUniformVec4("coords", x/screen_w,y/screen_h,w/screen_w,h/screen_h);
     ui_shaderprogram.setUniformVec3("color", p_ele->color);
     glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    std::vector<std::pair<std::string, double>> lines = fontDrawer.split(p_ele->button_text, w, 1.0f);
+    //TODO check for nonempy text
+    double word_w = lines[0].second;
+    double word_h = fontDrawer.get_max_char_h(1.0f);
+    fontDrawer.draw(lines[0].first, x + 0.5*(w-word_w), y + 0.5*(h-word_h), 1.0f, glm::vec3(1,1,1));
 }
 
 // void UIRenderer::render_window(UIWindow* p_ui_window)

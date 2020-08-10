@@ -3,3 +3,5 @@ sudo apt-get install libglfw3-dev libglfw3 libglm-dev libfreetype6 libfreetype6-
 put glad header file in /usr/include/glad
 
 settings universal access repeat keys
+
+nlohmann/json.hpp something

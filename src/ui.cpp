@@ -162,12 +162,12 @@ void UI_MainMenu::create_ui() //WARNING: need to create p_scene->slider_function
     double off_y = (win_h-n_buttons*h)/(n_buttons+1);
 
     UIButton* p_button_world = new UIButton(settings, off_x, off_y*1+h*0, w, h, button_color, 
-                                "Enter World", p_scene->button_functions.at("world"));
+                                "Exit", p_scene->button_functions.at("exit"));
     elements.push_back(p_button_world);
     UIButton* p_button_editor = new UIButton(settings, off_x, off_y*2+h*1, w, h, button_color, 
                                 "Editor", p_scene->button_functions.at("editor"));
     elements.push_back(p_button_editor);
     UIButton* p_button_exit = new UIButton(settings, off_x, off_y*3+h*2, w, h, button_color, 
-                                "Exit", p_scene->button_functions.at("exit"));
+                                "Create World", p_scene->button_functions.at("world"));
     elements.push_back(p_button_exit);
 }

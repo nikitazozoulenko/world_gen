@@ -6,8 +6,9 @@
 MasterRenderer::MasterRenderer(GLFWwindow* window, Settings& settings) :
     window(window),
     settings(settings),
-    block_renderer(BlockRenderer(settings)),
-    ui_renderer(UIRenderer(settings))
+    block_renderer(settings),
+    ui_renderer(settings),
+    skybox_renderer(settings)
 {
     glEnable(GL_DEPTH_TEST);
     //glEnable(GL_CULL_FACE);
@@ -33,5 +34,6 @@ void MasterRenderer::render_mainmenu(MainMenu* p_scene)
     glClearColor(123/255.0f, 45/255.0f, 67/255.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     ui_renderer.render(p_scene->p_ui);
+    skybox_renderer.render(p_scene->camera);
     glfwSwapBuffers(window);
 }

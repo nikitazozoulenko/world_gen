@@ -8,11 +8,11 @@ Settings::Settings() :
     chunk_width(16),
     chunk_height(100),
     chunk_depth(16),
-    render_distance_chunks(10),
+    render_distance_chunks(30),
     MAX_OCTAVES(8),
-    reach(6),
+    reach(7),
     zNear(0.1),
-    zFar(1000.0)
+    zFar(10000.0)
 {
 
 }

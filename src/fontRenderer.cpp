@@ -27,7 +27,7 @@ void FontDrawer::makeCharacterTextureMap(std::string truetype_file_path)
         std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl;
 
     //font size
-    FT_Set_Pixel_Sizes(face, 0, 48);
+    FT_Set_Pixel_Sizes(face, 0, 36);
 
     //Store each character in std::map
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // Disable byte-alignment restriction
@@ -67,6 +67,7 @@ void FontDrawer::makeCharacterTextureMap(std::string truetype_file_path)
             (unsigned int) face->glyph->advance.x
         };
         character_map.insert(std::pair<char, Character>(c, character));
+        max_char_h = std::max(max_char_h, (float)face->glyph->bitmap_top);
     }
     FT_Done_Face(face);
     FT_Done_FreeType(ft);
@@ -76,6 +77,7 @@ void FontDrawer::makeCharacterTextureMap(std::string truetype_file_path)
 
 void FontDrawer::draw(std::string text, float x, float y, float scale, glm::vec3 color)
 {
+    glDisable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     
@@ -119,6 +121,7 @@ void FontDrawer::draw(std::string text, float x, float y, float scale, glm::vec3
     glBindVertexArray(0);
     glBindTexture(GL_TEXTURE_2D, 0);
     glDisable(GL_BLEND);
+    glEnable(GL_DEPTH_TEST);
 }
 
 
@@ -145,8 +148,9 @@ void FontDrawer::setupCharShader()
 
     char_shaderprogram = Shaderprogram(vertex_path, geometry_path, fragment_path, compute_path);
     char_shaderprogram.bind();
-    glm::mat4 projection = glm::ortho(0.0f, 1280.0f, 0.0f, 720.0f);
+    glm::mat4 projection = glm::ortho(0.0f, (float)settings.getWindowWidth(), 0.0f, (float)settings.getWindowHeight());
     char_shaderprogram.setUniformMat4("projection", projection);
+    char_shaderprogram.setUniformFloat("z", -1);
 }
 
 std::vector<std::pair<std::string, double>> FontDrawer::split(std::string text, double w, float scale)
@@ -171,7 +175,7 @@ std::vector<std::pair<std::string, double>> FontDrawer::split(std::string text, 
     //split into sentence lines
     vector< pair<string, double> > lines;
     int j=0;
-    float space_advance = character_map.at(' ').advance * scale;
+    float space_advance = (character_map.at(' ').advance>>6) * scale;
     float line_len= -space_advance;
     string line="";
     for(int i=0; i<words.size(); i++){
@@ -180,7 +184,7 @@ std::vector<std::pair<std::string, double>> FontDrawer::split(std::string text, 
         string word = words[i].first;
         if(line_len < w){
             line.append(word+' ');
-            if(j==words.size()-1){
+            if(i==words.size()-1){
                 lines.push_back({line, line_len});
             }
             j++;
@@ -195,5 +199,10 @@ std::vector<std::pair<std::string, double>> FontDrawer::split(std::string text, 
             line_len= -space_advance;
         }
     }
+    
     return lines;
+}
+
+float FontDrawer::get_max_char_h(float scale){
+    return max_char_h*scale;
 }

@@ -7,7 +7,7 @@ Program::Program() :
     settings(Settings()),
     window(createWindow(settings)),
     masterRenderer(MasterRenderer(window, settings)),
-    p_scene(createFreeCamWorld()),
+    p_scene(createMainMenu()),
     timer(Timer())
 {
 
