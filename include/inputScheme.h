@@ -89,5 +89,20 @@ private:
 
 
 
+class Editor;
+class EditorInputScheme : public InputScheme
+{
+public:
+    EditorInputScheme(Settings& settings, GLFWwindow* window, Camera& camera, Editor* p_scene);
+    void processInput(double delta_time);
+    void init();
+    void remove();
+private:
+
+    Editor* p_scene;
+};
+
+
+
 
 #endif // INPUT_SCHEME_H

@@ -111,6 +111,7 @@ bool InputScheme::released(int key)
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////// FreeCamWorld InputScheme ////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 FreeCamWorldInputScheme::FreeCamWorldInputScheme(Settings& settings, GLFWwindow* window, Camera& camera, FreeCamWorld* p_scene) :
     InputScheme(settings, window, camera),
     p_scene(p_scene),
@@ -261,6 +262,59 @@ void MainMenuInputScheme::remove()
 
 
 void MainMenuInputScheme::processInput(double delta_time)
+{
+    // ui mouse
+    glfwPollEvents();
+    if(clicked(GLFW_MOUSE_BUTTON_LEFT)){
+        p_scene->p_ui->mouse_click(mouse_x, mouse_y);
+    }
+    if(released(GLFW_MOUSE_BUTTON_LEFT)){
+        p_scene->p_ui->mouse_release();
+    }
+    if(cursor_moved){
+        p_scene->p_ui->process_movement(mouse_x-mouse_old_x, mouse_y-mouse_old_y, mouse_x, mouse_y);
+    }
+
+    //keys
+    if (clicked(GLFW_KEY_ESCAPE))
+        glfwSetWindowShouldClose(window, true);
+    if (clicked(GLFW_KEY_L))
+        p_scene->change_scene_freecamworld();
+    
+
+
+    clear_frame_input();
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////// Editor InputScheme //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+EditorInputScheme::EditorInputScheme(Settings& settings, GLFWwindow* window, Camera& camera, Editor* p_scene) :
+    InputScheme(settings, window, camera),
+    p_scene(p_scene)
+{
+
+}
+
+
+void EditorInputScheme::init()
+{   
+    //cursor
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);//undisable cursor
+    //set user defined pointer for mouse callbacks
+    glfwSetWindowUserPointer(window, this);
+}
+
+
+void EditorInputScheme::remove()
+{
+}
+
+
+void EditorInputScheme::processInput(double delta_time)
 {
     // ui mouse
     glfwPollEvents();

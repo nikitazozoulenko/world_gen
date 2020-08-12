@@ -45,9 +45,10 @@ double UIElement::getGlobalY()
 
 ////////////////////////////////////////////////
 
-UIFrame::UIFrame(Settings& settings, double x0, double y0, double w, double h, glm::vec3 color, bool moveable, UIElement* p_parent):
-    UIElement(settings, x0, y0, w, h, color, p_parent, "frame"),
-    moveable(true)
+UIFrame::UIFrame(Settings& settings, double x0, double y0, double w, double h, glm::vec3 color, bool moveable, 
+        UIElement* p_parent, std::string type):
+    UIElement(settings, x0, y0, w, h, color, p_parent, type),
+    moveable(moveable)
 {
 
 }
@@ -81,13 +82,30 @@ void UIFrame::process_movement(double xoff, double yoff, double x, double y)
     }
 }
 
+////////////////////////////////////////////////
+
+UIEditorFrame::UIEditorFrame(Settings& settings, double x0, double y0, double w, double h, glm::vec3 color, bool moveable, 
+        UIElement* p_parent, std::string type):
+    UIFrame(settings, x0, y0, w, h, color, moveable, p_parent, type)
+{
+}
+
+void UIEditorFrame::scroll_move_win(double val, double change)
+{
+    for(auto p_child : children){
+        if(p_child->type!="yslider"){
+            p_child->y0 += change;
+        }
+    }
+}
+
 
 ////////////////////////////////////////////////
 
 
 UISlider::UISlider(Settings& settings, double x0, double y0, double w, double h, glm::vec3 color, double tick_w, double line_h, 
-        double min, double max, std::function<void(double, double)>& fun, UIElement* p_parent):
-    UIElement(settings, x0, y0, w, h, color, p_parent, "slider"), 
+        double min, double max, std::function<void(double, double)>& fun, UIElement* p_parent, std::string type):
+    UIElement(settings, x0, y0, w, h, color, p_parent, type), 
     tick_w(tick_w), line_h(line_h), min(min), max(max), fun(fun),
     value((max+min)/2.0),
     tick_held_down(false),
@@ -129,7 +147,6 @@ void UISlider::mouse_click(double& x, double& y)
     if(tick_x0 < x && x < tick_x0+tick_w && tick_y0 < y && y < tick_y0+tick_h)
     {
         tick_held_down=true;
-        double c_val_norm = (value-min)/(max-min);
         tick_x0_at_click = x0_at_click + c_val_norm*(w-tick_w);
     }//if on line
     else if(line_x0 < x && x < line_x0+line_w && line_y0 < y && y < line_y0+line_h)
@@ -161,9 +178,84 @@ void UISlider::process_movement(double xoff, double yoff, double x, double y)
 ////////////////////////////////////////////////
 
 
-UIButton::UIButton(Settings& settings, double x0, double y0, double w, double h, glm::vec3 color, 
-                std::string button_text, std::function<void()>& fun, UIElement* p_parent):
-    UIElement(settings, x0, y0, w, h, color, p_parent, "button"), 
+UIYSlider::UIYSlider(Settings& settings, double x0, double y0, double w, double h, glm::vec3 color, double tick_h, double line_w,
+        double min, double max, std::function<void(double, double)>& fun, UIElement* p_parent, std::string type):
+    UIElement(settings, x0, y0, w, h, color, p_parent, type), 
+    tick_h(tick_h), line_w(line_w), min(min), max(max), fun(fun),
+    value((max+min)/2.0),
+    tick_held_down(false),
+    line_clicked(false)
+{
+}
+
+UIYSlider::~UIYSlider()
+{
+}
+
+void UIYSlider::change_slider_val(double x, double y)
+{
+    double temp_val = value;
+
+    //clamp = std::min( maxval, std::max(minval, val) );
+    double minval = y_click-tick_y0_at_click;
+    double maxval = h-(tick_y0_at_click+tick_h-y_click);
+    double Y0=std::min(maxval - minval, std::max(0.0, y - y0_at_click - minval));
+    value = Y0*(max-min)/(maxval-minval) + min;
+
+    if( value!=temp_val ){
+        fun(value, temp_val-value);
+    }
+}
+
+void UIYSlider::mouse_click(double& x, double& y)
+{
+    double c_val_norm = (value-min)/(max-min);
+    double tick_y0 = y0_at_click + c_val_norm*(h-tick_h);
+    double& tick_x0 = x0_at_click;
+    double& tick_w = w;
+
+    double& line_y0 = y0_at_click;
+    double line_x0 = x0_at_click + 0.5*(w - line_w);
+    double& line_h = h;
+
+    //if on slider tick
+    if(tick_x0 < x && x < tick_x0+tick_w && tick_y0 < y && y < tick_y0+tick_h)
+    {
+        tick_held_down=true;
+        tick_y0_at_click = y0_at_click + c_val_norm*(h-tick_h);
+    }//if on line
+    else if(line_x0 < x && x < line_x0+line_w && line_y0 < y && y < line_y0+line_h)
+    {
+        line_clicked=true;
+        y_click = tick_y0_at_click + tick_h/2;
+        change_slider_val(x, y);
+        tick_held_down=true;
+    }
+}
+void UIYSlider::mouse_release()
+{
+    tick_held_down=false;
+    line_clicked=false;
+}
+void UIYSlider::process_movement(double xoff, double yoff, double x, double y)
+{
+    if(tick_held_down){
+        change_slider_val(x,y);
+    }
+    else if(!line_clicked){
+        p_parent->process_movement(xoff, yoff, x, y);
+    }
+}
+
+
+
+
+////////////////////////////////////////////////
+
+
+UIButton::UIButton(Settings& settings, double x0, double y0, double w, double h, glm::vec3 color, std::string button_text, 
+            std::function<void()>& fun,  UIElement* p_parent, std::string type):
+    UIElement(settings, x0, y0, w, h, color, p_parent, type), 
     button_text(button_text), fun(fun)
 {
 }

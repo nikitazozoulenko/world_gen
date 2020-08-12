@@ -17,6 +17,7 @@
 #define SCENE_FreeCamWorld  18823
 #define SCENE_MainMenu      24354
 #define SCENE_ExitGame      666
+#define SCENE_Editor        54321
 
 class Scene 
 {
@@ -41,6 +42,7 @@ public:
 
     void change_scene_freecamworld();
     void change_scene_mainmenu();
+    void change_scene_editor();
     void exit_game();
 protected:
     Settings& settings;
@@ -77,6 +79,21 @@ public:
 protected:
 private:
 };
+
+
+class Editor: public Scene
+{
+public:
+    Editor(Settings& settings, GLFWwindow* window, MasterRenderer& masterRenderer);
+    ~Editor();
+    void render();
+    void scene_logic(double delta_time);
+    void end_scene();
+
+protected:
+private:
+};
+
 
 
 #endif // SCENE_LIKE_AN_OPTIONS_MENU_H

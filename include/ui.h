@@ -59,4 +59,21 @@ private:
 };
 
 
+
+class Editor;
+
+class UI_Editor: public UI
+{
+public:
+    UI_Editor(Settings& settings, Editor* p_scene);
+    ~UI_Editor();
+    void create_ui();
+
+    int win_per_row;
+    double total_h; //of frame
+protected:
+private:
+};
+
+
 #endif // WORLDGEN_NIKITA_UI_H

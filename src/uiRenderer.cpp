@@ -35,8 +35,12 @@ void UIRenderer::render_element(UIElement* p_ele, double off_x, double off_y)
 {
     if(p_ele->type=="frame")
         render_frame(static_cast<UIFrame*>(p_ele), off_x, off_y);
-    else if(p_ele->type=="slider")
+    else if(p_ele->type=="editorframe")
+        render_editorframe(static_cast<UIFrame*>(p_ele), off_x, off_y);
+    else if(p_ele->type=="xslider")
         render_slider(static_cast<UISlider*>(p_ele), off_x, off_y);
+    else if(p_ele->type=="yslider")
+        render_y_slider(static_cast<UIYSlider*>(p_ele), off_x, off_y);
     else if(p_ele->type=="button")
         render_button(static_cast<UIButton*>(p_ele), off_x, off_y);
     else
@@ -62,6 +66,36 @@ void UIRenderer::render_frame(UIFrame* p_ele, double off_x, double off_y)
     glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
+void UIRenderer::render_editorframe(UIFrame* p_ele, double off_x, double off_y)
+{
+    glEnable(GL_STENCIL_TEST);
+    glStencilFunc(GL_ALWAYS, 1, 0xFF); // Set any stencil to 1
+    glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+    glStencilMask(0xFF); // Write to stencil buffer
+    glDepthMask(GL_FALSE); // Don't write to depth buffer
+    glClear(GL_STENCIL_BUFFER_BIT); // Clear stencil buffer (0 by default)
+
+    //window
+    double screen_w = settings.getWindowWidth();
+    double screen_h = settings.getWindowHeight();
+    double x = off_x+p_ele->x0;
+    double y = off_y+p_ele->y0;
+    double& w = p_ele->w;
+    double& h = p_ele->h;
+
+    glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+    ui_shaderprogram.setUniformVec4("coords", x/screen_w,y/screen_h,w/screen_w,h/screen_h);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE,GL_TRUE);
+
+    glStencilFunc(GL_EQUAL, 1, 0xFF); // Pass test if stencil value is 1
+    glStencilMask(0x00); // Don't write anything to stencil buffer
+    glDepthMask(GL_TRUE); // Write to depth buffer
+
+    render_frame(p_ele, off_x, off_y);
+    glDisable(GL_STENCIL_TEST);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+}
 
 void UIRenderer::render_slider(UISlider* p_ele, double off_x, double off_y)
 {
@@ -96,6 +130,39 @@ void UIRenderer::render_slider(UISlider* p_ele, double off_x, double off_y)
 }
 
 
+void UIRenderer::render_y_slider(UIYSlider* p_ele, double off_x, double off_y)
+{
+    double& x0 = p_ele->x0;
+    double& y0 = p_ele->y0;
+    double& w = p_ele->w;
+    double& h = p_ele->h;
+    double& tick_h = p_ele->tick_h;
+    double& line_w = p_ele->line_w;
+    double& min = p_ele->min;
+    double& max = p_ele->max;
+    double& value = p_ele->value;
+    double screen_w = settings.getWindowWidth();
+    double screen_h = settings.getWindowHeight();
+
+    //tick
+    double c_val_norm = (value-min)/(max-min);
+    double tick_x0 = (off_x + x0);
+    double tick_y0 = (off_y + y0 +c_val_norm*(h-tick_h));
+    double& tick_w = w;
+    ui_shaderprogram.setUniformVec4("coords", tick_x0/screen_w, tick_y0/screen_h, tick_w/screen_w, tick_h/screen_h);
+    ui_shaderprogram.setUniformVec3("color", p_ele->color*0.5f);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    //line
+    double line_x0 = (off_x +x0 + 0.5*(w - line_w));
+    double line_y0 = (off_y + y0);
+    double& line_h = h;
+    ui_shaderprogram.setUniformVec4("coords", line_x0/screen_w, line_y0/screen_h, line_w/screen_w, line_h/screen_h);
+    ui_shaderprogram.setUniformVec3("color", p_ele->color*0.75f);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+}
+
+
 void UIRenderer::render_button(UIButton* p_ele, double off_x, double off_y)
 {
     double screen_w = settings.getWindowWidth();
@@ -120,57 +187,6 @@ void UIRenderer::render_button(UIButton* p_ele, double off_x, double off_y)
     glBindVertexArray(vao_quad);
 }
 
-// void UIRenderer::render_window(UIWindow* p_ui_window)
-// {
-//     for(auto& slider : p_ui_window->sliders){
-//         render_window_slider(slider, p_ui_window);
-//     }
-//     //window
-//     double screen_w = settings.getWindowWidth();
-//     double screen_h = settings.getWindowHeight();
-//     double x = p_ui_window->x0/screen_w;
-//     double y = p_ui_window->y0/screen_h;
-//     double w = p_ui_window->w/screen_w;
-//     double h = p_ui_window->h/screen_h;
-//     ui_shaderprogram.setUniformVec4("coords", x,y,w,h);
-//     ui_shaderprogram.setUniformVec3("color", p_ui_window->color);
-//     glDrawArrays(GL_TRIANGLES, 0, 6);
-// }
-
-
-
-// void UIRenderer::render_window_slider(UISlider& slider, UIWindow* p_ui_window)
-// {   //sizes in pixels
-//     double& win_x0 = p_ui_window->x0;
-//     double& win_y0 = p_ui_window->y0;
-//     double& win_w = p_ui_window->w;
-//     double& win_h = p_ui_window->h;
-//     glm::vec3& color = p_ui_window->color;
-//     double& min = slider.min;
-//     double& max = slider.max;
-//     double& value = slider.value;
-//     double screen_w = settings.getWindowWidth();
-//     double screen_h = settings.getWindowHeight();
-
-//     //tick
-//     double c_val_norm = (value-min)/(max-min);
-//     double tick_x0 = (win_x0 + slider.x0 + c_val_norm*(slider.w-slider.tick_w)) / screen_w;
-//     double tick_y0 = (win_y0 + slider.y0)/screen_h;
-//     double tick_w = slider.tick_w/screen_w;
-//     double tick_h = slider.h/screen_h;
-//     ui_shaderprogram.setUniformVec4("coords", tick_x0, tick_y0, tick_w, tick_h);
-//     ui_shaderprogram.setUniformVec3("color", color*0.5f);
-//     glDrawArrays(GL_TRIANGLES, 0, 6);
-
-//     //line
-//     double line_x0 = (win_x0 + slider.x0)/screen_w;
-//     double line_y0 = (win_y0 + slider.y0 + 0.5*(slider.h - slider.line_h)) / screen_h;
-//     double line_w = slider.w/screen_w;
-//     double line_h = slider.line_h/screen_h;
-//     ui_shaderprogram.setUniformVec4("coords", line_x0, line_y0, line_w, line_h);
-//     ui_shaderprogram.setUniformVec3("color", color*0.75f);
-//     glDrawArrays(GL_TRIANGLES, 0, 6);
-// }
 
 
 

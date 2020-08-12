@@ -7,7 +7,7 @@ Program::Program() :
     settings(Settings()),
     window(createWindow(settings)),
     masterRenderer(MasterRenderer(window, settings)),
-    p_scene(createMainMenu()),
+    p_scene(new MainMenu(settings, window, masterRenderer)),
     timer(Timer())
 {
 
@@ -64,18 +64,6 @@ GLFWwindow* Program::createWindow(Settings& settings)
 }
 
 
-FreeCamWorld* Program::createFreeCamWorld()
-{
-    return new FreeCamWorld(settings, window, masterRenderer);
-}
-
-
-MainMenu* Program::createMainMenu()
-{
-    return new MainMenu(settings, window, masterRenderer);
-}
-
-
 void Program::changeSceneIfNeeded()
 {
     int& change_scene = p_scene->change_scene;
@@ -83,12 +71,17 @@ void Program::changeSceneIfNeeded()
     {
         p_scene->p_input_scheme->remove();
         delete p_scene;
-        if(change_scene == SCENE_ExitGame)
+        if(change_scene == SCENE_ExitGame){
+            glfwSetWindowShouldClose(window, true);
+            p_scene=nullptr;
             return;
+        }
         else if(change_scene == SCENE_MainMenu)
-            p_scene = createMainMenu();
+            p_scene = new MainMenu(settings, window, masterRenderer);
         else if(change_scene == SCENE_FreeCamWorld)
-            p_scene = createFreeCamWorld();
+            p_scene = new FreeCamWorld(settings, window, masterRenderer);
+        else if(change_scene == SCENE_Editor)
+            p_scene = new Editor(settings, window, masterRenderer);
         p_scene->p_input_scheme->init();
     }
 }
@@ -103,11 +96,13 @@ void Program::run()
         changeSceneIfNeeded();
         // per-frame time logic
         float delta_time = timer.update_delta_time();
-        p_scene->p_input_scheme->processInput(delta_time);
-        p_scene->scene_logic(delta_time);
-        //render
-        p_scene->render();
-        p_scene->frame +=1;
+        if(p_scene){
+            p_scene->p_input_scheme->processInput(delta_time);
+            p_scene->scene_logic(delta_time);
+            //render
+            p_scene->render();
+            p_scene->frame +=1;
+        }
     }
     p_scene->p_input_scheme->remove();
     delete p_scene;

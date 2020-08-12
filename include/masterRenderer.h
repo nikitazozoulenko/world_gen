@@ -18,6 +18,7 @@ public:
     MasterRenderer(GLFWwindow* window, Settings& settings);
     void render_freecamworld(FreeCamWorld* p_scene);
     void render_mainmenu(MainMenu* p_scene);
+    void render_editor(Editor* p_scene);
 
     //TODO: remove from public, should be private
     GLFWwindow* window;

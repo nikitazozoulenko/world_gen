@@ -2,6 +2,7 @@
 
 #include <ui.h>
 #include <scene.h>
+#include <misc.h>
 
 
 UI::UI(Settings& settings, Scene* p_scene) : settings(settings), p_scene(p_scene), p_clicked_ele(nullptr)
@@ -165,9 +166,82 @@ void UI_MainMenu::create_ui() //WARNING: need to create p_scene->slider_function
                                 "Exit", p_scene->button_functions.at("exit"));
     elements.push_back(p_button_world);
     UIButton* p_button_editor = new UIButton(settings, off_x, off_y*2+h*1, w, h, button_color, 
-                                "Editor", p_scene->button_functions.at("freecamworld"));
+                                "Editor", p_scene->button_functions.at("editor"));
     elements.push_back(p_button_editor);
     UIButton* p_button_exit = new UIButton(settings, off_x, off_y*3+h*2, w, h, button_color, 
                                 "Create World", p_scene->button_functions.at("freecamworld"));
     elements.push_back(p_button_exit);
+}
+
+
+
+// ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// ///////////////////////////////////////////////////////////// Editor //////////////////////////////////////////////////////////////////
+// ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+UI_Editor::UI_Editor(Settings& settings, Editor* p_scene) : 
+    UI(settings, p_scene), 
+    win_per_row(3)
+{
+}
+UI_Editor::~UI_Editor()
+{
+}
+
+void UI_Editor::create_ui() //WARNING: need to create p_scene->slider_functions first
+{
+    int n_buttons=1;
+    double screen_w = settings.getWindowWidth();
+    double screen_h = settings.getWindowHeight();
+    double frame_w =screen_w-150; //1130
+    double frame_h =screen_h-150; //570
+    double frame_x = (screen_w-frame_w)/2.0;
+    double frame_y = (screen_h-n_buttons*frame_h)/(n_buttons+1);
+
+    UIEditorFrame* p_frame = new UIEditorFrame(settings, frame_x, frame_y, frame_w, frame_h, glm::vec3(2/255.0, 33/255.0, 44/255.0), 
+                                    false, nullptr, "editorframe");
+    elements.push_back(p_frame);
+
+    //slider
+    double slider_space =20;
+    double tick_w=70;
+    double tick_h=40; // this depends on how many windows
+    double line_w=20;
+    double line_h=frame_h-2*slider_space;
+
+    //windows
+    double window_space = 45;
+    double win_ratio = 3.0/4.0;
+    double win_w = (frame_w - (slider_space + tick_w + slider_space + (win_per_row-1)*window_space + slider_space))/win_per_row;
+    double win_h = win_w*win_ratio;
+
+
+
+    double win_start_x = slider_space + tick_w + slider_space;
+    double win_start_y = frame_h - win_h - slider_space;
+    double win_off_x = win_w+window_space;
+    double win_off_y = -win_h-window_space;
+    glm::vec3 win_color(200/255.0, 200/255.0, 2/255.0);
+
+    int n_windows = 8;
+    for(int i=0; i<n_windows; i++)
+    {
+        int row = i/win_per_row;
+        int col = i%win_per_row;
+        new UIFrame(settings, win_start_x+col*win_off_x, win_start_y+row*win_off_y, win_w, win_h, win_color, true, p_frame);
+    }
+
+    
+    total_h = 2*slider_space-window_space + -(std::ceil(n_windows/(double)win_per_row)*win_off_y);
+    total_h = std::max(frame_h, total_h);
+    std::function<void(double, double)> slider_fun= std::bind(&UIEditorFrame::scroll_move_win, p_frame,std::placeholders::_1, std::placeholders::_2);
+    UIYSlider* p_slider = new UIYSlider(settings, slider_space, slider_space, tick_w, line_h, glm::vec3(54/255.0, 222/255.0, 99/255.0), 
+                                       tick_h, line_w, 0, total_h-frame_h, 
+                                       slider_fun, 
+                                       p_frame);
+    p_slider->value=p_slider->max;
+
+
+
 }

@@ -33,8 +33,6 @@ private:
     // Current Scene, game world may be included in scene
     Scene* p_scene;
     void changeSceneIfNeeded();
-    FreeCamWorld* createFreeCamWorld();
-    MainMenu* createMainMenu();
 
     //For delta_time, other
     Timer timer;

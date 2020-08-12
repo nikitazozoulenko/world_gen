@@ -47,7 +47,8 @@ private:
 class UIFrame : public UIElement
 {
 public:
-    UIFrame(Settings& settings, double x0, double y0, double w, double h, glm::vec3 color, bool moveable, UIElement* p_parent=nullptr);
+    UIFrame(Settings& settings, double x0, double y0, double w, double h, glm::vec3 color, bool moveable, 
+        UIElement* p_parent=nullptr, std::string type="frame");
     ~UIFrame();
     void mouse_click(double& x, double& y);
     void mouse_release();
@@ -57,11 +58,20 @@ public:
 private:
 };
 
+class UIEditorFrame : public UIFrame
+{
+public:
+    UIEditorFrame(Settings& settings, double x0, double y0, double w, double h, glm::vec3 color, bool moveable, 
+        UIElement* p_parent=nullptr, std::string type="editorframe");
+    void scroll_move_win(double val, double change);
+};
+
+
 class UISlider : public UIElement
 {
 public:
     UISlider(Settings& settings, double x0, double y0, double w, double h, glm::vec3 color, double tick_w, double line_h, 
-        double min, double max, std::function<void(double, double)>& fun, UIElement* p_parent=nullptr);
+        double min, double max, std::function<void(double, double)>& fun, UIElement* p_parent=nullptr, std::string type="slider");
     ~UISlider();
     void mouse_click(double& x, double& y);
     void mouse_release();
@@ -86,10 +96,40 @@ private:
 };
 
 
+class UIYSlider : public UIElement
+{
+public:
+    UIYSlider(Settings& settings, double x0, double y0, double w, double h, glm::vec3 color, double tick_h, double line_w,
+        double min, double max, std::function<void(double, double)>& fun, UIElement* p_parent=nullptr, std::string type="yslider");
+    ~UIYSlider();
+    void mouse_click(double& x, double& y);
+    void mouse_release();
+    void process_movement(double xoff, double yoff, double x, double y);
+
+    void change_slider_val(double x, double y);
+
+    // sizes in pixels
+    double line_w;
+    double tick_h;
+
+    //other
+    double min;
+    double max;
+    double value;
+    std::function<void(double, double)> fun;
+    bool tick_held_down;
+    bool line_clicked;
+    double tick_y0_at_click;
+
+private:
+};
+
+
 class UIButton : public UIElement
 {
 public:
-    UIButton(Settings& settings, double x0, double y0, double w, double h, glm::vec3 color, std::string button_text, std::function<void()>& fun, UIElement* p_parent=nullptr);
+    UIButton(Settings& settings, double x0, double y0, double w, double h, glm::vec3 color, std::string button_text, 
+            std::function<void()>& fun, UIElement* p_parent=nullptr, std::string type="button");
     ~UIButton();
     void mouse_click(double& x, double& y);
     void mouse_release();

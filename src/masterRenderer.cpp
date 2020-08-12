@@ -37,3 +37,12 @@ void MasterRenderer::render_mainmenu(MainMenu* p_scene)
     skybox_renderer.render(p_scene->camera);
     glfwSwapBuffers(window);
 }
+
+void MasterRenderer::render_editor(Editor* p_scene)
+{
+    glClearColor(123/255.0f, 45/255.0f, 67/255.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    ui_renderer.render(p_scene->p_ui);
+    skybox_renderer.render(p_scene->camera);
+    glfwSwapBuffers(window);
+}
