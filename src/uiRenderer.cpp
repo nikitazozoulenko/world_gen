@@ -37,7 +37,7 @@ void UIRenderer::render_element(UIElement* p_ele, double off_x, double off_y)
         render_frame(static_cast<UIFrame*>(p_ele), off_x, off_y);
     else if(p_ele->type=="editorframe")
         render_editorframe(static_cast<UIFrame*>(p_ele), off_x, off_y);
-    else if(p_ele->type=="xslider")
+    else if(p_ele->type=="slider")
         render_slider(static_cast<UISlider*>(p_ele), off_x, off_y);
     else if(p_ele->type=="yslider")
         render_y_slider(static_cast<UIYSlider*>(p_ele), off_x, off_y);
