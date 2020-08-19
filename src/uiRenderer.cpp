@@ -16,7 +16,6 @@ UIRenderer::UIRenderer(Settings& settings):
 
 void UIRenderer::render(UI* p_ui)
 {
-    print_float("render ui", 0);
     //bind shaders
     ui_shaderprogram.bind();
     glBindVertexArray(vao_quad);

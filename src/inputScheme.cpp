@@ -59,7 +59,7 @@ void InputScheme::cursor_pos_callback(GLFWwindow* window, double xpos, double yp
 void InputScheme::key_map_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     InputScheme* p_input_scheme = (InputScheme*)glfwGetWindowUserPointer(window);
-    p_input_scheme->key_map[key]=(bool)action;
+    p_input_scheme->key_map[key]=action;
 }
 
 
@@ -67,7 +67,7 @@ void InputScheme::key_map_callback(GLFWwindow* window, int key, int scancode, in
 void InputScheme::mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
     InputScheme* p_input_scheme = (InputScheme*)glfwGetWindowUserPointer(window);
-    p_input_scheme->key_map[button]=(bool)action;
+    p_input_scheme->key_map[button]=action;
 }
 
 
@@ -87,7 +87,9 @@ bool InputScheme::clicked(int key)
     bool found = false;
     auto search = key_map.find(key);
     if(search != key_map.end())
+    {
         found = (search->second == GLFW_PRESS);
+    }
     return found;
 }
 bool InputScheme::held(int key)
@@ -220,9 +222,6 @@ void FreeCamWorldInputScheme::processInput(double delta_time)
             start_CAMMOVE_mode();
         }
     }
-    if(clicked(GLFW_KEY_L)){
-        p_scene->change_scene_mainmenu();
-    }
     clear_frame_input();
 }
 
@@ -278,8 +277,6 @@ void MainMenuInputScheme::processInput(double delta_time)
     //keys
     if (clicked(GLFW_KEY_ESCAPE))
         glfwSetWindowShouldClose(window, true);
-    if (clicked(GLFW_KEY_L))
-        p_scene->change_scene_freecamworld();
     
 
 
@@ -287,9 +284,9 @@ void MainMenuInputScheme::processInput(double delta_time)
 }
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////// Editor InputScheme //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 EditorInputScheme::EditorInputScheme(Settings& settings, GLFWwindow* window, Camera& camera, Editor* p_scene) :
@@ -331,8 +328,6 @@ void EditorInputScheme::processInput(double delta_time)
     //keys
     if (clicked(GLFW_KEY_ESCAPE))
         glfwSetWindowShouldClose(window, true);
-    if (clicked(GLFW_KEY_L))
-        p_scene->change_scene_freecamworld();
     
 
 

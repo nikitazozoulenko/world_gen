@@ -31,7 +31,7 @@ protected:
     bool firstmouse = true;
 
     //only contains info if clicked this frame. has to be cleared every frame
-    std::unordered_map<int, bool> key_map;
+    std::unordered_map<int, int> key_map;
 
     bool clicked(int key);
     bool held(int key);
