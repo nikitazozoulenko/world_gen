@@ -54,6 +54,10 @@ public:
     UI_FreeCamWorld(Settings& settings, FreeCamWorld* p_scene);
     ~UI_FreeCamWorld();
     void create_ui();
+    void create_itempick();
+
+    UIElement* p_itempick_base;
+    UIElement* p_escapemenu;
 protected:
 private:
 };
@@ -70,7 +74,6 @@ public:
     void create_ui();
 
     int win_per_row;
-    double total_h; //of frame
 protected:
 private:
 };

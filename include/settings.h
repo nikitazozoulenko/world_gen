@@ -29,6 +29,11 @@ public:
 
     float zNear;
     float zFar;
+
+    int hotbar_size;
+    int inventory_size;
+    int inv_row_size;
+    int inv_col_size;
 protected:
 private:
     int width;

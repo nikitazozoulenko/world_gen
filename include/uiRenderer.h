@@ -23,7 +23,8 @@ public:
 
     void render_element(UIElement* p_ele, double off_x, double off_y);
     void render_frame(UIFrame* p_ele, double off_x, double off_y);
-    void render_editorframe(UIFrame* p_ele, double off_x, double off_y);
+    void render_invis(UIInvis* p_ele, double off_x, double off_y);
+    void render_scrollframe(UIScrollFrame* p_ele, double off_x, double off_y);
     void render_slider(UISlider* p_ele, double off_x, double off_y);
     void render_y_slider(UIYSlider* p_ele, double off_x, double off_y);
     void render_button(UIButton* p_ele, double off_x, double off_y);

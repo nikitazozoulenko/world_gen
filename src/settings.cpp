@@ -12,7 +12,10 @@ Settings::Settings() :
     MAX_OCTAVES(8),
     reach(7),
     zNear(0.1),
-    zFar(10000.0)
+    zFar(10000.0),
+    hotbar_size(10),
+    inv_row_size(8),
+    inv_col_size(3)
 {
 
 }

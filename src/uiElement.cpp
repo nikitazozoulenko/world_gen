@@ -80,22 +80,34 @@ void UIFrame::process_movement(double xoff, double yoff, double x, double y)
         x0=std::min(W-(x0_at_click+w-x_click), std::max(x_click-x0_at_click, x-OFFX)) - x_click+x0_at_click;
         y0=std::min(H-(y0_at_click+h-y_click), std::max(y_click-y0_at_click, y-OFFY)) - y_click+y0_at_click;
     }
+    else if(p_parent){
+        p_parent->process_movement(xoff, yoff, x, y);
+    }
+}
+
+
+////////////////////////////////////////////////
+
+
+UIInvis::UIInvis(Settings& settings, double x0, double y0, double w, double h, bool moveable, UIElement* p_parent, std::string type):
+    UIFrame(settings, x0, y0, w, h, {0,0,0}, moveable, p_parent, type)
+{
 }
 
 ////////////////////////////////////////////////
 
-UIEditorFrame::UIEditorFrame(Settings& settings, double x0, double y0, double w, double h, glm::vec3 color, bool moveable, 
-        UIElement* p_parent, std::string type):
-    UIFrame(settings, x0, y0, w, h, color, moveable, p_parent, type)
+UIScrollFrame::UIScrollFrame(Settings& settings, double x0, double y0, double w, double h, glm::vec3 color, bool moveable, 
+        UIElement* p_parent, std::string
+         type):
+    UIFrame(settings, x0, y0, w, h, color, moveable, p_parent, type),
+    total_h(0)
 {
 }
 
-void UIEditorFrame::scroll_move_win(double val, double change)
+void UIScrollFrame::scroll_move_win(double val, double change)
 {
     for(auto p_child : children){
-        if(p_child->type!="yslider"){
-            p_child->y0 += change;
-        }
+        p_child->y0 += change;
     }
 }
 

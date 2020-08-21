@@ -49,21 +49,30 @@ class UIFrame : public UIElement
 public:
     UIFrame(Settings& settings, double x0, double y0, double w, double h, glm::vec3 color, bool moveable, 
         UIElement* p_parent=nullptr, std::string type="frame");
-    ~UIFrame();
-    void mouse_click(double& x, double& y);
-    void mouse_release();
-    void process_movement(double xoff, double yoff, double x, double y);
+    virtual ~UIFrame();
+    virtual void mouse_click(double& x, double& y);
+    virtual void mouse_release();
+    virtual void process_movement(double xoff, double yoff, double x, double y);
 
     bool moveable;
 private:
 };
 
-class UIEditorFrame : public UIFrame
+class UIInvis : public UIFrame
 {
 public:
-    UIEditorFrame(Settings& settings, double x0, double y0, double w, double h, glm::vec3 color, bool moveable, 
-        UIElement* p_parent=nullptr, std::string type="editorframe");
+    UIInvis(Settings& settings, double x0, double y0, double w, double h, bool moveable, 
+        UIElement* p_parent=nullptr, std::string type="invis");
+private:
+};
+
+class UIScrollFrame : public UIFrame
+{
+public:
+    UIScrollFrame(Settings& settings, double x0, double y0, double w, double h, glm::vec3 color, bool moveable,
+        UIElement* p_parent=nullptr, std::string type="scrollframe");
     void scroll_move_win(double val, double change);
+    double total_h;
 };
 
 

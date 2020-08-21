@@ -97,7 +97,7 @@ void UI::process_movement(double xoff, double yoff, double x, double y)
 ///////////////////////////////////////////////////////////// FreeCamWorld //////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-UI_FreeCamWorld::UI_FreeCamWorld(Settings& settings, FreeCamWorld* p_scene) : UI(settings, p_scene)
+UI_FreeCamWorld::UI_FreeCamWorld(Settings& settings, FreeCamWorld* p_scene) : UI(settings, p_scene), p_itempick_base(nullptr), p_escapemenu(nullptr)
 {
 }
 UI_FreeCamWorld::~UI_FreeCamWorld()
@@ -129,14 +129,71 @@ void UI_FreeCamWorld::create_ui() //WARNING: need to create p_scene->slider_func
     UIButton* p_child2 = new UIButton(settings, off_x, off_y*2+h, w, h, glm::vec3(66/255.0, 66/255.0, 66/255.0),
                                         "Menu", p_scene->button_functions.at("mainmenu"), p_frame);
 
-    // UIFrame* p_child1 = new UIFrame(settings, 50, 50, 200, 200, 0.75f*glm::vec3(54/255.0, 54/255.0, 99/255.0), true, p_frame);
-    // UIFrame* p_child2 = new UIFrame(settings, 25, 25, 150, 150, 0.5f*glm::vec3(54/255.0, 54/255.0, 99/255.0), true, p_child1);
 
     //cursor fake
     UIFrame* p_cursor = new UIFrame(settings, 1280/2-1, 720/2-1, 2, 2, glm::vec3(1,1,1), true);
     elements.push_back(p_cursor);
+
+    create_itempick();
 }
 
+
+void UI_FreeCamWorld::create_itempick()
+{
+    //start options
+    double hotbar_item_size = 50;
+    double hotbar_space_to_edges = 10;
+    double hotbar_item_space = 30;
+    double space_between_frame_hotbar = 40; //between hotbar and select
+    double frame_space = 20;
+    double slider_w = 30;
+    double search_w = 100;
+    double search_h = 40;
+    glm::vec3 search_col(0.3, 0.3, 0.3);
+    glm::vec3 frame_col(0.4, 0.4, 0.4);
+    glm::vec3 select_col(0.5, 0.5, 0.5);
+    glm::vec3 item_color(200/255.0, 200/255.0, 2/255.0);
+    glm::vec3 slider_col(0.6, 0.6, 0.6);
+    int n_hotbar_items = settings.hotbar_size;
+    int n_select_row_size = settings.inv_row_size;
+    int n_select_col_size = settings.inv_col_size;
+
+    //base=frame+hotbar
+    double base_w = (n_hotbar_items-1)*hotbar_item_space + n_hotbar_items*hotbar_item_size + 2*hotbar_space_to_edges;
+    double hotbar_h = hotbar_item_size + 2*hotbar_space_to_edges;
+    double select_item_size = (base_w-((4+n_select_row_size)*frame_space + slider_w))/(double)n_select_row_size;
+    double slider_h = n_select_col_size*(frame_space + select_item_size) + frame_space;
+    double frame_h = 3*frame_space + slider_h + search_h;
+    UIInvis* p_itempick_base = new UIInvis(settings, 0, 0, base_w, hotbar_h+space_between_frame_hotbar+frame_h, true);
+    elements.push_back(p_itempick_base);
+    UIFrame* p_hotbar = new UIFrame(settings, 0, 0, base_w, hotbar_h, frame_col, true, p_itempick_base);
+    UIFrame* p_frame = new UIFrame(settings, 0, hotbar_h+space_between_frame_hotbar, base_w, frame_h, frame_col, true, p_itempick_base);
+
+    //select
+    UIScrollFrame* p_select = new UIScrollFrame(settings, 2*frame_space+slider_w, frame_space, base_w-(3*frame_space+slider_w), slider_h, select_col, true, p_frame);
+    double item_start_x = frame_space;
+    double item_start_y = slider_h - select_item_size - frame_space;
+    double item_off_x = select_item_size+frame_space;
+    double item_off_y = -select_item_size-frame_space;
+    int n_windows = n_select_row_size * n_select_col_size*3;
+    for(int i=0; i<n_windows; i++)
+    {
+        int row = i/n_select_row_size;
+        int col = i%n_select_row_size;
+        new UIFrame(settings, item_start_x+col*item_off_x, item_start_y+row*item_off_y, select_item_size, select_item_size, item_color, true, p_select);
+    }
+    p_select->total_h = frame_space + std::ceil(n_windows/(double)-n_select_row_size)*item_off_y;
+    p_select->total_h = std::max(slider_h, p_select->total_h);
+
+    //slider
+    std::function<void(double, double)> slider_fun= std::bind(&UIScrollFrame::scroll_move_win, p_select, std::placeholders::_1, std::placeholders::_2);
+    UIYSlider* p_slider = new UIYSlider(settings, frame_space, frame_space, slider_w, slider_h, slider_col, 
+                                       slider_w, slider_w, 0, p_select->total_h-slider_h, slider_fun, p_frame);
+    p_slider->value=p_slider->max;
+
+    //search
+    UIFrame* p_search = new UIFrame(settings, 2*frame_space+slider_w, 2*frame_space+slider_h, search_w, search_h, search_col, true, p_frame);
+}
 
 // /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // ///////////////////////////////////////////////////////////// MainMenu //////////////////////////////////////////////////////////////////
@@ -198,46 +255,49 @@ void UI_Editor::create_ui() //WARNING: need to create p_scene->slider_functions 
     double frame_h =screen_h-150; //570
     double frame_x = (screen_w-frame_w)/2.0;
     double frame_y = (screen_h-n_buttons*frame_h)/(n_buttons+1);
+    glm::vec3 frame_col(2/255.0, 33/255.0, 44/255.0);
 
-    UIEditorFrame* p_frame = new UIEditorFrame(settings, frame_x, frame_y, frame_w, frame_h, glm::vec3(2/255.0, 33/255.0, 44/255.0), 
-                                    false, nullptr, "editorframe");
+    UIFrame* p_frame = new UIFrame(settings, frame_x, frame_y, frame_w, frame_h, frame_col,false);
     elements.push_back(p_frame);
 
     //slider
-    double slider_space =20;
+    double space =20;
     double tick_w=70;
     double tick_h=40; // this depends on how many windows
     double line_w=20;
-    double line_h=frame_h-2*slider_space;
+    double line_h=frame_h-2*space;
 
     //windows
     double window_space = 45;
     double win_ratio = 3.0/4.0;
-    double win_w = (frame_w - (slider_space + tick_w + slider_space + (win_per_row-1)*window_space + slider_space))/win_per_row;
+    double win_w = (frame_w - (space + tick_w + space + (win_per_row-1)*window_space + space))/win_per_row;
     double win_h = win_w*win_ratio;
 
 
 
-    double win_start_x = slider_space + tick_w + slider_space;
-    double win_start_y = frame_h - win_h - slider_space;
+    double win_start_x = space;
+    double win_start_y = frame_h - win_h - space;
     double win_off_x = win_w+window_space;
     double win_off_y = -win_h-window_space;
     glm::vec3 win_color(200/255.0, 200/255.0, 2/255.0);
 
-    int n_windows = 8;
+    UIScrollFrame* p_scrollframe = new UIScrollFrame(settings, space+tick_w, 0, frame_w-(space+tick_w), frame_h, frame_col,
+                                    false, p_frame);
+
+    int n_windows = 22;
     for(int i=0; i<n_windows; i++)
     {
         int row = i/win_per_row;
         int col = i%win_per_row;
-        new UIFrame(settings, win_start_x+col*win_off_x, win_start_y+row*win_off_y, win_w, win_h, win_color, true, p_frame);
+        new UIFrame(settings, win_start_x+col*win_off_x, win_start_y+row*win_off_y, win_w, win_h, win_color, true, p_scrollframe);
     }
 
     
-    total_h = 2*slider_space-window_space + -(std::ceil(n_windows/(double)win_per_row)*win_off_y);
-    total_h = std::max(frame_h, total_h);
-    std::function<void(double, double)> slider_fun= std::bind(&UIEditorFrame::scroll_move_win, p_frame,std::placeholders::_1, std::placeholders::_2);
-    UIYSlider* p_slider = new UIYSlider(settings, slider_space, slider_space, tick_w, line_h, glm::vec3(54/255.0, 222/255.0, 99/255.0), 
-                                       tick_h, line_w, 0, total_h-frame_h, 
+    p_scrollframe->total_h = 2*space-window_space + -(std::ceil(n_windows/(double)win_per_row)*win_off_y);
+    p_scrollframe->total_h = std::max(frame_h, p_scrollframe->total_h);
+    std::function<void(double, double)> slider_fun= std::bind(&UIScrollFrame::scroll_move_win, p_scrollframe,std::placeholders::_1, std::placeholders::_2);
+    UIYSlider* p_slider = new UIYSlider(settings, space, space, tick_w, line_h, glm::vec3(54/255.0, 222/255.0, 99/255.0), 
+                                       tick_h, line_w, 0, p_scrollframe->total_h-frame_h, 
                                        slider_fun, 
                                        p_frame);
     p_slider->value=p_slider->max;

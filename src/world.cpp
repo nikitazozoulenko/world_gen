@@ -25,7 +25,7 @@ World::World(Settings& settings, Camera& camera, std::unordered_map<std::string,
     settings(settings),
     chunk_manager(settings, chunk_map, blockIDMap),
     block_is_targeted(false),
-    player(camera),
+    player(settings, camera),
     blockIDMap(blockIDMap)
 {
 
