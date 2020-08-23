@@ -39,11 +39,13 @@ public:
     std::unordered_map<std::string, std::function<void(double, double)>> slider_functions;
     std::unordered_map<std::string, std::function<void()>> button_functions;
     void test_slider_fun(double val, double change);
+    void slider_nothing(double val, double change);
 
     void change_scene_freecamworld();
     void change_scene_mainmenu();
     void change_scene_editor();
     void exit_game();
+    void button_nothing();
 protected:
     Settings& settings;
 private:
@@ -60,8 +62,9 @@ public:
     void end_scene();
     World world;
 
-    void slider_amp_fun(double val, double change);
-    void slider_size_fun(double val, double change);
+    void toggle_menu();
+    void toggle_inventory();
+    bool is_cursor_mode();
 protected:
 private:
 };

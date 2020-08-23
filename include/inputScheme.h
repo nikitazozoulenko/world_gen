@@ -18,7 +18,7 @@ public:
     virtual void init() = 0;
     virtual void remove() = 0;
 
-protected:
+// protected:
     GLFWwindow* window;
     Camera& camera;
     Settings& settings;

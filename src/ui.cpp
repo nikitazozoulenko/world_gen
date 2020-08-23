@@ -106,35 +106,42 @@ UI_FreeCamWorld::~UI_FreeCamWorld()
 
 void UI_FreeCamWorld::create_ui() //WARNING: need to create p_scene->slider_functions first
 {
+    create_itempick();
+    create_escapemenu();
+
+    elements.push_back(p_cursor);
+}
+
+
+void UI_FreeCamWorld::create_escapemenu()
+{
+    double screen_w = settings.getWindowWidth();
+    double screen_h = settings.getWindowHeight();
+
     double win_w = 300;
     double win_h = 300;
-    UIElement* p_frame = new UIFrame(settings, 100, 100, win_w, win_h, glm::vec3(54/255.0, 54/255.0, 99/255.0), true);
-    elements.push_back(p_frame);
-
+    double start_x = (screen_w-win_w)/2.0;
+    double start_y = (screen_h-win_h)/2.0;
+    p_escapemenu = new UIFrame(settings, start_x, start_y, win_w, win_h, glm::vec3(54/255.0, 54/255.0, 99/255.0), true);
 
     //how big a slider is
     double w = 200;
     double off_x = (win_w-w)/2.0;
-    double h = 100;
-    double off_y = (win_h-2*h)/3.0;
+    double h = 75;
+    double off_y = (win_h-3*h)/4.0;
+    glm::vec3 col(66/255.0, 66/255.0, 66/255.0);
 
-    double tick_w = 50;
-    double line_h = 40;
-
-    double m = 30;
-    double M = 200;
-
-    UISlider* p_child1 = new UISlider(settings, off_x, off_y, w, h, glm::vec3(54/255.0, 54/255.0, 99/255.0), 
-                                        tick_w, line_h, m, M, p_scene->slider_functions.at("test"), p_frame);
-    UIButton* p_child2 = new UIButton(settings, off_x, off_y*2+h, w, h, glm::vec3(66/255.0, 66/255.0, 66/255.0),
-                                        "Menu", p_scene->button_functions.at("mainmenu"), p_frame);
+    UIButton* p_child1 = new UIButton(settings, off_x, off_y, w, h, col,
+                                        "Main Menu", p_scene->button_functions.at("mainmenu"), p_escapemenu);
+    UIButton* p_child2 = new UIButton(settings, off_x, off_y*2+h, w, h, col,
+                                        "TODO", p_scene->button_functions.at("nothing"), p_escapemenu);
+    UIButton* p_child3 = new UIButton(settings, off_x, off_y*3+h+h, w, h, col,
+                                        "Exit", p_scene->button_functions.at("exit"), p_escapemenu);
 
 
     //cursor fake
-    UIFrame* p_cursor = new UIFrame(settings, 1280/2-1, 720/2-1, 2, 2, glm::vec3(1,1,1), true);
+    p_cursor = new UIFrame(settings, 1280/2-1, 720/2-1, 2, 2, glm::vec3(1,1,1), true);
     elements.push_back(p_cursor);
-
-    create_itempick();
 }
 
 
@@ -144,10 +151,10 @@ void UI_FreeCamWorld::create_itempick()
     double hotbar_item_size = 50;
     double hotbar_space_to_edges = 10;
     double hotbar_item_space = 30;
-    double space_between_frame_hotbar = 40; //between hotbar and select
+    double space_between_frame_hotbar = 10; //between hotbar and select
     double frame_space = 20;
     double slider_w = 30;
-    double search_w = 100;
+    double search_w = 160;
     double search_h = 40;
     glm::vec3 search_col(0.3, 0.3, 0.3);
     glm::vec3 frame_col(0.4, 0.4, 0.4);
@@ -157,20 +164,25 @@ void UI_FreeCamWorld::create_itempick()
     int n_hotbar_items = settings.hotbar_size;
     int n_select_row_size = settings.inv_row_size;
     int n_select_col_size = settings.inv_col_size;
+    double screen_w = settings.getWindowWidth();
+    double screen_h = settings.getWindowHeight();
 
     //base=frame+hotbar
+
+
     double base_w = (n_hotbar_items-1)*hotbar_item_space + n_hotbar_items*hotbar_item_size + 2*hotbar_space_to_edges;
     double hotbar_h = hotbar_item_size + 2*hotbar_space_to_edges;
     double select_item_size = (base_w-((4+n_select_row_size)*frame_space + slider_w))/(double)n_select_row_size;
     double slider_h = n_select_col_size*(frame_space + select_item_size) + frame_space;
     double frame_h = 3*frame_space + slider_h + search_h;
-    UIInvis* p_itempick_base = new UIInvis(settings, 0, 0, base_w, hotbar_h+space_between_frame_hotbar+frame_h, true);
-    elements.push_back(p_itempick_base);
-    UIFrame* p_hotbar = new UIFrame(settings, 0, 0, base_w, hotbar_h, frame_col, true, p_itempick_base);
-    UIFrame* p_frame = new UIFrame(settings, 0, hotbar_h+space_between_frame_hotbar, base_w, frame_h, frame_col, true, p_itempick_base);
+    double start_x = (screen_w-base_w)/2.0;
+    double start_y = (screen_h-frame_h)/2.0;
+    p_itempick_base = new UIInvis(settings, start_x, start_y, base_w, hotbar_h+space_between_frame_hotbar+frame_h, true);
+    UIFrame* p_hotbar = new UIFrame(settings, 0, 0, base_w, hotbar_h, frame_col, false, p_itempick_base);
+    UIFrame* p_frame = new UIFrame(settings, 0, hotbar_h+space_between_frame_hotbar, base_w, frame_h, frame_col, false, p_itempick_base);
 
     //select
-    UIScrollFrame* p_select = new UIScrollFrame(settings, 2*frame_space+slider_w, frame_space, base_w-(3*frame_space+slider_w), slider_h, select_col, true, p_frame);
+    UIScrollFrame* p_select = new UIScrollFrame(settings, 2*frame_space+slider_w, frame_space, base_w-(3*frame_space+slider_w), slider_h, select_col, false, p_frame);
     double item_start_x = frame_space;
     double item_start_y = slider_h - select_item_size - frame_space;
     double item_off_x = select_item_size+frame_space;
@@ -192,8 +204,48 @@ void UI_FreeCamWorld::create_itempick()
     p_slider->value=p_slider->max;
 
     //search
-    UIFrame* p_search = new UIFrame(settings, 2*frame_space+slider_w, 2*frame_space+slider_h, search_w, search_h, search_col, true, p_frame);
+    UIButton* p_search = new UIButton(settings, 2*frame_space+slider_w, 2*frame_space+slider_h, search_w, search_h, search_col, "Search...", p_scene->button_functions.at("nothing"), p_frame);
+
+    //hotbar items
+    double hot_off = hotbar_item_space+hotbar_item_size;
+    for(int i=0; i<n_hotbar_items; i++){
+        new UIFrame(settings, hotbar_space_to_edges+i*hot_off, hotbar_space_to_edges, hotbar_item_size, hotbar_item_size, item_color, true, p_itempick_base);
+    }
 }
+
+void UI_FreeCamWorld::toggle_menu()
+{
+    toggle_element(p_escapemenu);
+}
+void UI_FreeCamWorld::toggle_inventory()
+{
+    toggle_element(p_itempick_base);
+}
+void UI_FreeCamWorld::toggle_element(UIElement* p_ele)
+{
+    auto f = std::find(elements.begin(), elements.end(), p_ele);
+    if(f!=elements.end()){
+        elements.erase(f);
+    }else{
+        p_ele->time_last_press=glfwGetTime();
+        elements.push_back(p_ele);
+    }
+
+}
+
+bool UI_FreeCamWorld::is_cursor_mode()
+{
+    std::vector<UIElement*> eles_with_cursor{p_itempick_base, p_escapemenu};
+    bool needs_cursor_mode=false;
+    for(UIElement* p_ele : eles_with_cursor){
+        if(std::find(elements.begin(), elements.end(), p_ele) != elements.end()){
+            needs_cursor_mode=true;
+            break;
+        }
+    }
+    return needs_cursor_mode;
+}
+
 
 // /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // ///////////////////////////////////////////////////////////// MainMenu //////////////////////////////////////////////////////////////////

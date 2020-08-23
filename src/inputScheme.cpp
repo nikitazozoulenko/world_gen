@@ -143,6 +143,7 @@ void FreeCamWorldInputScheme::start_MOUSEMOVE_mode()
 {
     mode=MOUSEMOVE;
     firstmouse=true;
+    print_float("MOUSEMOVE INIT", firstmouse);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);//undisable cursor
     glfwSetScrollCallback(window, NULL);
 }
@@ -152,6 +153,7 @@ void FreeCamWorldInputScheme::start_CAMMOVE_mode()
 {   
     mode=CAMMOVE;
     firstmouse=true;
+    print_float("CAMMOVE INIT", firstmouse);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);//disable cursor
     glfwSetScrollCallback(window, scroll_callback_CAMMOVE);
 }
@@ -213,15 +215,25 @@ void FreeCamWorldInputScheme::processInput(double delta_time)
         mouseMovementInput(delta_time);
 
     //escape exit window
-    if (clicked(GLFW_KEY_ESCAPE))
-        glfwSetWindowShouldClose(window, true);
-    if (clicked(GLFW_KEY_TAB)){
-        if(mode==CAMMOVE){
+    if (clicked(GLFW_KEY_ESCAPE)){
+        p_scene->toggle_menu();
+    }
+    if (clicked(GLFW_KEY_I)){
+        p_scene->toggle_inventory();
+    }
+
+    //toggle modes
+    if(p_scene->is_cursor_mode()){
+        if(mode!=MOUSEMOVE){
             start_MOUSEMOVE_mode();
-        }else if(mode==MOUSEMOVE){
+        }
+    }
+    else{
+        if(mode!=CAMMOVE){
             start_CAMMOVE_mode();
         }
     }
+    //end with clearing input
     clear_frame_input();
 }
 

@@ -12,10 +12,12 @@ Scene::Scene(Settings& settings, GLFWwindow* window, InputScheme* p_input_scheme
     p_ui(p_ui)
 {
     slider_functions["test"] = std::bind(&Scene::test_slider_fun, this, std::placeholders::_1, std::placeholders::_2);
+    slider_functions["nothing"] = std::bind(&Scene::slider_nothing, this, std::placeholders::_1, std::placeholders::_2);
     button_functions["freecamworld"] = std::bind(&Scene::change_scene_freecamworld, this);
     button_functions["mainmenu"] = std::bind(&Scene::change_scene_mainmenu, this);
     button_functions["editor"] = std::bind(&Scene::change_scene_editor, this);
     button_functions["exit"] = std::bind(&Scene::exit_game, this);
+    button_functions["nothing"] = std::bind(&Scene::button_nothing, this);
 }
 
 Scene::~Scene()
@@ -37,6 +39,9 @@ void Scene::test_slider_fun(double val, double change)
 {
     print_float("sliiiiiide scenetestfun", 0);
 }
+void Scene::slider_nothing(double val, double change)
+{
+}
 
 void Scene::change_scene_freecamworld()
 {
@@ -53,6 +58,9 @@ void Scene::change_scene_editor()
 void Scene::exit_game()
 {
     change_scene=SCENE_ExitGame;
+}
+void Scene::button_nothing()
+{
 }
 
 
@@ -89,18 +97,20 @@ void FreeCamWorld::end_scene()
     world.end();
 }
 
-void FreeCamWorld::slider_amp_fun(double val, double change)
+void FreeCamWorld::toggle_menu()
 {
-    print_float("slider",0);
-    // world.chunk_manager.amplitude=val;
+    static_cast<UI_FreeCamWorld*>(p_ui)->toggle_menu();
 }
 
-void FreeCamWorld::slider_size_fun(double val, double change)
+void FreeCamWorld::toggle_inventory()
 {
-    print_float("slider",1);
-    // world.chunk_manager.size=val;
+    static_cast<UI_FreeCamWorld*>(p_ui)->toggle_inventory();
 }
 
+bool FreeCamWorld::is_cursor_mode()
+{
+    return static_cast<UI_FreeCamWorld*>(p_ui)->is_cursor_mode();
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////// MainMenu Scene ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

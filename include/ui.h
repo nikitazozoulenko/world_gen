@@ -55,9 +55,17 @@ public:
     ~UI_FreeCamWorld();
     void create_ui();
     void create_itempick();
+    void create_escapemenu();
+
+    void toggle_menu();
+    void toggle_inventory();
+    void toggle_element(UIElement* p_ele);
+
+    bool is_cursor_mode();
 
     UIElement* p_itempick_base;
     UIElement* p_escapemenu;
+    UIElement* p_cursor;
 protected:
 private:
 };
