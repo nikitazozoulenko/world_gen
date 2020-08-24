@@ -10,10 +10,11 @@
 #include <unordered_map>
 #include <string>
 
+class Scene;
 class InputScheme
 {
 public:
-    InputScheme(Settings& settings, GLFWwindow* window, Camera& camera);
+    InputScheme(Settings& settings, GLFWwindow* window, Camera& camera, Scene* p_base_scene);
     virtual void processInput(double delta_time) = 0;
     virtual void init() = 0;
     virtual void remove() = 0;
@@ -22,6 +23,7 @@ public:
     GLFWwindow* window;
     Camera& camera;
     Settings& settings;
+    Scene* p_base_scene;
 
     double mouse_old_x=0;
     double mouse_old_y=0;
@@ -36,6 +38,8 @@ public:
     bool clicked(int key);
     bool held(int key);
     bool released(int key);
+
+    void update_elements_on_cursor();
 
     void clear_frame_input();
 

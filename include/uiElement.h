@@ -23,6 +23,7 @@ public:
     virtual void process_movement(double xoff, double yoff, double x, double y);
     double getGlobalX();
     double getGlobalY();
+    void update_click_all_parents(double time, double& x, double& y);
 
     Settings& settings;
     std::string type;
@@ -74,6 +75,7 @@ public:
     void scroll_move_win(double val, double change);
     double total_h;
 };
+
 
 
 class UISlider : public UIElement
@@ -154,6 +156,34 @@ public:
     std::function<void()> fun;
 
 private:
+};
+
+
+class UI_FreeCamWorld;
+class UIBlockItem : public UIElement
+{
+public:
+    UIBlockItem(Settings& settings, double x0, double y0, double w, double h, int border_size, glm::vec3 border_col, glm::vec3 item_col, 
+        unsigned int block, UI_FreeCamWorld* p_ui, UIElement* p_parent=nullptr, std::string type="blockitem");
+    UI_FreeCamWorld* p_ui;
+    glm::vec3 border_col;
+    glm::vec3 item_col;
+    int border_size;
+    unsigned int block;
+
+    void mouse_click(double& x, double& y);
+};
+
+class UIPickedBlock : public UIElement
+{
+public:
+    UIPickedBlock(Settings& settings, double x0, double y0, double w, double h, glm::vec3 item_col, unsigned int block, UI_FreeCamWorld* p_ui,
+        UIElement* p_parent=nullptr, std::string type="pickedblock");
+    glm::vec3 item_col;
+    unsigned int block;
+    
+    void mouse_release();
+    void process_movement(double xoff, double yoff, double x, double y);
 };
 
 

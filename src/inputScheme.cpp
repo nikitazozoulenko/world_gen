@@ -8,10 +8,11 @@
 
 
 // ABSTRACT class INPUT SCHEME
-InputScheme::InputScheme(Settings& settings, GLFWwindow* window, Camera& camera) :
+InputScheme::InputScheme(Settings& settings, GLFWwindow* window, Camera& camera, Scene* p_base_scene) :
     window(window),
     camera(camera),
-    settings(settings)
+    settings(settings),
+    p_base_scene(p_base_scene)
 {
     init_shared_callbacks();
 }
@@ -39,7 +40,7 @@ void InputScheme::framebuffer_size_callback(GLFWwindow* window, int width, int h
 void InputScheme::cursor_pos_callback(GLFWwindow* window, double xpos, double ypos)
 {   //records cursor movement
     InputScheme* p_input_scheme = (InputScheme*)glfwGetWindowUserPointer(window);
-    //normalizes [0,1] coords. y from bot to top, x from left to right
+    //y from bot to top, x from left to right
     double x = xpos;
     double y = p_input_scheme->settings.getWindowHeight() - ypos;
 
@@ -81,6 +82,12 @@ void InputScheme::clear_frame_input()
 }
 
 
+void InputScheme::update_elements_on_cursor()
+{
+    p_base_scene->p_ui->update_elements_on_cursor(mouse_x, mouse_y);
+}
+
+
 
 bool InputScheme::clicked(int key)
 {   //NOTE: WARNING: not working properly when held down ("keyboard repeat"). might work on windows
@@ -115,7 +122,7 @@ bool InputScheme::released(int key)
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 FreeCamWorldInputScheme::FreeCamWorldInputScheme(Settings& settings, GLFWwindow* window, Camera& camera, FreeCamWorld* p_scene) :
-    InputScheme(settings, window, camera),
+    InputScheme(settings, window, camera, p_scene),
     p_scene(p_scene),
     mode(CAMMOVE)
 {
@@ -143,7 +150,6 @@ void FreeCamWorldInputScheme::start_MOUSEMOVE_mode()
 {
     mode=MOUSEMOVE;
     firstmouse=true;
-    print_float("MOUSEMOVE INIT", firstmouse);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);//undisable cursor
     glfwSetScrollCallback(window, NULL);
 }
@@ -153,7 +159,6 @@ void FreeCamWorldInputScheme::start_CAMMOVE_mode()
 {   
     mode=CAMMOVE;
     firstmouse=true;
-    print_float("CAMMOVE INIT", firstmouse);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);//disable cursor
     glfwSetScrollCallback(window, scroll_callback_CAMMOVE);
 }
@@ -161,6 +166,7 @@ void FreeCamWorldInputScheme::start_CAMMOVE_mode()
 
 void FreeCamWorldInputScheme::freeCamMovementInput(double delta_time)
 {
+    p_scene->p_ui->elements_on_cursor.clear();
     //keyboard
     if (held(GLFW_KEY_W))
         camera.ProcessKeyboard(Camera::FORWARD, delta_time);
@@ -194,6 +200,7 @@ void FreeCamWorldInputScheme::freeCamMovementInput(double delta_time)
 
 void FreeCamWorldInputScheme::mouseMovementInput(double delta_time)
 {
+    update_elements_on_cursor();
     if(clicked(GLFW_MOUSE_BUTTON_LEFT)){
         p_scene->p_ui->mouse_click(mouse_x, mouse_y);
     }
@@ -251,7 +258,7 @@ void FreeCamWorldInputScheme::scroll_callback_CAMMOVE(GLFWwindow* window, double
 
 
 MainMenuInputScheme::MainMenuInputScheme(Settings& settings, GLFWwindow* window, Camera& camera, MainMenu* p_scene) :
-    InputScheme(settings, window, camera),
+    InputScheme(settings, window, camera, p_scene),
     p_scene(p_scene)
 {
 
@@ -276,6 +283,7 @@ void MainMenuInputScheme::processInput(double delta_time)
 {
     // ui mouse
     glfwPollEvents();
+    update_elements_on_cursor();
     if(clicked(GLFW_MOUSE_BUTTON_LEFT)){
         p_scene->p_ui->mouse_click(mouse_x, mouse_y);
     }
@@ -302,7 +310,7 @@ void MainMenuInputScheme::processInput(double delta_time)
 
 
 EditorInputScheme::EditorInputScheme(Settings& settings, GLFWwindow* window, Camera& camera, Editor* p_scene) :
-    InputScheme(settings, window, camera),
+    InputScheme(settings, window, camera, p_scene),
     p_scene(p_scene)
 {
 
@@ -327,6 +335,7 @@ void EditorInputScheme::processInput(double delta_time)
 {
     // ui mouse
     glfwPollEvents();
+    update_elements_on_cursor();
     if(clicked(GLFW_MOUSE_BUTTON_LEFT)){
         p_scene->p_ui->mouse_click(mouse_x, mouse_y);
     }

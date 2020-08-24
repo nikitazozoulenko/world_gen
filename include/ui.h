@@ -17,11 +17,14 @@ public:
     UI(Settings& settings, Scene* p_scene);
     virtual ~UI();
     Settings& settings;
-    std::vector<UIElement*> elements; //need pointer for identification (or do i??)
+    std::vector<UIElement*> elements; //active elements
+    std::vector<UIElement*> elements_on_cursor; //actives most inner children under cursor
     void mouse_click(double x,double y);
     void mouse_release();
     void process_movement(double xoff, double yoff, double x, double y);
-    static UIElement* find_element_on_cursor(std::vector<UIElement*>& ui_windows, double x, double y);
+    void update_elements_on_cursor(double x, double y);
+    static std::vector<UIElement*> find_elements_on_cursor(std::vector<UIElement*>& ui_windows, double x, double y);
+    static UIElement* find_top_element_on_cursor(std::vector<UIElement*>& ui_windows, double x, double y);
     virtual void create_ui()=0;
 
     UIElement* p_clicked_ele; //smallest element, "inner most"

@@ -17,62 +17,69 @@ UI::~UI()
     }
 }
 
-UIElement* UI::find_element_on_cursor(std::vector<UIElement*>& elements, double x, double y)
-{   
+std::vector<UIElement*> UI::find_elements_on_cursor(std::vector<UIElement*>& elements, double x, double y)
+{
     //find all UIElements that are under the cursor to later pick the top most one.
-    std::vector<int> ele_indices;
-    for(int i=0; i<elements.size(); i++){   
-        UIElement* p_element = elements[i];
-        double& x0 = p_element->x0;
-        double& y0 = p_element->y0;
-        double& w = p_element->w;
-        double& h = p_element->h;
+    std::vector<UIElement*> cursor_elements;
+    for(UIElement* p_ele : elements){   
+        double& x0 = p_ele->x0;
+        double& y0 = p_ele->y0;
+        double& w = p_ele->w;
+        double& h = p_ele->h;
 
         //if (x,y) in ui window
         if(x<(x0+w) && x0<x){
             if(y<(y0+h) && y0<y){
-                ele_indices.push_back(i);
+                cursor_elements.push_back(p_ele);
             }
         }
     }
 
     //now pick the top most window
-    if(ele_indices.size()>0){
-        std::sort(ele_indices.begin(), ele_indices.end(), [&elements](const auto& lhs, const auto& rhs){return elements[lhs]->time_last_press > elements[rhs]->time_last_press;});
-        return elements[ele_indices[0]];
-    }
-    //if none found, return nullptr
+    std::sort(cursor_elements.begin(), cursor_elements.end(), 
+        [&elements](const auto& lhs, const auto& rhs){return lhs->time_last_press > rhs->time_last_press;});
+    return cursor_elements;
+}
+    
+
+UIElement* UI::find_top_element_on_cursor(std::vector<UIElement*>& elements, double x, double y)
+{   
+    auto cursor_elements = find_elements_on_cursor(elements, x, y);
+    if(cursor_elements.size()>0)
+        return cursor_elements[0];
     return nullptr;
 }
 
+void UI::update_elements_on_cursor(double x, double y)
+{
+    elements_on_cursor.clear();
+    for(UIElement* p_ele : find_elements_on_cursor(elements, x, y)){
+        UIElement* p_prev_ele = p_ele;
+        std::vector<UIElement*> iter_elements = p_ele->children;
+        double off_x =p_ele->x0;
+        double off_y =p_ele->y0;
+        do
+        {
+            p_ele = find_top_element_on_cursor(iter_elements, x-off_x, y-off_y);
+            if(p_ele){
+                iter_elements = p_ele->children;
+                p_prev_ele = p_ele;
+                off_x += p_ele->x0;
+                off_y += p_ele->y0;
+            }
+        } while (p_ele!=nullptr && !iter_elements.empty());
+        elements_on_cursor.push_back(p_prev_ele);
+    }
+}
+
+
 void UI::mouse_click(double x, double y)
 {
-    //find window
-    p_clicked_ele = nullptr;
-    UIElement* p_ele=nullptr;
-    std::vector<UIElement*> iter_elements = elements;
-    double off_x =0;
-    double off_y =0;
-    double time = glfwGetTime();
-    do
-    {
-        p_ele = find_element_on_cursor(iter_elements, x-off_x, y-off_y);
-        if(p_ele){
-            iter_elements = p_ele->children;
-            p_clicked_ele = p_ele;
-            off_x += p_ele->x0;
-            off_y += p_ele->y0;
-            p_ele->time_last_press=time;
-            p_ele->x_click=x;
-            p_ele->y_click=y;
-            p_ele->x0_at_click=off_x;
-            p_ele->y0_at_click=off_y;
-            
-        }
-    } while (p_ele!=nullptr && !iter_elements.empty());
-    
-    if(p_clicked_ele){
-        p_clicked_ele->mouse_click(x, y);
+    //WARNING: update elements on cursor first
+    if(elements_on_cursor.size()>0){
+        p_clicked_ele=elements_on_cursor[0];
+        p_clicked_ele->update_click_all_parents(glfwGetTime(), x, y);
+        p_clicked_ele->mouse_click(x,y);
     }
 }
 

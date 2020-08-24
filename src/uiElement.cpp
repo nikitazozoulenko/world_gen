@@ -1,5 +1,6 @@
 #include <uiElement.h>
 #include <misc.h>
+#include <scene.h>
 
 #include <algorithm>
 
@@ -41,6 +42,17 @@ double UIElement::getGlobalY()
     }else{
         return y0;
     }
+}
+
+void UIElement::update_click_all_parents(double time, double& x, double& y)
+{
+    time_last_press=time;
+    x_click =x;
+    y_click =y;
+    x0_at_click = getGlobalX();
+    y0_at_click = getGlobalY();
+    if(p_parent)
+        p_parent->update_click_all_parents(time, x, y);
 }
 
 ////////////////////////////////////////////////
@@ -285,5 +297,40 @@ void UIButton::mouse_release()
 {
 }
 void UIButton::process_movement(double xoff, double yoff, double x, double y)
+{
+}
+
+
+////////////////////////////////////////////////
+
+
+UIBlockItem::UIBlockItem(Settings& settings, double x0, double y0, double w, double h, int border_size, glm::vec3 border_col, glm::vec3 item_col, 
+        unsigned int block, UI_FreeCamWorld* p_ui, UIElement* p_parent, std::string type) :
+    UIElement(settings, x0, y0, w, h, border_col, p_parent, type),
+    p_ui(p_ui),
+    border_col(border_col),
+    item_col(item_col),
+    border_size(border_size),
+    block(block)
+{
+}
+void UIBlockItem::mouse_click(double& x, double& y)
+{
+    
+}
+
+
+UIPickedBlock::UIPickedBlock(Settings& settings, double x0, double y0, double w, double h, glm::vec3 item_col, unsigned int block, UI_FreeCamWorld* p_ui,
+        UIElement* p_parent, std::string type) :
+    UIElement(settings, x0, y0, w, h, item_col, p_parent, type),
+    item_col(item_col),
+    block(block)
+{
+
+}
+void UIPickedBlock::mouse_release()
+{
+}
+void UIPickedBlock::process_movement(double xoff, double yoff, double x, double y)
 {
 }
