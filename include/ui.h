@@ -20,7 +20,7 @@ public:
     std::vector<UIElement*> elements; //active elements
     std::vector<UIElement*> elements_on_cursor; //actives most inner children under cursor
     void mouse_click(double x,double y);
-    void mouse_release();
+    void mouse_release(double x, double y);
     void process_movement(double xoff, double yoff, double x, double y);
     void update_elements_on_cursor(double x, double y);
     static std::vector<UIElement*> find_elements_on_cursor(std::vector<UIElement*>& ui_windows, double x, double y);

@@ -33,7 +33,7 @@ public:
     int hotbar_size;
     int inventory_size;
     int inv_row_size;
-    int inv_col_size;
+    int inv_col_size; //shown, not actual total size
 protected:
 private:
     int width;

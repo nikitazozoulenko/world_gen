@@ -1,6 +1,6 @@
 #include <player.h>
 
-Player::Player(Settings& settings, Camera& camera) :  settings(settings), camera(camera), inventory(settings.hotbar_size, 0)
+Player::Player(Settings& settings, Camera& camera) :  settings(settings), camera(camera), inventory(settings.hotbar_size, 0), selected_slot(0)
 {
     for(int i=0; i<inventory.size(); i++)
     {

@@ -205,7 +205,7 @@ void FreeCamWorldInputScheme::mouseMovementInput(double delta_time)
         p_scene->p_ui->mouse_click(mouse_x, mouse_y);
     }
     if(released(GLFW_MOUSE_BUTTON_LEFT)){
-        p_scene->p_ui->mouse_release();
+        p_scene->p_ui->mouse_release(mouse_x, mouse_y);
     }
     if(cursor_moved){
         p_scene->p_ui->process_movement(mouse_x-mouse_old_x, mouse_y-mouse_old_y, mouse_x, mouse_y);
@@ -288,7 +288,7 @@ void MainMenuInputScheme::processInput(double delta_time)
         p_scene->p_ui->mouse_click(mouse_x, mouse_y);
     }
     if(released(GLFW_MOUSE_BUTTON_LEFT)){
-        p_scene->p_ui->mouse_release();
+        p_scene->p_ui->mouse_release(mouse_x, mouse_y);
     }
     if(cursor_moved){
         p_scene->p_ui->process_movement(mouse_x-mouse_old_x, mouse_y-mouse_old_y, mouse_x, mouse_y);
@@ -340,7 +340,7 @@ void EditorInputScheme::processInput(double delta_time)
         p_scene->p_ui->mouse_click(mouse_x, mouse_y);
     }
     if(released(GLFW_MOUSE_BUTTON_LEFT)){
-        p_scene->p_ui->mouse_release();
+        p_scene->p_ui->mouse_release(mouse_x, mouse_y);
     }
     if(cursor_moved){
         p_scene->p_ui->process_movement(mouse_x-mouse_old_x, mouse_y-mouse_old_y, mouse_x, mouse_y);

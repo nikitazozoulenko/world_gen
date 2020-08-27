@@ -24,7 +24,7 @@ UIElement::~UIElement()
 }
 
 void UIElement::mouse_click(double& x, double& y){print_float("base click",0);}
-void UIElement::mouse_release(){print_float("base release",0);}
+void UIElement::mouse_release(double& x, double& y){print_float("base release",0);}
 void UIElement::process_movement(double xoff, double yoff, double x, double y){print_float("base process",0);}
 
 double UIElement::getGlobalX()
@@ -69,12 +69,6 @@ UIFrame::~UIFrame()
 {
 }
 
-void UIFrame::mouse_click(double& x, double& y)
-{
-}
-void UIFrame::mouse_release()
-{
-}
 void UIFrame::process_movement(double xoff, double yoff, double x, double y)
 {
     double W = settings.getWindowWidth();
@@ -181,7 +175,7 @@ void UISlider::mouse_click(double& x, double& y)
         tick_held_down=true;
     }
 }
-void UISlider::mouse_release()
+void UISlider::mouse_release(double& x, double& y)
 {
     tick_held_down=false;
     line_clicked=false;
@@ -256,7 +250,7 @@ void UIYSlider::mouse_click(double& x, double& y)
         tick_held_down=true;
     }
 }
-void UIYSlider::mouse_release()
+void UIYSlider::mouse_release(double& x, double& y)
 {
     tick_held_down=false;
     line_clicked=false;
@@ -273,8 +267,8 @@ void UIYSlider::process_movement(double xoff, double yoff, double x, double y)
 
 
 
-
 ////////////////////////////////////////////////
+
 
 
 UIButton::UIButton(Settings& settings, double x0, double y0, double w, double h, glm::vec3 color, std::string button_text, 
@@ -293,7 +287,7 @@ void UIButton::mouse_click(double& x, double& y)
 {
     fun();
 }
-void UIButton::mouse_release()
+void UIButton::mouse_release(double& x, double& y)
 {
 }
 void UIButton::process_movement(double xoff, double yoff, double x, double y)
@@ -301,36 +295,62 @@ void UIButton::process_movement(double xoff, double yoff, double x, double y)
 }
 
 
+
 ////////////////////////////////////////////////
 
 
-UIBlockItem::UIBlockItem(Settings& settings, double x0, double y0, double w, double h, int border_size, glm::vec3 border_col, glm::vec3 item_col, 
-        unsigned int block, UI_FreeCamWorld* p_ui, UIElement* p_parent, std::string type) :
+
+UIBlockItem::UIBlockItem(Settings& settings, double x0, double y0, double w, double h, double border_size, glm::vec3 border_col, glm::vec3 item_col, 
+        unsigned int& block, bool changeable, UI_FreeCamWorld* p_ui, UIElement* p_parent, std::string type) :
     UIElement(settings, x0, y0, w, h, border_col, p_parent, type),
     p_ui(p_ui),
     border_col(border_col),
     item_col(item_col),
     border_size(border_size),
-    block(block)
+    block(block),
+    changeable(changeable)
 {
 }
 void UIBlockItem::mouse_click(double& x, double& y)
 {
-    
+    double size = w-2*border_size;
+    UIElement* p_block = new UIPickedBlock(settings, x-size/2.0, y-size/2.0, size, size,
+                                    item_col, block, p_ui);
+    p_ui->elements.push_back(p_block);
+    p_ui->p_clicked_ele = p_block;
+    p_block->update_click_all_parents(glfwGetTime(), x, y);
+    p_block->x_click = p_block->x0_at_click+p_block->w/2.0;
+    p_block->y_click = p_block->y0_at_click+p_block->h/2.0;
+
 }
 
 
-UIPickedBlock::UIPickedBlock(Settings& settings, double x0, double y0, double w, double h, glm::vec3 item_col, unsigned int block, UI_FreeCamWorld* p_ui,
-        UIElement* p_parent, std::string type) :
-    UIElement(settings, x0, y0, w, h, item_col, p_parent, type),
+UIPickedBlock::UIPickedBlock(Settings& settings, double x0, double y0, double w, double h, glm::vec3 item_col, unsigned int block, 
+            UI_FreeCamWorld* p_ui, std::string type) :
+    UIFrame(settings, x0, y0, w, h, item_col, true, nullptr, type),
     item_col(item_col),
-    block(block)
+    block(block),
+    p_ui(p_ui)
 {
 
 }
-void UIPickedBlock::mouse_release()
+void UIPickedBlock::mouse_release(double& x, double& y)
 {
+    //change block if its okay
+    if(p_ui->elements_on_cursor.size()>1){
+        UIBlockItem* p_under = static_cast<UIBlockItem*>(p_ui->elements_on_cursor.at(1));
+        if(p_under->type=="blockitem"){
+            if(p_under->changeable){
+                p_under->block=block;
+            }
+        }
+    }
+
+    //now delete this hovering uielement
+    auto f = std::find(p_ui->elements.begin(), p_ui->elements.end(), this);
+    if(f!=p_ui->elements.end()){
+        p_ui->elements.erase(f);
+    }
+    delete this;
 }
-void UIPickedBlock::process_movement(double xoff, double yoff, double x, double y)
-{
-}
+

@@ -4,8 +4,9 @@
 #include <iostream>
 #include <algorithm>
 
-UIRenderer::UIRenderer(Settings& settings):
+UIRenderer::UIRenderer(Settings& settings, BlockRenderer& block_renderer):
     settings(settings),
+    block_renderer(block_renderer),
     fontDrawer(FontDrawer(settings, "/home/nikita/Code/world_gen/resources/Bitter.ttf"))
 {
     createShaders();
@@ -44,6 +45,10 @@ void UIRenderer::render_element(UIElement* p_ele, double off_x, double off_y)
         render_y_slider(static_cast<UIYSlider*>(p_ele), off_x, off_y);
     else if(p_ele->type=="button")
         render_button(static_cast<UIButton*>(p_ele), off_x, off_y);
+    else if(p_ele->type=="blockitem")
+        render_blockitem(static_cast<UIBlockItem*>(p_ele), off_x, off_y);
+    else if(p_ele->type=="pickedblock")
+        render_pickedblock(static_cast<UIPickedBlock*>(p_ele), off_x, off_y);
     else
         print_float("failed to render p_ele", 0);
 }
@@ -201,6 +206,55 @@ void UIRenderer::render_button(UIButton* p_ele, double off_x, double off_y)
 }
 
 
+void UIRenderer::render_blockitem(UIBlockItem* p_ele, double off_x, double off_y)
+{
+    //window
+    double screen_w = settings.getWindowWidth();
+    double screen_h = settings.getWindowHeight();
+    double x = off_x+p_ele->x0;
+    double y = off_y+p_ele->y0;
+    double& w = p_ele->w;
+    double& h = p_ele->h;
+    double& b = p_ele->border_size;
+
+    ui_shaderprogram.setUniformVec4("coords", x/screen_w,y/screen_h,w/screen_w,h/screen_h);
+    ui_shaderprogram.setUniformVec3("color", p_ele->border_col);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    ui_shaderprogram.setUniformVec4("coords", (x+b)/screen_w,(y+b)/screen_h,(w-b-b)/screen_w,(h-b-b)/screen_h);
+    ui_shaderprogram.setUniformVec3("color", p_ele->item_col);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    fontDrawer.draw(std::to_string(p_ele->block), x+b, y+b, 1.0f, glm::vec3(1,1,1));
+    ui_shaderprogram.bind(); //re-enable
+    glBindVertexArray(vao_quad);
+
+    for(auto& p_child : p_ele->children){
+        render_element(p_child, x, y);
+    }
+}
+void UIRenderer::render_pickedblock(UIPickedBlock* p_ele, double off_x, double off_y)
+{
+    //window
+    double screen_w = settings.getWindowWidth();
+    double screen_h = settings.getWindowHeight();
+    double x = off_x+p_ele->x0;
+    double y = off_y+p_ele->y0;
+    double& w = p_ele->w;
+    double& h = p_ele->h;
+
+    ui_shaderprogram.setUniformVec4("coords", x/screen_w,y/screen_h,w/screen_w,h/screen_h);
+    ui_shaderprogram.setUniformVec3("color", p_ele->item_col);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    fontDrawer.draw(std::to_string(p_ele->block), x, y, 1.0f, glm::vec3(1,1,1));
+    ui_shaderprogram.bind(); //re-enable
+    glBindVertexArray(vao_quad);
+
+    for(auto& p_child : p_ele->children){
+        render_element(p_child, x, y);
+    }
+}
 
 
 void UIRenderer::createShaders()
@@ -211,6 +265,12 @@ void UIRenderer::createShaders()
     const char * compute_path =  nullptr;
 
     ui_shaderprogram = Shaderprogram(vertex_path, geometry_path, fragment_path, compute_path);
+
+    vertex_path =   "/home/nikita/Code/world_gen/src/shaders/ui_tex.vert";
+    geometry_path = nullptr;
+    fragment_path = "/home/nikita/Code/world_gen/src/shaders/ui_tex.frag";
+    compute_path =  nullptr;
+    ui_tex_shaderprogram = Shaderprogram(vertex_path, geometry_path, fragment_path, compute_path);
 }
 
 
@@ -242,3 +302,4 @@ void UIRenderer::create_quad_vao_vbo()
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3*sizeof(float)));
     glEnableVertexAttribArray(1);
 }
+

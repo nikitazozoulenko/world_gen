@@ -7,7 +7,7 @@ MasterRenderer::MasterRenderer(GLFWwindow* window, Settings& settings) :
     window(window),
     settings(settings),
     block_renderer(settings),
-    ui_renderer(settings),
+    ui_renderer(settings, block_renderer),
     skybox_renderer(settings)
 {
     glEnable(GL_DEPTH_TEST);

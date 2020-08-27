@@ -84,10 +84,10 @@ void UI::mouse_click(double x, double y)
 }
 
 
-void UI::mouse_release()
+void UI::mouse_release(double x, double y)
 {
     if(p_clicked_ele){
-        p_clicked_ele->mouse_release();
+        p_clicked_ele->mouse_release(x, y);
         p_clicked_ele = nullptr;
     }
 }
@@ -173,9 +173,9 @@ void UI_FreeCamWorld::create_itempick()
     int n_select_col_size = settings.inv_col_size;
     double screen_w = settings.getWindowWidth();
     double screen_h = settings.getWindowHeight();
+    double block_border=4;
 
     //base=frame+hotbar
-
 
     double base_w = (n_hotbar_items-1)*hotbar_item_space + n_hotbar_items*hotbar_item_size + 2*hotbar_space_to_edges;
     double hotbar_h = hotbar_item_size + 2*hotbar_space_to_edges;
@@ -194,12 +194,17 @@ void UI_FreeCamWorld::create_itempick()
     double item_start_y = slider_h - select_item_size - frame_space;
     double item_off_x = select_item_size+frame_space;
     double item_off_y = -select_item_size-frame_space;
-    int n_windows = n_select_row_size * n_select_col_size*3;
-    for(int i=0; i<n_windows; i++)
-    {
-        int row = i/n_select_row_size;
-        int col = i%n_select_row_size;
-        new UIFrame(settings, item_start_x+col*item_off_x, item_start_y+row*item_off_y, select_item_size, select_item_size, item_color, true, p_select);
+    std::unordered_map<std::string, unsigned int>& blockIDMap = p_scene->masterRenderer.block_renderer.blockIDMap;
+    int n_windows=0;
+    for(auto& pair : blockIDMap){
+        unsigned int& block = pair.second;
+        if(block!=0){
+            int row = n_windows/n_select_row_size;
+            int col = n_windows%n_select_row_size;
+            new UIBlockItem(settings, item_start_x+col*item_off_x, item_start_y+row*item_off_y, select_item_size, select_item_size, block_border, 
+                     item_color, 0.5f*item_color, block, false, this, p_select);
+            n_windows++;
+        }
     }
     p_select->total_h = frame_space + std::ceil(n_windows/(double)-n_select_row_size)*item_off_y;
     p_select->total_h = std::max(slider_h, p_select->total_h);
@@ -214,9 +219,11 @@ void UI_FreeCamWorld::create_itempick()
     UIButton* p_search = new UIButton(settings, 2*frame_space+slider_w, 2*frame_space+slider_h, search_w, search_h, search_col, "Search...", p_scene->button_functions.at("nothing"), p_frame);
 
     //hotbar items
+    std::vector<unsigned int>& player_inv = static_cast<FreeCamWorld*>(p_scene)->world.player.inventory;
     double hot_off = hotbar_item_space+hotbar_item_size;
     for(int i=0; i<n_hotbar_items; i++){
-        new UIFrame(settings, hotbar_space_to_edges+i*hot_off, hotbar_space_to_edges, hotbar_item_size, hotbar_item_size, item_color, true, p_itempick_base);
+        new UIBlockItem(settings, hotbar_space_to_edges+i*hot_off, hotbar_space_to_edges, hotbar_item_size, hotbar_item_size, block_border, 
+                     item_color, 0.5f*item_color, player_inv.at(i), true, this, p_hotbar);
     }
 }
 

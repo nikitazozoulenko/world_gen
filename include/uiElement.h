@@ -19,7 +19,7 @@ public:
     virtual ~UIElement();
 
     virtual void mouse_click(double& x, double& y);
-    virtual void mouse_release();
+    virtual void mouse_release(double& x, double& y);
     virtual void process_movement(double xoff, double yoff, double x, double y);
     double getGlobalX();
     double getGlobalY();
@@ -51,8 +51,6 @@ public:
     UIFrame(Settings& settings, double x0, double y0, double w, double h, glm::vec3 color, bool moveable, 
         UIElement* p_parent=nullptr, std::string type="frame");
     virtual ~UIFrame();
-    virtual void mouse_click(double& x, double& y);
-    virtual void mouse_release();
     virtual void process_movement(double xoff, double yoff, double x, double y);
 
     bool moveable;
@@ -85,7 +83,7 @@ public:
         double min, double max, std::function<void(double, double)>& fun, UIElement* p_parent=nullptr, std::string type="slider");
     ~UISlider();
     void mouse_click(double& x, double& y);
-    void mouse_release();
+    void mouse_release(double& x, double& y);
     void process_movement(double xoff, double yoff, double x, double y);
 
     void change_slider_val(double x, double y);
@@ -114,7 +112,7 @@ public:
         double min, double max, std::function<void(double, double)>& fun, UIElement* p_parent=nullptr, std::string type="yslider");
     ~UIYSlider();
     void mouse_click(double& x, double& y);
-    void mouse_release();
+    void mouse_release(double& x, double& y);
     void process_movement(double xoff, double yoff, double x, double y);
 
     void change_slider_val(double x, double y);
@@ -143,7 +141,7 @@ public:
             std::function<void()>& fun, UIElement* p_parent=nullptr, std::string type="button");
     ~UIButton();
     void mouse_click(double& x, double& y);
-    void mouse_release();
+    void mouse_release(double& x, double& y);
     void process_movement(double xoff, double yoff, double x, double y);
 
 
@@ -163,27 +161,28 @@ class UI_FreeCamWorld;
 class UIBlockItem : public UIElement
 {
 public:
-    UIBlockItem(Settings& settings, double x0, double y0, double w, double h, int border_size, glm::vec3 border_col, glm::vec3 item_col, 
-        unsigned int block, UI_FreeCamWorld* p_ui, UIElement* p_parent=nullptr, std::string type="blockitem");
+    UIBlockItem(Settings& settings, double x0, double y0, double w, double h, double border_size, glm::vec3 border_col, glm::vec3 item_col, 
+        unsigned int& block, bool changeable, UI_FreeCamWorld* p_ui, UIElement* p_parent=nullptr, std::string type="blockitem");
     UI_FreeCamWorld* p_ui;
     glm::vec3 border_col;
     glm::vec3 item_col;
-    int border_size;
-    unsigned int block;
+    double border_size;
+    unsigned int& block;
+    bool changeable;
 
     void mouse_click(double& x, double& y);
 };
 
-class UIPickedBlock : public UIElement
+class UIPickedBlock : public UIFrame
 {
 public:
-    UIPickedBlock(Settings& settings, double x0, double y0, double w, double h, glm::vec3 item_col, unsigned int block, UI_FreeCamWorld* p_ui,
-        UIElement* p_parent=nullptr, std::string type="pickedblock");
+    UIPickedBlock(Settings& settings, double x0, double y0, double w, double h, glm::vec3 item_col, unsigned int block, 
+                UI_FreeCamWorld* p_ui, std::string type="pickedblock");
+    UI_FreeCamWorld* p_ui;
     glm::vec3 item_col;
     unsigned int block;
     
-    void mouse_release();
-    void process_movement(double xoff, double yoff, double x, double y);
+    void mouse_release(double& x, double& y);
 };
 
 
