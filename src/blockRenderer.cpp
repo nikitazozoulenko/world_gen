@@ -16,6 +16,7 @@ BlockRenderer::BlockRenderer(Settings& settings) :
 {
     createShaders();
     setupBlockData();
+    createItemTextures();
 }
 
 
@@ -193,4 +194,14 @@ void BlockRenderer::setupBlockData()
     }
     int image_width = 16;
     block_texture = loadTextureArray(pathToIndexMap, image_width);
+}
+
+
+void BlockRenderer::createItemTextures()
+{
+    for(auto& pair : blockIDMap){
+        std::string name = pair.first;
+        unsigned int blockID = pair.second;
+        itemTexMap[blockID] = blockID;
+    }
 }

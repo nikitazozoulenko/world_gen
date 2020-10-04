@@ -243,8 +243,9 @@ void UIRenderer::render_pickedblock(UIPickedBlock* p_ele, double off_x, double o
     double& w = p_ele->w;
     double& h = p_ele->h;
 
-    ui_shaderprogram.setUniformVec4("coords", x/screen_w,y/screen_h,w/screen_w,h/screen_h);
-    ui_shaderprogram.setUniformVec3("color", p_ele->item_col);
+    ui_tex_shaderprogram.bind();
+    ui_tex_shaderprogram.setUniformVec4("coords", x/screen_w,y/screen_h,w/screen_w,h/screen_h);
+    glBindTexture(GL_TEXTURE_2D, block_renderer.itemTexMap[p_ele->block]);
     glDrawArrays(GL_TRIANGLES, 0, 6);
 
     fontDrawer.draw(std::to_string(p_ele->block), x, y, 1.0f, glm::vec3(1,1,1));

@@ -91,7 +91,15 @@ void UIFrame::process_movement(double xoff, double yoff, double x, double y)
     }
 }
 
+////////////////////////////////////////////////
 
+
+UITexFrame::UITexFrame(Settings& settings, double x0, double y0, double w, double h, std::string tex_name, bool moveable,
+        UIElement* p_parent, std::string type):
+    UIFrame(settings, x0, y0, w, h, {0,0,0}, moveable, p_parent, type),
+    tex_name(tex_name)
+{
+}
 ////////////////////////////////////////////////
 
 
@@ -315,20 +323,21 @@ void UIBlockItem::mouse_click(double& x, double& y)
 {
     double size = w-2*border_size;
     UIElement* p_block = new UIPickedBlock(settings, x-size/2.0, y-size/2.0, size, size,
-                                    item_col, block, p_ui);
+                                    block, p_ui);
     p_ui->elements.push_back(p_block);
     p_ui->p_clicked_ele = p_block;
     p_block->update_click_all_parents(glfwGetTime(), x, y);
     p_block->x_click = p_block->x0_at_click+p_block->w/2.0;
     p_block->y_click = p_block->y0_at_click+p_block->h/2.0;
 
+    if(changeable)
+        block=0;
 }
 
 
-UIPickedBlock::UIPickedBlock(Settings& settings, double x0, double y0, double w, double h, glm::vec3 item_col, unsigned int block, 
+UIPickedBlock::UIPickedBlock(Settings& settings, double x0, double y0, double w, double h, unsigned int block, 
             UI_FreeCamWorld* p_ui, std::string type) :
-    UIFrame(settings, x0, y0, w, h, item_col, true, nullptr, type),
-    item_col(item_col),
+    UIFrame(settings, x0, y0, w, h, {0,0,0}, true, nullptr, type),
     block(block),
     p_ui(p_ui)
 {

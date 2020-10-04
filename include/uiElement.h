@@ -9,6 +9,7 @@
 #include <vector>
 #include <functional>
 #include <settings.h>
+#include <string>
 
 
 
@@ -55,6 +56,14 @@ public:
 
     bool moveable;
 private:
+};
+
+class UITexFrame : public UIFrame
+{
+public:
+    UITexFrame(Settings& settings, double x0, double y0, double w, double h, std::string tex_name, bool moveable,
+        UIElement* p_parent=nullptr, std::string type="texframe");
+    std::string tex_name;
 };
 
 class UIInvis : public UIFrame
@@ -176,10 +185,9 @@ public:
 class UIPickedBlock : public UIFrame
 {
 public:
-    UIPickedBlock(Settings& settings, double x0, double y0, double w, double h, glm::vec3 item_col, unsigned int block, 
+    UIPickedBlock(Settings& settings, double x0, double y0, double w, double h, unsigned int block, 
                 UI_FreeCamWorld* p_ui, std::string type="pickedblock");
     UI_FreeCamWorld* p_ui;
-    glm::vec3 item_col;
     unsigned int block;
     
     void mouse_release(double& x, double& y);

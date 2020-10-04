@@ -23,6 +23,7 @@ public:
     void render(ChunkMapivec2& chunk_map, Camera& camera);
     std::array<std::unordered_map<int, int>,6> texArrayIDLookup;
     std::unordered_map<std::string, unsigned int> blockIDMap;
+    std::unordered_map<unsigned int, unsigned int> itemTexMap;
     
 private:
     Settings& settings;
@@ -31,15 +32,19 @@ private:
 
     void createShaders();
 
+    void createItemTextures();
+
     void addFacesWithTexture(std::string tex_path, std::vector<int> faces, std::unordered_map<std::string, unsigned int>& pathToIndexMap, std::string& tex_dir);
     void readBlockJson(nlohmann::json& j, std::unordered_map<std::string, unsigned int>& pathToIndexMap, std::string& tex_dir);
     void setupBlockData();
-    unsigned int singleFaceBlock(int id, const char * path, std::unordered_map<std::string, unsigned int>& pathToIndexMap);
 
     glm::mat4 getProjViewMatrix(Camera& camera);
     void setProjViewMatrix(glm::mat4& projView);
 
     std::array<glm::vec4, 4> getFrustumPlanes(glm::mat4& projView);
     bool frustrumCulling(glm::ivec2& chunk_pos, std::array<glm::vec4, 4>& planes, float& sphere_r);
+
+    unsigned int item_vao;
+    unsigned int item_vbo;
 };
 #endif // MY_BLOCKRENDERER_H
